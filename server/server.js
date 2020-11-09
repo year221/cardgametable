@@ -16,9 +16,10 @@ io.on('connection', function (socket) {
     console.log('user disconnected', socket.id);          
   });  
 
-  socket.on('cardMoved', function (gameObject, zone_id) {
+  socket.on('cardMoved', function (gameObject, src_zone_Id, dst_zone_id) {
     console.log(gameObject)    
-    console.log(zone_id)    
+    console.log(src_zone_Id)    
+    console.log(dst_zone_id)    
 });  
 });
 
