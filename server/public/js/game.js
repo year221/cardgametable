@@ -71,7 +71,11 @@ export default class Game extends Phaser.Scene
         // this.all_cards.set('2', card);
         // this.add.existing(card); 
         //this.all_cards.add(new Card(this, 600,300, 'cards','clubs5','back','2'), true);        
-
+        this.input.on('dragstart', function (pointer, gameObject) {
+            // cache starting depth so that we could return it to its depth
+            gameObject._drag_start_depth = gameObject.depth;            
+            self.children.bringToTop(gameObject);
+        })
         this.input.on('drag', function (pointer, gameObject, dragX, dragY) {            
             // console.log('pointer-Y', pointer.x, pointer.y);
             // console.log('pointer-Y-camera', pointer.worldX, pointer.worldY);
@@ -109,6 +113,7 @@ export default class Game extends Phaser.Scene
             {
                 gameObject.x = gameObject.input.dragStartX;
                 gameObject.y = gameObject.input.dragStartY;
+                gameObject.depth = gameObject._drag_start_depth; /// recover it depth
             }
         });   
         
