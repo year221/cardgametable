@@ -62,8 +62,8 @@ export default class Game extends Phaser.Scene
         // this.add.existing(zone);        
         //this.all_zones.add(new CardZone(this, 400,300,300,200, 0x333333, 'zone1'), true);        
         //this.all_zones.add(new CardZone(this, 400,600,300,200, 0x333333, 'zone2'), true);  
-        self.add_card_to_zone('zone1', null, '1', 'cards','joker','back');
-        self.add_card_to_zone('zone2', null, '2', 'cards','clubs5','back');
+        self.add_card_to_zone('zone1', null, 'J', 'cards','joker','back');
+        self.add_card_to_zone('zone2', null, 'C', 'cards','clubs5','back');
         // let card = new Card(this, 400,300, 'cards','joker','back','1');
         // this.all_cards.set('1', card);
         // this.add.existing(card); 
@@ -122,7 +122,7 @@ export default class Game extends Phaser.Scene
         // socket io update from server on game status
         
         this.socket.on('cardMoved', function (card_id, src_zone_id, dst_zone_id, dst_pos_in_zone) {
-            //const last_pos = self.rearrange_card_in_zone_calculate_last_pos(dst_zone_id);
+            //const last_pos = self.rearrange_card_in_zone_calculate_last_pos(dst_zone_id);            
             self.add_card_to_zone(dst_zone_id, dst_pos_in_zone, card_id).setDepth(dst_pos_in_zone+1);
             // const card = self.all_cards.get(card_id);
             // if (card.zone_id == src_zone_id){
@@ -140,7 +140,13 @@ export default class Game extends Phaser.Scene
         let card;
         const zone = this.all_zones.get(zone_id);
         if (pos_in_zone==null){
-            pos_in_zone = this.rearrange_card_in_zone_calculate_last_pos(zone_id) + 1;
+            const last_card = this.rearrange_card_in_zone_calculate_last_pos(zone_id);
+            console.log(last_card,card_id);
+            if (last_card.last_card_id == card_id){
+                pos_in_zone = last_card.last_pos;
+            } else {
+                pos_in_zone = last_card.last_pos+1;
+            }
         }
 
         const new_pos = zone.calculate_xy_from_pos(pos_in_zone);       
@@ -170,25 +176,40 @@ export default class Game extends Phaser.Scene
     }
 
     // this function collect all cards in a zone and calculate their desired depth
-    rearrange_card_in_zone_calculate_last_pos(zone_id){
+    rearrange_card_in_zone_calculate_last_pos(zone_id,reset_depth_position){
         const card_in_zone = new Map();
         // loop through cards and record their position
-        let max_pos = 0;
+        let max_pos = -1;
+        //let card_id_at_max_pos = null;
         for (const [card_id, card] of this.all_cards.entries()) {
             if (card.zone_id == zone_id){
-                card_in_zone.set(card.pos_in_zone, card_id)
+                card_in_zone.set(card.pos_in_zone, card_id);
+                console.log(card_id, card.pos_in_zone, max_pos);
                 if (card.pos_in_zone > max_pos)
-                    max_pos = card.pos_in_zone
+                    max_pos = card.pos_in_zone;
+                    //card_id_at_max_pos = card_id;
+                    console.log('*',max_pos, card_in_zone.get(max_pos));
             }            
-        }
+        }    
         // now loop through collected
-        let c_pos = -1;
-        for (let pos = 0; pos <= max_pos; pos++) {
-            if (card_in_zone.has(pos)){                
-                c_pos ++;
-                this.all_cards.get(card_in_zone.get(pos)).set_pos_in_zone(c_pos).setDepth(c_pos+1);                
-            }
-        }        
-        return c_pos;
+        if ((reset_depth_position === undefined) || (reset_depth_position === null)){
+            console.log('xx');
+            return {last_pos:max_pos, last_card_id:card_in_zone.get(max_pos)};
+            
+        } else {
+            let c_pos = -1;
+            for (let pos = 0; pos <= max_pos; pos++) {
+                if (card_in_zone.has(pos)){                
+                    c_pos ++;
+                    const card = this.all_cards.get(card_in_zone.get(pos)).setDepth(c_pos+1);
+                    if (c_pos!= card.pos_in_zone){
+                        card.set_pos_in_zone(c_pos);      
+                        const new_pos = this.all_zones.get('zone_id').calculate_xy_from_pos(c_pos);              
+                        card.setPosition(new_pos.x, new_pos.y); 
+                    }                                       
+                }
+            }   
+            return {last_pos:c_pos, last_card_id: card_in_zone.get(max_pos)};
+        }
     }
 }
