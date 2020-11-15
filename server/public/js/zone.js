@@ -43,36 +43,5 @@ export default class CardZone extends Phaser.GameObjects.Rectangle
 
     highlight(value){
         this.isStroked=value;   
-    }
-
-    // unlink_cards(card_id_arr){
-    //     // unlink this card from the zone. Note that this does NOT remove the card from display.
-    //     card_id_arr.forEach(function(card_id){
-    //         this.cards.delete(card_id);            
-    //     }
-    // }
-
-    // get_max_pos(){
-    //     // loop through cards and record their position
-    //     if (this.cards.size==0){
-    //         return -1
-    //     } else {
-    //         return Math.max(...this.cards.values());
-    //     }        
-    // }
-
-    // squeeze_cards(all_cards){
-    //     if (this.max_pos+1!=this.cards.size){
-
-    //     }
-    // }
-    // add_cards(card_id_arr, all_cards){
-    //     let new_pos = this.get_max_pos();
-    //     card_id_arr.forEach(function(card_id){
-    //         new_pos ++;
-    //         this.cards.set(card_id, new_pos);
-    //         new_xy = this.calculate_xy_from_pos(new_pos);
-    //         all_cards.get(card_id).set_zone_id(this.zone_id).setPosition(new_xy.x, new_xy.y).setRotation(this.rotation).setDepth(new_pos+1);
-    //     }        
-    // }        
+    }    
 }

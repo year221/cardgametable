@@ -38,16 +38,4 @@ export default class Card extends Phaser.GameObjects.Sprite
         this.zone_id=zone_id;
         return this;
     }
-    // get_card_status(){
-    //     return {
-    //         zone_id:this.zone_id,
-    //         pos_in_zone:this.pos_in_zone,            
-    //         face_up: this._face_up
-    //     }
-    // }
-
-    // set_pos_in_zone(value){
-    //     this.pos_in_zone = value;
-    //     return this;
-    // }
 }
