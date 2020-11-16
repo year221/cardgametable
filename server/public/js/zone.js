@@ -9,11 +9,19 @@ export default class CardZone extends Phaser.GameObjects.Rectangle
     delta_y = 20;
     boundary_width;
     boundary_height
+    local_display = false;
     constructor(scene, x, y, width, height, fillColor, zone_id, boundary_width, boundary_height) {
         super(scene, x, y, width, height, fillColor);
         this.zone_id = zone_id;
-        this.setInteractive();
-        this.input.dropZone = true;     
+        //this.local_display = local_display;
+        this.set_local_display(true);
+        // if (this.local_display){
+        //     this.setInteractive();  
+        //     this.input.dropZone = true;     
+        // } else {
+        //     this.visible = false;
+        //     this.active = false;
+        // }
         this._sinR=0;
         this._cosR=1;   
         this.boundary_width=boundary_width;
@@ -43,5 +51,23 @@ export default class CardZone extends Phaser.GameObjects.Rectangle
 
     highlight(value){
         this.isStroked=value;   
+    }    
+
+    set_local_display(value){
+        // hide zone from local display
+        this.local_display=value;
+        if (value){
+            this.active=true;
+            this.setInteractive();
+            this.input.dropZone = true; 
+            //this.scene.input.setDraggable(this);                     
+            this.visible=true;
+        } else {
+            //this.scene.input.setDraggable(this, false);         
+            this.input.dropZone = false; 
+            this.scene.input.disable(this);            
+            this.visible=false;
+            this.active=false;            
+        }
     }    
 }

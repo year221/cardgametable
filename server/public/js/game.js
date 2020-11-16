@@ -40,13 +40,14 @@ export default class Game extends Phaser.Scene
         this.add_zone('zone2', 700,400,300,210, 0x333333, 80, 105);
         this.all_zones.get('zone2').set_zone_angle(90);
         this.add_zone('zone3', 400,200,300,210, 0x333333, 80, 105);
-        this.all_zones.get('zone3').set_zone_angle(180);
+        this.all_zones.get('zone3').set_zone_angle(180);          
 
         const camera_view_type = Math.random(); 
         if (camera_view_type>=0.5){
             this.cameras.main.startFollow(this.all_zones.get('zone2'));
             this.cameras.main.setAngle(this.all_zones.get('zone2').angle);
             console.log('zone2 camera');
+            this.all_zones.get('zone3').set_local_display(false);               
         } else {
             this.cameras.main.startFollow(this.all_zones.get('zone1'));
             this.cameras.main.setAngle(this.all_zones.get('zone1').angle);
@@ -77,7 +78,7 @@ export default class Game extends Phaser.Scene
         });         
 
         this.input.on('drop', function (pointer, gameObject, dropZone) {
-                        
+            dropZone.highlight(false); 
             gameObject.clearTint();
 
             if (gameObject instanceof Card && dropZone instanceof CardZone){
@@ -163,6 +164,7 @@ export default class Game extends Phaser.Scene
             card.setPosition(new_pos.x, new_pos.y).setDepth(i+1);
             card.zone_id=zone_id;
             card.angle = zone.angle;
+            card.set_local_display(zone.local_display);
         }         
     }
 
