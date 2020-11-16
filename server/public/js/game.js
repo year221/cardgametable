@@ -7,7 +7,8 @@ export default class Game extends Phaser.Scene
     all_zones;
     all_cards;
     cards_in_zones;
-    event_queue;
+    event_buffer;
+    last_event_id;
 
     activated_cards;
     dragged_cards;
@@ -27,7 +28,7 @@ export default class Game extends Phaser.Scene
     create()
     {
         var self = this;
-        this.socket = io('http://localhost:8081');     
+        this.socket = io();//'http://localhost:8081');     
         this.socket.on('connect', function () {
             console.log('Connected!');
         });           
@@ -52,9 +53,9 @@ export default class Game extends Phaser.Scene
             console.log('zone1 camera');
         }
 
-        self.event_add_new_card('zone1', undefined, 'J', 'cards','joker','back');
-        self.event_add_new_card('zone2', undefined, 'C5', 'cards','clubs5','back');
-        self.event_add_new_card('zone2', undefined, 'C6', 'cards','clubs6','back');
+        self.add_new_card('zone1', undefined, 'J', 'cards','joker','back');
+        self.add_new_card('zone2', undefined, 'C5', 'cards','clubs5','back');
+        self.add_new_card('zone2', undefined, 'C6', 'cards','clubs6','back');
 
         this.input.on('dragstart', function (pointer, gameObject) {
             // cache starting depth so that we could return it to its depth
@@ -80,7 +81,7 @@ export default class Game extends Phaser.Scene
             gameObject.clearTint();
 
             if (gameObject instanceof Card && dropZone instanceof CardZone){
-                self.socket.emit('cardMoved', gameObject.card_id,  gameObject.zone_id, dropZone.zone_id, null);                          
+                self.socket.emit('cardMoved',  gameObject.zone_id, dropZone.zone_id, [gameObject.card_id],  null);                          
                 self.move_cards(gameObject.zone_id, dropZone.zone_id, [gameObject.card_id]);
             }
 
@@ -98,8 +99,8 @@ export default class Game extends Phaser.Scene
         
         // socket io update from server on game status
         
-        this.socket.on('cardMoved', function (card_id, src_zone_id, dst_zone_id, dst_pos_in_zone) {
-            self.move_cards(src_zone_id, dst_zone_id, [card_id], dst_pos_in_zone);        
+        this.socket.on('cardMoved', function (src_zone_id, dst_zone_id, card_ids, dst_pos_in_zone) {
+            self.move_cards(src_zone_id, dst_zone_id, card_ids, dst_pos_in_zone);        
         });
     }        
 
@@ -153,7 +154,7 @@ export default class Game extends Phaser.Scene
     update_cards_in_zone(zone_id, starting_pos, end_pos){
         const zone = this.all_zones.get(zone_id);
         const cards_in_zone = this.cards_in_zones.get(zone_id);
-        if (starting_pos=== undefined) {starting_pos=0}
+        if (starting_pos=== undefined) {starting_pos=0;}
         if (end_pos === undefined) {end_pos = cards_in_zone.length;}
         for (let i = starting_pos; i<end_pos; i++)
         {
@@ -165,23 +166,30 @@ export default class Game extends Phaser.Scene
         }         
     }
 
-    event_add_new_card(dst_zone_id, insertion_location, card_id, texture, frame, frame_face_down){
-        if (insertion_location === undefined) {
-            insertion_location = this.cards_in_zones.get(dst_zone_id).length;
-        }
-        // add to cards in zone array
-        
-        Phaser.Utils.Array.AddAt(this.cards_in_zones.get(dst_zone_id), card_id, insertion_location);
-        const dst_zone = this.all_zones.get(dst_zone_id);
+    add_new_card(dst_zone_id, insertion_location, card_id, texture, frame, frame_face_down){
 
-        const new_pos = dst_zone.calculate_xy_from_pos(insertion_location);   
-        const card = new Card(this, new_pos.x, new_pos.y,
-            texture, frame, frame_face_down, card_id).setDepth(insertion_location+1);                  
-        card.zone_id=dst_zone_id;
-        card.angle = dst_zone.angle;
-        this.all_cards.set(card_id, card);
+        const card = new Card(this, 0, 0, texture, frame, frame_face_down, card_id);        
         this.add.existing(card);
-        console.log("add new cards");
+        this.all_cards.set(card_id, card);
+        this.add_cards(dst_zone_id, [card_id], insertion_location); 
+
+        // if (insertion_location === undefined) {
+        //     insertion_location = this.cards_in_zones.get(dst_zone_id).length;
+        // }
+        // // add to cards in zone array
+        
+        // Phaser.Utils.Array.AddAt(this.cards_in_zones.get(dst_zone_id), card_id, insertion_location);
+        
+
+        // const dst_zone = this.all_zones.get(dst_zone_id);
+        // add_cards(dst_zone_id, card_ids, insertion_location)
+        // const new_pos = dst_zone.calculate_xy_from_pos(insertion_location);   
+        // const card = new Card(this, new_pos.x, new_pos.y,
+        //     texture, frame, frame_face_down, card_id).setDepth(insertion_location+1);                  
+        // card.zone_id=dst_zone_id;
+        // card.angle = dst_zone.angle;
+        
+        // console.log("add new cards");
     }
 
     add_zone(zone_id, x, y, width, height, fillColor, boundary_width, boundary_height){

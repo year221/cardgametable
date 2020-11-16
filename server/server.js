@@ -25,8 +25,8 @@ io.on('connection', function (socket) {
     console.log('user disconnected', socket.id);          
   });  
 
-  socket.on('cardMoved', function (card_id, src_zone_id, dst_zone_id, dst_pos_in_zone) {
-    console.log(card_id, src_zone_id, dst_zone_id, dst_pos_in_zone)    
+  socket.on('cardMoved', function (src_zone_id, dst_zone_id, card_ids, dst_pos_in_zone) {
+    console.log(card_ids, src_zone_id, dst_zone_id, dst_pos_in_zone)    
 /*     let index = game_state.cards_in_zone[src_zone_id].indexOf(card_id);
     if (index > -1) {
       game_state.cards_in_zone[src_zone_id].splice(index, 1);
@@ -35,10 +35,10 @@ io.on('connection', function (socket) {
     if (index == -1) {
       game_state.cards_in_zone[dst_zone_id].push(card_id)
     }   */  
-    socket.broadcast.emit('cardMoved', card_id, src_zone_id, dst_zone_id, dst_pos_in_zone);    
+    socket.broadcast.emit('cardMoved', src_zone_id, dst_zone_id, card_ids, dst_pos_in_zone);    
   });  
 });
 
-server.listen(8081, function () {
+server.listen(3000, function () {
   console.log(`Listening on ${server.address().port}`);
 });
