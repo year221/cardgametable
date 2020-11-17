@@ -88,9 +88,10 @@ export default class Game extends Phaser.Scene
 
             if (gameObject instanceof Card && dropZone instanceof CardZone){
                 self.last_event_index ++;
-                self.event_buffer.set(self.last_event_index, [gameObject.zone_id, dropZone.zone_id, [gameObject.card_id]]);
-                self.socket.emit('cardMoved',  self.last_event_index, gameObject.zone_id, dropZone.zone_id, [gameObject.card_id],  null);                          
-                self.move_cards(gameObject.zone_id, dropZone.zone_id, [gameObject.card_id]);
+                self.event_buffer.set(self.last_event_index, {'name':'cardMoved', 'parameters':[gameObject.zone_id, dropZone.zone_id, [gameObject.card_id]]});                
+                const src_zone_id = gameObject.zone_id;
+                self.move_cards(src_zone_id, dropZone.zone_id, [gameObject.card_id]);
+                self.socket.emit('cardMoved',  self.last_event_index, src_zone_id, dropZone.zone_id, [gameObject.card_id],  null);                          
             }
 
         });          
@@ -113,16 +114,55 @@ export default class Game extends Phaser.Scene
 
         this.socket.on('playerIDAssigned', function (player_id) {
             console.log('received player ID', player_id);
-            this.player_id = player_id;            
+            self.player_id = player_id;            
         });    
         
-        this.socket.on('gameStateSync', function (last_events, cards_in_zone) {
-            console.log('received gamesStateSync', last_events, cards_in_zone);
+        this.socket.on('gameStateSync', function (last_events, cards_in_zones) {
+            console.log('received gamesStateSync', last_events, cards_in_zones);
+            self.sync_to_card_in_zones(cards_in_zones);
+            self.apply_and_update_event_buffer(last_events[self.player_id]);
             //this.player_id = player_id;            
         });          
     }        
 
-    
+    sync_to_card_in_zones(new_cards_in_zones){
+        
+        for (const [zone_id, cards_in_zone] of this.cards_in_zones) {
+            const new_cards_in_zone = new_cards_in_zones[zone_id];
+            
+            if (!(cards_in_zone.length === new_cards_in_zone.length && cards_in_zone.every((val, index) => val === new_cards_in_zone[index]))){
+                // update cards
+                this.cards_in_zones.set(zone_id, new_cards_in_zone);
+                this.update_cards_in_zone(zone_id); 
+            }
+          }
+    }
+
+    apply_and_update_event_buffer(last_event_index_applied)
+    {
+        // update event buffer
+        // remove event in the buffer that have been recognized by the server as applied
+        console.log('last index', last_event_index_applied);
+        console.log('before change', this.event_buffer)
+
+
+        const min_event_index = Math.min(...this.event_buffer.keys());        
+        for (let i=min_event_index; i<=last_event_index_applied;i++){
+            this.event_buffer.delete(i);
+        }
+        console.log('after change', this.event_buffer)        
+        for (let i=last_event_index_applied+1; i<=this.last_event_index;i++){            
+            const event = this.event_buffer.get(i);
+            if (!(event === undefined)){            
+                if (event.name==='cardMoved'){
+                    this.move_cards(...event.parameters);
+                }
+            }
+        }
+    }
+
+
+
     remove_cards(zone_id, card_ids, squeeze_cards_in_zone)
     {
         if (squeeze_cards_in_zone === undefined) {squeeze_cards_in_zone=true;}
@@ -192,24 +232,6 @@ export default class Game extends Phaser.Scene
         this.add.existing(card);
         this.all_cards.set(card_id, card);
         this.add_cards(dst_zone_id, [card_id], insertion_location); 
-
-        // if (insertion_location === undefined) {
-        //     insertion_location = this.cards_in_zones.get(dst_zone_id).length;
-        // }
-        // // add to cards in zone array
-        
-        // Phaser.Utils.Array.AddAt(this.cards_in_zones.get(dst_zone_id), card_id, insertion_location);
-        
-
-        // const dst_zone = this.all_zones.get(dst_zone_id);
-        // add_cards(dst_zone_id, card_ids, insertion_location)
-        // const new_pos = dst_zone.calculate_xy_from_pos(insertion_location);   
-        // const card = new Card(this, new_pos.x, new_pos.y,
-        //     texture, frame, frame_face_down, card_id).setDepth(insertion_location+1);                  
-        // card.zone_id=dst_zone_id;
-        // card.angle = dst_zone.angle;
-        
-        // console.log("add new cards");
     }
 
     add_zone(zone_id, x, y, width, height, fillColor, boundary_width, boundary_height){
