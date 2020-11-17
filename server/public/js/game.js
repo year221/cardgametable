@@ -9,7 +9,8 @@ export default class Game extends Phaser.Scene
     all_cards;
     cards_in_zones;
     event_buffer;
-    last_event_id;
+    last_event_index;
+
 
 
     activated_cards;
@@ -22,6 +23,8 @@ export default class Game extends Phaser.Scene
         this.all_zones = new Map();
         this.all_cards = new Map();
         this.cards_in_zones = new Map();
+        this.event_buffer = new Map();
+        this.last_event_index=-1;
     }
     preload()
     {
@@ -84,7 +87,9 @@ export default class Game extends Phaser.Scene
             gameObject.clearTint();
 
             if (gameObject instanceof Card && dropZone instanceof CardZone){
-                self.socket.emit('cardMoved',  gameObject.zone_id, dropZone.zone_id, [gameObject.card_id],  null);                          
+                self.last_event_index ++;
+                self.event_buffer.set(self.last_event_index, [gameObject.zone_id, dropZone.zone_id, [gameObject.card_id]]);
+                self.socket.emit('cardMoved',  self.last_event_index, gameObject.zone_id, dropZone.zone_id, [gameObject.card_id],  null);                          
                 self.move_cards(gameObject.zone_id, dropZone.zone_id, [gameObject.card_id]);
             }
 
@@ -109,9 +114,15 @@ export default class Game extends Phaser.Scene
         this.socket.on('playerIDAssigned', function (player_id) {
             console.log('received player ID', player_id);
             this.player_id = player_id;            
-        });        
+        });    
+        
+        this.socket.on('gameStateSync', function (last_events, cards_in_zone) {
+            console.log('received gamesStateSync', last_events, cards_in_zone);
+            //this.player_id = player_id;            
+        });          
     }        
 
+    
     remove_cards(zone_id, card_ids, squeeze_cards_in_zone)
     {
         if (squeeze_cards_in_zone === undefined) {squeeze_cards_in_zone=true;}
