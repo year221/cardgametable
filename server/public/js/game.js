@@ -87,11 +87,12 @@ export default class Game extends Phaser.Scene
             gameObject.clearTint();
 
             if (gameObject instanceof Card && dropZone instanceof CardZone){
-                self.last_event_index ++;
-                self.event_buffer.set(self.last_event_index, {'name':'cardMoved', 'parameters':[gameObject.zone_id, dropZone.zone_id, [gameObject.card_id]]});                
                 const src_zone_id = gameObject.zone_id;
-                self.move_cards(src_zone_id, dropZone.zone_id, [gameObject.card_id]);
-                self.socket.emit('cardMoved',  self.last_event_index, src_zone_id, dropZone.zone_id, [gameObject.card_id],  null);                          
+                const dst_zone_id = dropZone.zone_id;
+                self.move_cards(src_zone_id, dst_zone_id, [gameObject.card_id]);
+                self.last_event_index ++;
+                self.event_buffer.set(self.last_event_index, {'name':'cardMoved', 'parameters':[src_zone_id, dst_zone_id, [gameObject.card_id]]});                                                
+                self.socket.emit('cardMoved',  self.last_event_index, src_zone_id, dst_zone_id, [gameObject.card_id],  null);                          
             }
 
         });          
@@ -207,7 +208,7 @@ export default class Game extends Phaser.Scene
     {
         // event to move card from one zone to another        
         const card_id_removed = this.remove_cards(src_zone_id, card_ids, true); 
-        this.add_cards(dst_zone_id, card_id_removed, insertion_location);                
+        this.add_cards(dst_zone_id, card_id_removed, insertion_location);          
     }
 
     update_cards_in_zone(zone_id, starting_pos, end_pos){
