@@ -4,11 +4,13 @@ import Card from './cards.js';
 export default class Game extends Phaser.Scene
 {
     /** @type {Phaser.GameObjects.Zone} */
+    player_id;
     all_zones;
     all_cards;
     cards_in_zones;
     event_buffer;
     last_event_id;
+
 
     activated_cards;
     dragged_cards;
@@ -103,6 +105,11 @@ export default class Game extends Phaser.Scene
         this.socket.on('cardMoved', function (src_zone_id, dst_zone_id, card_ids, dst_pos_in_zone) {
             self.move_cards(src_zone_id, dst_zone_id, card_ids, dst_pos_in_zone);        
         });
+
+        this.socket.on('playerIDAssigned', function (player_id) {
+            console.log('received player ID', player_id);
+            this.player_id = player_id;            
+        });        
     }        
 
     remove_cards(zone_id, card_ids, squeeze_cards_in_zone)
