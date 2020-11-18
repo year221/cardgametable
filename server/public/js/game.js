@@ -70,7 +70,7 @@ export default class Game extends Phaser.Scene
 
         this.input.on('dragstart', function (pointer, gameObject) {
             // cache starting depth so that we could return it to its depth
-            gameObject._drag_start_depth = gameObject.depth;            
+            //gameObject._drag_start_depth = gameObject.depth;            
             self.children.bringToTop(gameObject);
         })
 
@@ -105,9 +105,10 @@ export default class Game extends Phaser.Scene
         this.input.on('dragend', function (pointer, gameObject, dropped) {            
             if (!dropped)
             {
-                gameObject.x = gameObject.input.dragStartX;
-                gameObject.y = gameObject.input.dragStartY;
-                gameObject.depth = gameObject._drag_start_depth; /// recover it depth
+                //gameObject.x = gameObject.input.dragStartX;
+                //gameObject.y = gameObject.input.dragStartY;
+                //gameObject.depth = gameObject._drag_start_depth; /// recover it depth
+                self.update_cards_in_zone(gameObject.zone_id);
             }
         });   
 

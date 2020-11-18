@@ -7,7 +7,7 @@ export default class Card extends Phaser.GameObjects.Sprite
     _frame_down;
     _frame_up;
     _face_up;  
-    _drag_start_depth;        
+    //_drag_start_depth;        
 
     constructor(scene, x, y, texture, frame, frame_face_down, card_id) {
         console.log(frame)  
