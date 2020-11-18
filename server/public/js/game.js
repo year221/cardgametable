@@ -120,13 +120,13 @@ export default class Game extends Phaser.Scene
         
         this.socket.on('gameStateSync', function (last_events, cards_in_zones) {
             console.log('received gamesStateSync', last_events, cards_in_zones);
-            self.sync_to_card_in_zones(cards_in_zones);
+            self.sync_card_in_zones(cards_in_zones);
             self.apply_and_update_event_buffer(last_events[self.player_id]);
             //this.player_id = player_id;            
         });          
     }        
 
-    sync_to_card_in_zones(new_cards_in_zones){
+    sync_card_in_zones(new_cards_in_zones){
         
         for (const [zone_id, cards_in_zone] of this.cards_in_zones) {
             const new_cards_in_zone = new_cards_in_zones[zone_id];
@@ -166,6 +166,8 @@ export default class Game extends Phaser.Scene
 
     remove_cards(zone_id, card_ids, squeeze_cards_in_zone)
     {
+        // Remove cards from card zone. 
+        // squeeze_cards_in_zone: whether update card position for those in the zone
         if (squeeze_cards_in_zone === undefined) {squeeze_cards_in_zone=true;}
         const cards_in_zone = this.cards_in_zones.get(zone_id);        
         //let card_index = card_ids.length - 1;
