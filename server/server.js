@@ -60,9 +60,9 @@ io.on('connection', function (socket) {
     // remove cards from src zone
     const card_removed = utils.remove_items(game_state.cards_in_zones[src_zone_id], card_ids); 
     // add cards to src zone   
-    if ((dst_pos_in_zone === undefined) || (dst_pos_in_zone === null)){ 
-      game_state.cards_in_zones[dst_zone_id]  = game_state.cards_in_zones[dst_zone_id].concat(card_removed)
-    } else {
+    if ((dst_pos_in_zone === undefined) || (dst_pos_in_zone === null) || (dst_pos_in_zone>= game_state.cards_in_zones[dst_zone_id].length)){ 
+      game_state.cards_in_zones[dst_zone_id]  = game_state.cards_in_zones[dst_zone_id].concat(card_removed);
+    } else {      
       game_state.cards_in_zones[dst_zone_id].splice(dst_pos_in_zone, 0, card_removed);
     }
 

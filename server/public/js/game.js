@@ -200,6 +200,7 @@ export default class Game extends Phaser.Scene
         const cards_in_zone = this.cards_in_zones.get(zone_id);
 
         if ((insertion_location === undefined) || (insertion_location===null)) { insertion_location = cards_in_zone.length; }
+        if (insertion_location > cards_in_zone.length) {insertion_location=cards_in_zone.length; }
         Phaser.Utils.Array.AddAt(cards_in_zone, card_ids, insertion_location);
         this.update_cards_in_zone(zone_id, insertion_location);             
 
