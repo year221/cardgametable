@@ -14,7 +14,8 @@ export default class Game extends Phaser.Scene
 
 
     activated_cards;
-    dragged_cards;
+    primary_card;
+    //dragged_cards;
     
     // perhaps use dictionary for faster search for both. 
 	constructor()
@@ -25,6 +26,7 @@ export default class Game extends Phaser.Scene
         this.cards_in_zones = new Map();
         this.event_buffer = new Map();
         this.last_event_index=-1;
+        this.primary_card = null;
     }
     preload()
     {
@@ -38,7 +40,7 @@ export default class Game extends Phaser.Scene
             console.log('Connected!');
         });           
  
-        // sample card and zone placement
+        // sample card and zone placement 
         const card_width=140;
         const card_height=190;
         this.add_zone('zone1', 400,600,300,210, 0x333333, 80, 105);
@@ -63,6 +65,9 @@ export default class Game extends Phaser.Scene
         self.add_new_card('zone2', undefined, 'C5', 'cards','clubs5','back');
         self.add_new_card('zone2', undefined, 'C6', 'cards','clubs6','back');
 
+        // Above will be replaced by event
+        // TODO: Replace above with synchronization from server.
+
         this.input.on('dragstart', function (pointer, gameObject) {
             // cache starting depth so that we could return it to its depth
             gameObject._drag_start_depth = gameObject.depth;            
@@ -85,7 +90,7 @@ export default class Game extends Phaser.Scene
         this.input.on('drop', function (pointer, gameObject, dropZone) {
             dropZone.highlight(false); 
             gameObject.clearTint();
-
+            console.log('drop');
             if (gameObject instanceof Card && dropZone instanceof CardZone){
                 const src_zone_id = gameObject.zone_id;
                 const dst_zone_id = dropZone.zone_id;
@@ -105,8 +110,22 @@ export default class Game extends Phaser.Scene
                 gameObject.depth = gameObject._drag_start_depth; /// recover it depth
             }
         });   
-        
-        
+
+        // Activate cards
+        this.input.on('pointerdown', function(pointer, gameObjects){  
+            console.log('pointerdown');
+            if (gameObjects.length>=1){
+                if (gameObjects[0] instanceof Card){
+                    self.primary_card = gameObjects[0].card_id;      
+                    console.log(self.primary_card);              
+                }
+            }            
+        });
+
+        this.input.on('pointerup', function(pointer, gameObjects){  
+            console.log("pointerup", gameObjects.length);          
+            
+        });
         // socket io update from server on game status
         
         this.socket.on('cardMoved', function (src_zone_id, dst_zone_id, card_ids, dst_pos_in_zone) {
