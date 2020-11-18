@@ -4,11 +4,10 @@ export default class Card extends Phaser.GameObjects.Sprite
 {
     card_id;
     zone_id;
-    pos_in_zone;
     _frame_down;
     _frame_up;
     _face_up;  
-    _drag_start_depth;      
+    _drag_start_depth;        
 
     constructor(scene, x, y, texture, frame, frame_face_down, card_id) {
         console.log(frame)  
@@ -17,6 +16,7 @@ export default class Card extends Phaser.GameObjects.Sprite
         this._frame_down=frame_face_down;
         this._frame_up = frame;
         this._face_up = true;        
+        this.zone_id = null;
         this.setInteractive();        
         scene.input.setDraggable(this);               
     }
@@ -34,16 +34,23 @@ export default class Card extends Phaser.GameObjects.Sprite
         }
     }
 
-    get_card_status(){
-        return {
-            zone_id:this.zone_id,
-            pos_in_zone:this.pos_in_zone,            
-            face_up: this._face_up
-        }
+    set_zone_id(zone_id){
+        this.zone_id=zone_id;
+        return this;
     }
 
-    set_pos_in_zone(value){
-        this.pos_in_zone = value;
-        return this;
+    set_local_display(value){
+        // set card to be invisible and not manipulatible. 
+        if (value){
+            this.active=true;
+            this.setInteractive();
+            this.scene.input.setDraggable(this);                     
+            this.visible=true;
+        } else {
+            this.scene.input.setDraggable(this, false);         
+            this.scene.input.disable(this);
+            this.visible=false;
+            this.active=false;            
+        }
     }
 }
