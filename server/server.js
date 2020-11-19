@@ -15,6 +15,7 @@ app.get('/', function (req, res) {
 game_state = {
   status: "InGame",
   cards_in_zones: {'zone1':['J'], 'zone2':['C5','C6'], 'zone3':[]},
+  card_status: {'J':true, 'C5': true, 'C6':true},
   socket_id_to_player_id: new Map(),
   last_events: {},
 };
@@ -43,6 +44,16 @@ io.on('connection', function (socket) {
     console.log('user disconnected', socket.id);          
   }); 
 
+  socket.on('cardFlipped', function (event_index, card_ids)
+  {
+    console.log('cardFlipped', game_state.socket_id_to_player_id.get(socket.id), event_index, card_ids);
+    game_state.last_events[game_state.socket_id_to_player_id.get(socket.id)]=event_index;
+    for (const card_id of card_ids){
+      game_state.card_status[card_id]=!(game_state.card_status[card_id]);
+    }
+    io.sockets.emit('gameStateSync', game_state.last_events, null, game_state.card_status);
+  });
+  
   socket.on('cardMoved', function (event_index, src_zone_id, dst_zone_id, card_ids, dst_pos_in_zone) {
     console.log('cardMoved', game_state.socket_id_to_player_id.get(socket.id), event_index, card_ids, src_zone_id, dst_zone_id, dst_pos_in_zone);
 /*     let index = game_state.cards_in_zone[src_zone_id].indexOf(card_id);
@@ -67,7 +78,7 @@ io.on('connection', function (socket) {
     }
 
     console.log(game_state.cards_in_zones);
-    io.sockets.emit('gameStateSync', game_state.last_events, game_state.cards_in_zones);
+    io.sockets.emit('gameStateSync', game_state.last_events, game_state.cards_in_zones, null);
   });  
   
 });

@@ -6,7 +6,7 @@ export default class CardZone extends Phaser.GameObjects.Rectangle
     _sinR;
     _cosR;
     delta_x = 30;
-    delta_y = 20;
+    delta_y = 30;
     boundary_width;
     boundary_height
     local_display = false;
