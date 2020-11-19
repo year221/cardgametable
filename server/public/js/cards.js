@@ -26,11 +26,13 @@ export default class Card extends Phaser.GameObjects.Sprite
     }
 
     set face_up(new_face_up_value){
-        this._face_up = new_face_up_value;
-        if (this._face_up){
-            this.setFrame(this._frame_up)
-        } else {
-            this.setFrame(this._frame_down)
+        if (this.face_up !== new_face_up_value){
+            this._face_up = new_face_up_value;
+            if (this._face_up){
+                this.setFrame(this._frame_up)
+            } else {
+                this.setFrame(this._frame_down)
+            }
         }
     }
 

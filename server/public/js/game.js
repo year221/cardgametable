@@ -97,10 +97,15 @@ export default class Game extends Phaser.Scene
         const flip_button = this.add.text(flip_button_xy.x, flip_button_xy.y, 'FLIP', {color:'#0f0', backgroundColor: '#666' });
         flip_button.setInteractive();
         flip_button.on('pointerdown', function(){
-            const all_activated_cards = self.activated_cards.getChildren();
-            for (let card of all_activated_cards){
-                card.flip_face();
-            }                  
+            const all_activated_cards = self.activated_cards.getChildren();   
+            const card_ids=all_activated_cards.map(card => card.card_id);
+            self.flip_cards(card_ids);
+            self.last_event_index ++;
+            self.event_buffer.set(self.last_event_index, {'name':'cardFlipped', 'parameters':[card_ids]});                                                
+            self.socket.emit('cardFlipped', self.last_event_index, card_ids);                       
+            // for (let card of all_activated_cards){
+            //     card.flip_face();
+            // }                  
         })
 
         // Above will be replaced by event
@@ -157,7 +162,6 @@ export default class Game extends Phaser.Scene
             //gameObject.clearTint();
             console.log('drop');
             if (gameObject instanceof Card && dropZone instanceof CardZone){
-
                 //const src_zone_id = gameObject.zone_id;
                 const dst_zone_id = dropZone.zone_id;
                 const all_activated_cards = self.activated_cards.getChildren();
@@ -275,24 +279,31 @@ export default class Game extends Phaser.Scene
         });
         // socket io update from server on game status
         
-        this.socket.on('cardMoved', function (src_zone_id, dst_zone_id, card_ids, dst_pos_in_zone) {
-            self.move_cards(src_zone_id, dst_zone_id, card_ids, dst_pos_in_zone);        
-        });
+        // this.socket.on('cardMoved', function (src_zone_id, dst_zone_id, card_ids, dst_pos_in_zone) {
+        //     self.move_cards(src_zone_id, dst_zone_id, card_ids, dst_pos_in_zone);        
+        // });
 
         this.socket.on('playerIDAssigned', function (player_id) {
             console.log('received player ID', player_id);
             self.player_id = player_id;            
         });    
         
-        this.socket.on('gameStateSync', function (last_events, cards_in_zones) {
-            console.log('received gamesStateSync', last_events, cards_in_zones);
-            self.sync_card_in_zones(cards_in_zones);
+        this.socket.on('gameStateSync', function (last_events, cards_in_zones, cards_status) {
+            console.log('received gamesStateSync', last_events, cards_in_zones, cards_status);
+            if (cards_in_zones != null){
+                self.sync_card_in_zones(cards_in_zones);
+            }
+            if (cards_status != null){
+                self.sync_card_status(cards_status);
+            }
             self.apply_and_update_event_buffer(last_events[self.player_id]);
             //this.player_id = player_id;            
         });          
     }        
     
-    sync_card_in_zones(new_cards_in_zones){
+    // synchronize all cards in the zones 
+    sync_card_in_zones(new_cards_in_zones)
+    {
         
         for (const [zone_id, cards_in_zone] of this.cards_in_zones) {
             const new_cards_in_zone = new_cards_in_zones[zone_id];
@@ -304,6 +315,13 @@ export default class Game extends Phaser.Scene
             }
           }
     }
+
+    // synchronize all card status : which side is up or down
+    sync_card_status(cards_status){
+        for (const [card_id, card] of this.all_cards){
+            card.face_up = cards_status[card_id];
+        }
+    }    
 
     apply_and_update_event_buffer(last_event_index_applied)
     {
@@ -323,11 +341,20 @@ export default class Game extends Phaser.Scene
             if (!(event === undefined)){            
                 if (event.name==='cardMoved'){
                     this.move_cards(...event.parameters);
+                } else if (event.name==='cardFlipped'){
+                    this.flip_cards(...event.parameters);
                 }
             }
         }
     }
 
+    // flip face of cards
+    flip_cards(card_ids)
+    {
+        for (let card_id of card_ids){
+            this.all_cards.get(card_id).flip_face();
+        }           
+    }
 
 
     remove_cards(zone_id, card_ids, squeeze_cards_in_zone)
