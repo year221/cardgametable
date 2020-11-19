@@ -18,6 +18,16 @@ export default class Game extends Phaser.Scene
     to_be_deactivate_upon_pointer_up;
     primary_card;
     on_multiple_selection;
+    layout_cfg={
+        card_delta_x: 30,
+        card_delta_y: 0,
+    }
+    dragging_cache_param={
+        step_x:0,
+        step_y:0,
+        offset_x:0,
+        offset_y:0,
+    }
     //dragged_cards;
     
     // perhaps use dictionary for faster search for both. 
@@ -73,7 +83,11 @@ export default class Game extends Phaser.Scene
             this.cameras.main.setAngle(this.all_zones.get('zone1').angle);
             console.log('zone1 camera');
         }
-
+        console.log("camera rotation",this.cameras.main.rotation);
+        const _sinR=Math.sin(this.cameras.main.rotation);
+        const _cosR=Math.cos(this.cameras.main.rotation);       
+        this.layout_cfg.dragging_card_group_delta_x = this.layout_cfg.card_delta_x*_cosR + this.layout_cfg.card_delta_y*_sinR;
+        this.layout_cfg.dragging_card_group_delta_y = -this.layout_cfg.card_delta_x*_sinR + this.layout_cfg.card_delta_y*_cosR,         
         self.add_new_card('zone1', undefined, 'J', 'cards','joker','back');
         self.add_new_card('zone2', undefined, 'C5', 'cards','clubs5','back');
         self.add_new_card('zone2', undefined, 'C6', 'cards','clubs6','back');
@@ -85,13 +99,38 @@ export default class Game extends Phaser.Scene
             // cache starting depth so that we could return it to its depth
             //gameObject._drag_start_depth = gameObject.depth;            
             self.children.bringToTop(gameObject);
-            self.activated_cards.setDepth(gameObject.depth, 1).setXY(gameObject.x,gameObject.y,30,0);
-        })
+            const rotation = gameObject.rotation;
+            const all_activated_cards = self.activated_cards.getChildren();
+            for (let card of self.activated_cards.getChildren()){
+                card.rotation = rotation;
+            }                
+            const index_pos_primary_card = all_activated_cards.indexOf(gameObject);
+
+            console.log('index_pos_primary_card',index_pos_primary_card);
+            const _sinR=Math.sin(rotation);
+            const _cosR=Math.cos(rotation);            
+            self.dragging_cache_param.step_x = self.layout_cfg.card_delta_x*_cosR + self.layout_cfg.card_delta_y*_sinR;
+            self.dragging_cache_param.step_y = -self.layout_cfg.card_delta_x*_sinR + self.layout_cfg.card_delta_y*_cosR;            
+            self.dragging_cache_param.offset_x = -index_pos_primary_card*self.dragging_cache_param.step_x;
+            self.dragging_cache_param.offset_y = -index_pos_primary_card*self.dragging_cache_param.step_y;                
+            self.activated_cards
+            .setDepth(gameObject.depth, 1)            
+            .setXY(gameObject.x+self.dragging_cache_param.offset_x,
+                gameObject.y+self.dragging_cache_param.offset_y,
+                self.dragging_cache_param.step_x,
+                self.dragging_cache_param.step_y);
+                //.setXY(gameObject.x,gameObject.y,self.layout_cfg.dragging_card_group_delta_x,self.layout_cfg.dragging_card_group_delta_y);
+
+            //.rotate(self.cameras.main.rotation);
+        });
 
         this.input.on('drag', function (pointer, gameObject, dragX, dragY) {            
             //gameObject.x = dragX;
             //gameObject.y = dragY;
-            self.activated_cards.setXY(dragX,dragY,30,0);
+            self.activated_cards.setXY(dragX+self.dragging_cache_param.offset_x,
+                dragY+self.dragging_cache_param.offset_y,
+                self.dragging_cache_param.step_x,
+                self.dragging_cache_param.step_y);
         });            
 
         this.input.on('dragenter', function (pointer, gameObject, dropZone) {
