@@ -34,6 +34,10 @@ export default class Card extends Phaser.GameObjects.Sprite
         }
     }
 
+    flip_face(){
+        this.face_up = !this.face_up;
+    }
+
     set_zone_id(zone_id){
         this.zone_id=zone_id;
         return this;

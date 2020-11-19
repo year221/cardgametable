@@ -92,6 +92,17 @@ export default class Game extends Phaser.Scene
         self.add_new_card('zone2', undefined, 'C5', 'cards','clubs5','back');
         self.add_new_card('zone2', undefined, 'C6', 'cards','clubs6','back');
 
+        const flip_button_xy = this.cameras.main.getWorldPoint(this.cameras.main.centerX, this.cameras.main.centerY+200);
+
+        const flip_button = this.add.text(flip_button_xy.x, flip_button_xy.y, 'FLIP', {color:'#0f0', backgroundColor: '#666' });
+        flip_button.setInteractive();
+        flip_button.on('pointerdown', function(){
+            const all_activated_cards = self.activated_cards.getChildren();
+            for (let card of all_activated_cards){
+                card.flip_face();
+            }                  
+        })
+
         // Above will be replaced by event
         // TODO: Replace above with synchronization from server.
 
