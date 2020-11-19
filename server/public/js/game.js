@@ -14,7 +14,10 @@ export default class Game extends Phaser.Scene
 
 
     activated_cards;
+    zone_id_of_activated_cards;
+    to_be_deactivate_upon_pointer_up;
     primary_card;
+    on_multiple_selection;
     //dragged_cards;
     
     // perhaps use dictionary for faster search for both. 
@@ -26,7 +29,12 @@ export default class Game extends Phaser.Scene
         this.cards_in_zones = new Map();
         this.event_buffer = new Map();
         this.last_event_index=-1;
-        this.primary_card = null;
+        this.primary_card = null;        
+        this.on_multiple_selection=false;
+        //this.zone_id_of_activated_cards=null;
+        this.to_be_deactivate_upon_pointer_up=[];
+        this.tint_color_for_activated_card = 0xa0a0ff;
+        
     }
     preload()
     {
@@ -38,7 +46,12 @@ export default class Game extends Phaser.Scene
         this.socket = io();//'http://localhost:8081');     
         this.socket.on('connect', function () {
             console.log('Connected!');
-        });           
+        });    
+        
+        this.activated_cards = this.add.group();
+        //this.to_be_deactivate_upon_pointer_up = this.add.group();
+        // configuration
+        this.input.dragDistanceThreshold=5;
  
         // sample card and zone placement 
         const card_width=140;
@@ -72,11 +85,13 @@ export default class Game extends Phaser.Scene
             // cache starting depth so that we could return it to its depth
             //gameObject._drag_start_depth = gameObject.depth;            
             self.children.bringToTop(gameObject);
+            self.activated_cards.setDepth(gameObject.depth, 1).setXY(gameObject.x,gameObject.y,30,0);
         })
 
         this.input.on('drag', function (pointer, gameObject, dragX, dragY) {            
-            gameObject.x = dragX;
-            gameObject.y = dragY;
+            //gameObject.x = dragX;
+            //gameObject.y = dragY;
+            self.activated_cards.setXY(dragX,dragY,30,0);
         });            
 
         this.input.on('dragenter', function (pointer, gameObject, dropZone) {
@@ -89,15 +104,49 @@ export default class Game extends Phaser.Scene
 
         this.input.on('drop', function (pointer, gameObject, dropZone) {
             dropZone.highlight(false); 
-            gameObject.clearTint();
+            //gameObject.clearTint();
             console.log('drop');
             if (gameObject instanceof Card && dropZone instanceof CardZone){
-                const src_zone_id = gameObject.zone_id;
+
+                //const src_zone_id = gameObject.zone_id;
                 const dst_zone_id = dropZone.zone_id;
-                self.move_cards(src_zone_id, dst_zone_id, [gameObject.card_id]);
-                self.last_event_index ++;
-                self.event_buffer.set(self.last_event_index, {'name':'cardMoved', 'parameters':[src_zone_id, dst_zone_id, [gameObject.card_id]]});                                                
-                self.socket.emit('cardMoved',  self.last_event_index, src_zone_id, dst_zone_id, [gameObject.card_id],  null);                          
+                const all_activated_cards = self.activated_cards.getChildren();
+                for (let card of all_activated_cards){
+                    card.clearTint();
+                }                
+                let src_zone_id = all_activated_cards[0].zone_id;
+                let card_ids = [];
+                for (let card of all_activated_cards){
+                    console.log('-',card.card_id);
+                    if (card.zone_id == src_zone_id){                        
+                        card_ids.push(card.card_id);
+                        console.log('zones', card.zone_id, src_zone_id, card_ids);
+                    } else {
+                        console.log('Moving', card_ids);
+                        self.move_cards(src_zone_id, dst_zone_id, card_ids);
+                        self.last_event_index ++;
+                        self.event_buffer.set(self.last_event_index, {'name':'cardMoved', 'parameters':[src_zone_id, dst_zone_id, card_ids]});                                                
+                        self.socket.emit('cardMoved',  self.last_event_index, src_zone_id, dst_zone_id, card_ids,  null);                                
+                        card_ids = [card.card_id];
+                        src_zone_id  = card.zone_id;
+                    }
+                }
+                if (card_ids.length>0){
+                    self.move_cards(src_zone_id, dst_zone_id, card_ids);
+                    self.last_event_index ++;
+                    self.event_buffer.set(self.last_event_index, {'name':'cardMoved', 'parameters':[src_zone_id, dst_zone_id, card_ids]});                                                
+                    self.socket.emit('cardMoved',  self.last_event_index, src_zone_id, dst_zone_id, card_ids,  null);                        
+                }
+
+                self.activated_cards.clear();
+                while (self.to_be_deactivate_upon_pointer_up.length>0){
+                    self.to_be_deactivate_upon_pointer_up.pop();     
+                }           
+                // self.move_cards(src_zone_id, dst_zone_id, [gameObject.card_id]);
+                // self.last_event_index ++;
+                // self.event_buffer.set(self.last_event_index, {'name':'cardMoved', 'parameters':[src_zone_id, dst_zone_id, [gameObject.card_id]]});                                                
+                // self.socket.emit('cardMoved',  self.last_event_index, src_zone_id, dst_zone_id, [gameObject.card_id],  null);        
+                
             }
 
         });          
@@ -108,24 +157,71 @@ export default class Game extends Phaser.Scene
                 //gameObject.x = gameObject.input.dragStartX;
                 //gameObject.y = gameObject.input.dragStartY;
                 //gameObject.depth = gameObject._drag_start_depth; /// recover it depth
-                self.update_cards_in_zone(gameObject.zone_id);
+                const all_activated_cards = self.activated_cards.getChildren();
+                for (let card of all_activated_cards){
+                    card.clearTint();
+                }
+                const zone_ids = new Set(all_activated_cards.map(card => card.zone_id));
+                for (let zone_id of zone_ids){
+                    self.update_cards_in_zone(zone_id);
+                  }
+                self.activated_cards.clear();
+                //self.update_cards_in_zone(gameObject.zone_id);
             }
         });   
 
         // Activate cards
         this.input.on('pointerdown', function(pointer, gameObjects){  
             console.log('pointerdown');
+            console.log('length of game objects', gameObjects.length);
             if (gameObjects.length>=1){
+                
                 if (gameObjects[0] instanceof Card){
-                    self.primary_card = gameObjects[0].card_id;      
-                    console.log(self.primary_card);              
+                    //self.primary_card = gameObjects[0].card_id;      
+                    const card = gameObjects[0];
+                    if (self.activated_cards.contains(card)){
+                    //if (self.activated_cards.includes(card.card_id)){
+                        self.to_be_deactivate_upon_pointer_up.push(card);
+                    } else {
+                        self.activated_cards.add(card);
+                        card.setTint(self.tint_color_for_activated_card);
+                    }
+                } else if (gameObjects[0] instanceof CardZone){
+                    self.on_multiple_selection = true;
                 }
-            }            
+            } else {
+                self.on_multiple_selection = true;
+            }           
         });
 
-        this.input.on('pointerup', function(pointer, gameObjects){  
-            console.log("pointerup", gameObjects.length);          
+        this.input.on('pointerup', function(pointer){  
+            self.on_multiple_selection = false;
+            while (self.to_be_deactivate_upon_pointer_up.length>0){
+                const card = self.to_be_deactivate_upon_pointer_up.pop();
+                card.clearTint();
+                self.activated_cards.remove(card);
+
+                // const index = self.activated_cards.indexOf(card_id);
+                // if (index>=0){
+                //     self.all_cards.get(card_id).clearTint();
+                    
+                // }                
+            }       
             
+        });
+
+        this.input.on('gameobjectover', function(pointer, gameObject){
+            if (self.on_multiple_selection && (gameObject instanceof Card)){
+               
+                if (self.activated_cards.contains(gameObject)){
+                //if (self.activated_cards.includes(card.card_id)){
+                    self.activated_cards.remove(gameObject);
+                    gameObject.clearTint();
+                } else {
+                    self.activated_cards.add(gameObject);
+                    gameObject.setTint(self.tint_color_for_activated_card);
+                }                
+            }
         });
         // socket io update from server on game status
         
@@ -145,7 +241,7 @@ export default class Game extends Phaser.Scene
             //this.player_id = player_id;            
         });          
     }        
-
+    
     sync_card_in_zones(new_cards_in_zones){
         
         for (const [zone_id, cards_in_zone] of this.cards_in_zones) {
@@ -235,6 +331,7 @@ export default class Game extends Phaser.Scene
     }
 
     update_cards_in_zone(zone_id, starting_pos, end_pos){
+        console.log(this);
         const zone = this.all_zones.get(zone_id);
         const cards_in_zone = this.cards_in_zones.get(zone_id);
         if (starting_pos=== undefined) {starting_pos=0;}
