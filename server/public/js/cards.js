@@ -1,6 +1,6 @@
 import Phaser from './phaser.js'
 
-export default class Card extends Phaser.GameObjects.Sprite
+export class Card extends Phaser.GameObjects.Sprite
 {
     card_id;
     zone_id;
@@ -58,5 +58,18 @@ export default class Card extends Phaser.GameObjects.Sprite
             this.visible=false;
             this.active=false;            
         }
+    }
+}
+
+
+function card_id_to_frame(card_id){    
+    return card_id.split('_')[0];
+}
+
+
+export class PokerCard extends Card{
+    constructor(scene, x, y, texture, card_id) {         
+        const frame = card_id_to_frame(card_id);              
+        super(scene, x, y, texture, card_id_to_frame(card_id), 'back', card_id);              
     }
 }

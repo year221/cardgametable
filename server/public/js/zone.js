@@ -34,7 +34,7 @@ export default class CardZone extends Phaser.GameObjects.Rectangle
         this._cosR=Math.cos(this.rotation);
         return this;
     }
-    calculate_xy_from_pos(pos_in_zone, card_width){        
+    calculate_xy_from_pos(pos_in_zone){        
 
         //var sin_rotation = Math.sin(this.rotation);
         //var cos_rotation = Math.cos(this.rotation);
