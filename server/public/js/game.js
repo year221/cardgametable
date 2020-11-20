@@ -129,8 +129,8 @@ export default class Game extends Phaser.Scene
             // }                  
         })
 
-        this.add.text(flip_button_xy.x-100, flip_button_xy.y-50, '#Decks');
-        const inputText = this.add.rexInputText(this.cameras.main.width/2, this.cameras.main.height/2-50, 40, 40, {
+        this.add.text(this.cameras.main.width/2 - 120 , this.cameras.main.height/2-100, '#Decks');
+        const inputText = this.add.rexInputText(this.cameras.main.width/2 - 60 , this.cameras.main.height/2-100, 40, 40, {
             type: 'number',
             text: '4',
             fontSize: '12px',
@@ -151,8 +151,7 @@ export default class Game extends Phaser.Scene
             // for (let card of all_activated_cards){
             //     card.flip_face();
             // }                  
-        })
-
+        });  
         // Above will be replaced by event
         // TODO: Replace above with synchronization from server.
 
