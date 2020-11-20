@@ -14,8 +14,8 @@ app.get('/', function (req, res) {
 
 game_state = {
   status: "InGame",
-  cards_in_zones: {'zone1':['J'], 'zone2':['C5','C6'], 'zone3':[]},
-  card_status: {'J':true, 'C5': true, 'C6':true},
+  cards_in_zones: {'zone1':['J1','J2'], 'zone2':['C5','C6'], 'zone3':[]},
+  card_status: {'J1':true, 'J2':true, 'C5': true, 'C6':true},
   socket_id_to_player_id: new Map(),
   last_events: {},
 };

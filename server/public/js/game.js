@@ -79,27 +79,33 @@ export default class Game extends Phaser.Scene
         const camera_view_type = Math.random(); 
         
         if (camera_view_type>=0.5){
-            this.cameras.main.startFollow(this.all_zones.get('zone2'));
+            
+            this.cameras.main.centerOn(this.all_zones.get('zone2').x, this.all_zones.get('zone2').y);
             this.cameras.main.setAngle(this.all_zones.get('zone2').angle);
+            //this.cameras.main.startFollow(this.all_zones.get('zone2'));
             console.log('zone2 camera');
             this.all_zones.get('zone3').set_local_display(false);               
         } else {
-            this.cameras.main.startFollow(this.all_zones.get('zone1'));
+            this.cameras.main.centerOn(this.all_zones.get('zone1').x, this.all_zones.get('zone1').y);
             this.cameras.main.setAngle(this.all_zones.get('zone1').angle);
+            //this.cameras.main.startFollow(this.all_zones.get('zone1'));
             console.log('zone1 camera');
         }
         console.log("camera rotation",this.cameras.main.rotation);
+        //this.cameras.main.setZoom(0.5);
         const _sinR=Math.sin(this.cameras.main.rotation);
         const _cosR=Math.cos(this.cameras.main.rotation);       
         this.layout_cfg.dragging_card_group_delta_x = this.layout_cfg.card_delta_x*_cosR + this.layout_cfg.card_delta_y*_sinR;
         this.layout_cfg.dragging_card_group_delta_y = -this.layout_cfg.card_delta_x*_sinR + this.layout_cfg.card_delta_y*_cosR,         
-        self.add_new_card('zone1', undefined, 'J', 'cards','joker','back');
+        self.add_new_card('zone1', undefined, 'J1', 'cards','jokerRed','back');
+        self.add_new_card('zone1', undefined, 'J2', 'cards','jokerBlack','back');
         self.add_new_card('zone2', undefined, 'C5', 'cards','clubs5','back');
         self.add_new_card('zone2', undefined, 'C6', 'cards','clubs6','back');
 
-        const flip_button_xy = this.cameras.main.getWorldPoint(this.cameras.main.centerX, this.cameras.main.centerY+200);
-
-        const flip_button = this.add.text(flip_button_xy.x, flip_button_xy.y, 'FLIP', {color:'#0f0', backgroundColor: '#666' });
+        const flip_button_xy = this.cameras.main.midPoint;//getWorldPoint(this.cameras.main.width/2,this.cameras.main.height/2);
+        console.log(flip_button_xy);
+        console.log(this.cameras.main.centerX, this.cameras.main.centerY);
+        const flip_button = this.add.text(this.cameras.main.width/2, this.cameras.main.height/2, 'FLIP', {color:'#0f0', backgroundColor: '#666' });
         flip_button.setInteractive();
         flip_button.on('pointerdown', function(){
             const all_activated_cards = self.activated_cards.getChildren();   
@@ -113,14 +119,13 @@ export default class Game extends Phaser.Scene
             // }                  
         })
 
-        
-        const inputText = this.add.rexInputText(flip_button_xy.x, flip_button_xy.y-50, 100, 100, {
+        this.add.text(flip_button_xy.x-100, flip_button_xy.y-50, '#Decks');
+        const inputText = this.add.rexInputText(flip_button_xy.x, flip_button_xy.y-50, 40, 40, {
             type: 'number',
             text: '4',
             fontSize: '12px',
-        })
-        console.log('angle', this.cameras.main.angle)
-        inputText.rotate3d.set(0,0,1,-this.cameras.main.rotation/Math.PI*180);//this.all_zones.get('zone2').angle);
+        }).rotate3d.set(0,0,1,-this.cameras.main.rotation/Math.PI*180);
+        
 
 
         // Above will be replaced by event
@@ -129,12 +134,13 @@ export default class Game extends Phaser.Scene
         this.input.on('dragstart', function (pointer, gameObject) {
             // cache starting depth so that we could return it to its depth
             //gameObject._drag_start_depth = gameObject.depth;            
-            self.children.bringToTop(gameObject);
+            
             const rotation = gameObject.rotation;
             const all_activated_cards = self.activated_cards.getChildren();
-            for (let card of self.activated_cards.getChildren()){
+            for (let card of all_activated_cards){
                 card.rotation = rotation;
-            }                
+            }  
+            self.children.bringToTop(all_activated_cards[0]);              
             const index_pos_primary_card = all_activated_cards.indexOf(gameObject);
 
             console.log('index_pos_primary_card',index_pos_primary_card);
@@ -145,7 +151,7 @@ export default class Game extends Phaser.Scene
             self.dragging_cache_param.offset_x = -index_pos_primary_card*self.dragging_cache_param.step_x;
             self.dragging_cache_param.offset_y = -index_pos_primary_card*self.dragging_cache_param.step_y;                
             self.activated_cards
-            .setDepth(gameObject.depth, 1)            
+            .setDepth(all_activated_cards[0].depth, 1)            
             .setXY(gameObject.x+self.dragging_cache_param.offset_x,
                 gameObject.y+self.dragging_cache_param.offset_y,
                 self.dragging_cache_param.step_x,
