@@ -1,6 +1,8 @@
 import Phaser from './phaser.js';
 import CardZone from './zone.js';
 import Card from './cards.js';
+//import InputText from 'phaser3-rex-plugins/plugins/inputtext.js';  
+//import InputTextPlugin from './lib/rexinputtextplugin.min.js';
 export default class Game extends Phaser.Scene
 {
     /** @type {Phaser.GameObjects.Zone} */
@@ -49,6 +51,8 @@ export default class Game extends Phaser.Scene
     preload()
     {
         this.load.atlas('cards', 'assets/cards.png', 'assets/cards.json');
+        this.load.plugin('rexinputtextplugin', 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexinputtextplugin.min.js', true);           
+    
     }
     create()
     {
@@ -73,6 +77,7 @@ export default class Game extends Phaser.Scene
         this.all_zones.get('zone3').set_zone_angle(180);          
 
         const camera_view_type = Math.random(); 
+        
         if (camera_view_type>=0.5){
             this.cameras.main.startFollow(this.all_zones.get('zone2'));
             this.cameras.main.setAngle(this.all_zones.get('zone2').angle);
@@ -107,6 +112,16 @@ export default class Game extends Phaser.Scene
             //     card.flip_face();
             // }                  
         })
+
+        
+        const inputText = this.add.rexInputText(flip_button_xy.x, flip_button_xy.y-50, 100, 100, {
+            type: 'number',
+            text: '4',
+            fontSize: '12px',
+        })
+        console.log('angle', this.cameras.main.angle)
+        inputText.rotate3d.set(0,0,1,-this.cameras.main.rotation/Math.PI*180);//this.all_zones.get('zone2').angle);
+
 
         // Above will be replaced by event
         // TODO: Replace above with synchronization from server.
