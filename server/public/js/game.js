@@ -129,6 +129,15 @@ export default class Game extends Phaser.Scene
             // }                  
         })
 
+        const reset_button = this.add.text(this.cameras.main.width/2, this.cameras.main.height/2+50, 'RESET', {color:'#0f0', backgroundColor: '#666' });
+        flip_button.setInteractive();
+        flip_button.on('pointerdown', function(){                                               
+            self.socket.emit('resetGame');                       
+            // for (let card of all_activated_cards){
+            //     card.flip_face();
+            // }                  
+        })        
+
         this.add.text(this.cameras.main.width/2 - 120 , this.cameras.main.height/2-100, '#Decks');
         const inputText = this.add.rexInputText(this.cameras.main.width/2 - 60 , this.cameras.main.height/2-100, 40, 40, {
             type: 'number',
@@ -354,34 +363,45 @@ export default class Game extends Phaser.Scene
             }
             self.apply_and_update_event_buffer(last_events[self.player_id]);
             //this.player_id = player_id;            
-        });          
+        });       
     }        
     
+    clear_all_cards(){
+
+    }
     // synchronize all cards in the zones 
+
     sync_card_in_zones(new_cards_in_zones)
     {
-        let old_card_ids_of_changed_zones=[];
-        let new_card_ids_of_changed_zones=[];
+        let removed_card_ids_of_changed_zones=[];
+        let added_card_ids_of_changed_zones=[];
         for (const [zone_id, cards_in_zone] of this.cards_in_zones) {
             const new_cards_in_zone = new_cards_in_zones[zone_id];
             
             if (!(cards_in_zone.length === new_cards_in_zone.length && cards_in_zone.every((val, index) => val === new_cards_in_zone[index]))){
                 // update cards
-                old_card_ids_of_changed_zones = old_card_ids_of_changed_zones.concat(cards_in_zone);
-                new_card_ids_of_changed_zones = old_card_ids_of_changed_zones.concat(new_cards_in_zone);
+                removed_card_ids_of_changed_zones = removed_card_ids_of_changed_zones.concat(cards_in_zone.filter(card_id => !new_cards_in_zone.includes(card_id)));
+               
+                added_card_ids_of_changed_zones = added_card_ids_of_changed_zones.concat(new_cards_in_zone.filter(card_id => !cards_in_zone.includes(card_id)));
                 this.cards_in_zones.set(zone_id, new_cards_in_zone);
                 this.update_cards_in_zone(zone_id); 
             }
         }
 
-        const cards_ids_to_be_destroyed = old_card_ids_of_changed_zones.filter(card_id => !new_card_ids_of_changed_zones.includes(card_id));
+        const cards_ids_to_be_destroyed = removed_card_ids_of_changed_zones.filter(card_id => !added_card_ids_of_changed_zones.includes(card_id));
 
         for (const card_id of cards_ids_to_be_destroyed){
             let card = self.all_cards.get(card_id);
             self.all_cards.delete(card_id);
             card.destroy();// remove from pahser
             self.cards_status.delete(card_id);
-        }
+        }        
+
+        // remove those "moved away" cards from the activated cards
+        //const to_be_removed_active_cards = self.activated_cards.getChildren().filter(card=> removed_card_ids_of_changed_zones.includes(card.card_id));
+        //for (let card of to_be_removed_active_cards){
+        //    self.activated_cards.remove(card);
+        //}                
     }
 
     // synchronize all card status : which side is up or down
