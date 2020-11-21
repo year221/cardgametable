@@ -76,10 +76,10 @@ export default class Game extends Phaser.Scene
         // sample card and zone placement 
         const card_width=140;
         const card_height=190;
-        this.add_zone('zone1', 400,600,300,210, 0x333333, 80, 105);
-        this.add_zone('zone2', 700,400,300,210, 0x333333, 80, 105);
+        this.add_zone('zone1', 400,600,300,210, 0x333333, 45, 57.5,15,30,0.5, 0);
+        this.add_zone('zone2', 700,400,300,210, 0x333333, 45, 57.5,15,30,1, 0);
         this.all_zones.get('zone2').set_zone_angle(90);
-        this.add_zone('zone3', 400,200,300,210, 0x333333, 80, 105);
+        this.add_zone('zone3', 400,200,300,210, 0x333333, 45, 57.5,15,30,0.5, 0);
         this.all_zones.get('zone3').set_zone_angle(180);          
 
         const camera_view_type = Math.random(); 
@@ -90,7 +90,7 @@ export default class Game extends Phaser.Scene
             this.cameras.main.setAngle(this.all_zones.get('zone2').angle);
             //this.cameras.main.startFollow(this.all_zones.get('zone2'));
             console.log('zone2 camera');
-            this.all_zones.get('zone3').set_local_display(false);               
+            this.all_zones.get('zone3').set_local_display(1);               
         } else {
             this.cameras.main.centerOn(this.all_zones.get('zone1').x, this.all_zones.get('zone1').y);
             this.cameras.main.setAngle(this.all_zones.get('zone1').angle);
@@ -483,27 +483,28 @@ export default class Game extends Phaser.Scene
             
             let card = this.all_cards.get(cards_in_zone[i]); 
             if (card===undefined){
-                card = this.add_new_card(zone_id, i, cards_in_zone[i])//, new_cards_status.get(cards_in_zone[i]));                                
-            } else {
-                const new_pos = zone.calculate_xy_from_pos(i);   
-                card.setPosition(new_pos.x, new_pos.y);
-            }      
+                card = this.generate_new_card(cards_in_zone[i])//, new_cards_status.get(cards_in_zone[i]));                                
+            }
+            const new_pos = zone.calculate_xy_from_pos(i);  
+            card.set_local_display(zone.local_display); 
+            card.setPosition(new_pos.x, new_pos.y);            
             card.setDepth(i+1);
             card.zone_id=zone_id;
-            card.angle = zone.angle;
-            card.set_local_display(zone.local_display);
+            card.angle = zone.angle;            
+            card.setScale(zone.card_scale)
         }         
     }
 
-    add_new_card(dst_zone_id, insertion_location, card_id, face_up){
+    generate_new_card(card_id, face_up){
         // if ((face_up===undefined) || (face_up===null)){
         //     face_up = true;
         // }
-        const card = new PokerCard(this, 0, 0, 'cards', card_id);  
-        if (face_up===false) {card.face_up = face_up;}
+        const card = new PokerCard(this, 0, 0, 'cards', card_id);
+        card.face_up = face_up;
+        //if (face_up===false) {card.face_up = face_up;}
         this.add.existing(card);
         this.all_cards.set(card_id, card);
-        this.add_cards(dst_zone_id, [card_id], insertion_location);  
+        //this.add_cards(dst_zone_id, [card_id], insertion_location);  
         return card;       
     }
 
@@ -513,10 +514,9 @@ export default class Game extends Phaser.Scene
     //     this.add.existing(card);
     //     this.all_cards.set(card_id, card);
     //     this.add_cards(dst_zone_id, [card_id], insertion_location); 
-    // }    
-
-    add_zone(zone_id, x, y, width, height, fillColor, boundary_width, boundary_height){
-        const zone = new CardZone(this, x, y, width, height, fillColor, zone_id, boundary_width, boundary_height);
+    // }         
+    add_zone(zone_id, x, y, width, height, fillColor, boundary_width, boundary_height, card_step_x, card_step_y, card_scale, local_display){
+        const zone = new CardZone(this, x, y, width, height, fillColor, zone_id, boundary_width, boundary_height, card_step_x, card_step_y, card_scale, local_display);
         this.all_zones.set(zone_id, zone);           
         this.add.existing(zone);  
         this.cards_in_zones.set(zone_id, []);

@@ -6,7 +6,8 @@ export class Card extends Phaser.GameObjects.Sprite
     zone_id;
     _frame_down;
     _frame_up;
-    _face_up;  
+    _face_up;
+    _local_display;      
     //_drag_start_depth;        
 
     constructor(scene, x, y, texture, frame, frame_face_down, card_id) {
@@ -17,8 +18,9 @@ export class Card extends Phaser.GameObjects.Sprite
         this._frame_up = frame;
         this._face_up = true;        
         this.zone_id = null;
-        this.setInteractive();        
-        scene.input.setDraggable(this);               
+        this.set_local_display(0);
+        //this.setInteractive();        
+        //scene.input.setDraggable(this);               
     }
 
     get face_up(){
@@ -28,12 +30,16 @@ export class Card extends Phaser.GameObjects.Sprite
     set face_up(new_face_up_value){
         if (this.face_up !== new_face_up_value){
             this._face_up = new_face_up_value;
-            if (this._face_up){
-                this.setFrame(this._frame_up)
-            } else {
-                this.setFrame(this._frame_down)
-            }
+            this.update_frame();
         }
+    }
+
+    update_frame(){
+        if ((this._face_up) && this._local_display==0){
+            this.setFrame(this._frame_up)
+        } else {
+            this.setFrame(this._frame_down)
+        }        
     }
 
     flip_face(){
@@ -47,16 +53,29 @@ export class Card extends Phaser.GameObjects.Sprite
 
     set_local_display(value){
         // set card to be invisible and not manipulatible. 
-        if (value){
-            this.active=true;
+        this._local_display = value;
+        if (value==0){
+            //this.active=true;
             this.setInteractive();
             this.scene.input.setDraggable(this);                     
             this.visible=true;
-        } else {
-            this.scene.input.setDraggable(this, false);         
-            this.scene.input.disable(this);
+            this.update_frame();
+        } else if (value==2){
+            if (!(this.scene.input ===undefined)){
+            //    this.scene.input.setDraggable(this, false);         
+                this.scene.input.disable(this);
+            }
             this.visible=false;
-            this.active=false;            
+            //this.active=false;  
+            //this.update_frame();          
+        } else if (value==1){
+            if (!(this.scene.input ===undefined)){
+            //    this.scene.input.setDraggable(this, false);         
+                this.scene.input.disable(this);
+            }
+            this.visible=true;
+            //this.active=true;  
+            this.setFrame(this._frame_down);      
         }
     }
 }
