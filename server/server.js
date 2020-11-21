@@ -113,6 +113,16 @@ io.on('connection', function (socket) {
     io.sockets.emit('gameStateSync', game_state.last_events, game_state.cards_in_zones, null);
   });  
   
+  socket.on('resetGame', function (event_index, src_zone_id, dst_zone_id, card_ids, dst_pos_in_zone) {  
+    for (let zone_id of game_state.zone_ids){
+      game_state.cards_in_zones[zone_id] = [];
+    }
+    game_state.card_status = {};
+    for (let player_id of game_state.socket_id_to_player_id.values()){
+      game_state.last_events[player_id]=-1;
+    }    
+    io.sockets.emit('setGameToInitialStage', game_state.last_events, game_state.cards_in_zones, null);
+  });
 });
 
 

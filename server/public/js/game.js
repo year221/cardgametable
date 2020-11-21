@@ -16,12 +16,12 @@ export default class Game extends Phaser.Scene
 
     input_text;
     activated_cards;
-    zone_id_of_activated_cards;
+    //zone_id_of_activated_cards;
     to_be_deactivate_upon_pointer_up;
-    primary_card;
+    //primary_card;
     on_multiple_selection;    
-    mouse_moved;    
-    previous_empty_click;
+    //mouse_moved;    
+    //previous_empty_click;
     layout_cfg={
         card_delta_x: 30,
         card_delta_y: 0,
@@ -46,7 +46,7 @@ export default class Game extends Phaser.Scene
         this.cards_in_zones = new Map();
         this.event_buffer = new Map();
         this.last_event_index=-1;
-        this.primary_card = null;        
+        //this.primary_card = null;        
         this.on_multiple_selection=false;
         //this.zone_id_of_activated_cards=null;
         this.to_be_deactivate_upon_pointer_up=[];
@@ -130,8 +130,8 @@ export default class Game extends Phaser.Scene
         })
 
         const reset_button = this.add.text(this.cameras.main.width/2, this.cameras.main.height/2+50, 'RESET', {color:'#0f0', backgroundColor: '#666' });
-        flip_button.setInteractive();
-        flip_button.on('pointerdown', function(){                                               
+        reset_button.setInteractive();
+        reset_button.on('pointerdown', function(){                                               
             self.socket.emit('resetGame');                       
             // for (let card of all_activated_cards){
             //     card.flip_face();
@@ -364,10 +364,31 @@ export default class Game extends Phaser.Scene
             self.apply_and_update_event_buffer(last_events[self.player_id]);
             //this.player_id = player_id;            
         });       
+        this.socket.on('setGameToInitialStage', function(){
+            self.clear_all_cards();
+            self.clear_all_events();
+        });
     }        
     
     clear_all_cards(){
+        this.on_multiple_selection=false;
+        this.activated_cards.clear();
+        while (this.to_be_deactivate_upon_pointer_up.length>0){
+            this.to_be_deactivate_upon_pointer_up.pop();     
+        }   
+        for (let [card_id, card] of this.all_cards){
+            this.all_cards.delete(card_id);
+            card.destroy();// remove from pahser        
+        }
 
+        for (let zone_id of this.cards_in_zones.keys()){
+            this.cards_in_zones.set(zone_id, []);
+        }        
+    }
+
+    clear_all_events(){
+        this.event_buffer.clear;
+        this.last_event_index=-1;
     }
     // synchronize all cards in the zones 
 
@@ -393,8 +414,7 @@ export default class Game extends Phaser.Scene
         for (const card_id of cards_ids_to_be_destroyed){
             let card = self.all_cards.get(card_id);
             self.all_cards.delete(card_id);
-            card.destroy();// remove from pahser
-            self.cards_status.delete(card_id);
+            card.destroy();// remove from pahser            
         }        
 
         // remove those "moved away" cards from the activated cards
