@@ -34,16 +34,17 @@ game_state = {
 io.on('connection', function (socket) {
   console.log('a user connected', socket.id);  
   
-  // assign player id
+  // assign player id from 0 to number of connected sockets.
   let player_id = "0"; 
   if (game_state.socket_id_to_player_id.size!=0){
-    const all_values = game_state.socket_id_to_player_id.values();
+    const all_values = Array.from(game_state.socket_id_to_player_id.values());
     //const max_id = String(Math.max(...all_values)+1);
     let i=0;
-    while (all_values.includes(i)){
+    while (all_values.includes(String(i))){
       i++;
+      console.log(i);
     }
-    player_id = str(i);
+    player_id = String(i);
   }
   console.log('new assigned player id', player_id);
   game_state.socket_id_to_player_id.set(socket.id, player_id);
