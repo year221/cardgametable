@@ -23,8 +23,8 @@ all_cards_prototype.push('J2');
 
 game_state = {
   status: "InGame",
-  zone_ids: ['zone1','zone2','zone3'],
-  cards_in_zones: {'zone1':[], 'zone2':[], 'zone3':[]},
+  zone_ids: ['zone_0','zone_1','zone_2','zone_3'],
+  cards_in_zones: {'zone_0':[], 'zone_1':[], 'zone_2':[], 'zone_3':[]},
   card_status: {},
   socket_id_to_player_id: new Map(),
   last_events: {},
@@ -37,14 +37,22 @@ io.on('connection', function (socket) {
   // assign player id
   let player_id = "0"; 
   if (game_state.socket_id_to_player_id.size!=0){
-    player_id = String(Math.max(...game_state.socket_id_to_player_id.values())+1);
+    const all_values = game_state.socket_id_to_player_id.values();
+    //const max_id = String(Math.max(...all_values)+1);
+    let i=0;
+    while (all_values.includes(i)){
+      i++;
+    }
+    player_id = str(i);
   }
   console.log('new assigned player id', player_id);
   game_state.socket_id_to_player_id.set(socket.id, player_id);
   socket.emit('playerIDAssigned', game_state.socket_id_to_player_id.get(socket.id));
   game_state.last_events[player_id]=-1;
   console.log(game_state.last_events);
-
+  socket.emit('resetLayout');
+  socket.emit('setGameToInitialStage');
+  socket.emit('gameStateSync', game_state.last_events, game_state.cards_in_zones,  game_state.card_status);
   socket.on('disconnect', function () {
     game_state.socket_id_to_player_id.delete(socket.id);
     console.log('user disconnected', socket.id);          

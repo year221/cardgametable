@@ -6,7 +6,7 @@ export default new Phaser.Game({
 	parent: 'rex-text-input',
 	type: Phaser.AUTO,
 	width: 1024,
-	height: 900,
+	height: 768,
     dom: {
         createContainer: true
     },	

@@ -1,7 +1,7 @@
 import Phaser from './phaser.js';
 
 export const ZoneDisplayType = {'visible':0, 'back_only':1, 'non_visible':2}
-export default class CardZone extends Phaser.GameObjects.Rectangle
+export class CardZone extends Phaser.GameObjects.Rectangle
 {
     zone_id;   
     _sinR;
@@ -88,4 +88,52 @@ export default class CardZone extends Phaser.GameObjects.Rectangle
             //this.active=true;            
         }
     }    
+}
+
+export function calculate_circular_zone_xy(
+    starting_x, starting_y, step_x, step_y, n_zones, n_row
+    ){
+    // calculate card position for a circular arrangement
+    if (n_row===undefined){
+        n_row=2;
+    }
+    if (n_row!=2){
+        console.error('Currently only support n_row==2');
+    } // TODO: update with additional n_row support
+    let zone_xy = []
+    /* the pattern is as follows:
+    1 zone: 1
+    2 zones: 1 1
+    3 zones: 1 2
+    4 zones: 1 3
+    5 zones: 3 2
+    6 zones: 3 3
+    7 zones: 3 4
+    8 zones: 5 3
+    9 zones: 5 4
+    10 zones: 5 5
+    11 zones: 5 6
+    12 zones: 7 5
+    */
+    const first_row = Math.floor(n_zones/4)*2-1;
+    const second_row = n_zones - first_row; 
+    for (let i =0; i<Math.ceil(first_row/2); i++){
+        zone_xy.push({
+            'x': starting_x + step_x*i,
+            'y': starting_y
+        });        
+    }
+    for (let i = 0; i< second_row; i++){
+        zone_xy.push({
+            'x': starting_x + (second_row-1)/2 * step_x - step_x*i,
+            'y': starting_y + step_y,
+        });        
+    }
+    for (let i = 0; i<Math.floor(first_row/2); i++){
+        zone_xy.push({
+            'x': starting_x - (first_row-1)/2 * step_x + step_x*i,
+            'y': starting_y,
+        });
+    }
+    return zone_xy;
 }
