@@ -149,6 +149,12 @@ layout_cfg = {
       x: -420,
       y: -30,
     },     
+    {
+      type: 'reset_game',
+      name: 'Reset Game',      
+      x: 500,
+      y: 0,
+    },    
   ]
 };
 

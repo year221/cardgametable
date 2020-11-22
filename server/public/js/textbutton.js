@@ -15,10 +15,10 @@ export class TextButton extends Phaser.GameObjects.Text
     }
 
     highlight(value){
-        if (value==0){
-            this.setStroke('#0f0')
-        } else if (value==1){
-            this.setStroke('#066')
+        if (value==1){
+            this.setTint(0x888888);
+        } else if (value==0){
+            this.clearTint();
         }
     }        
 }
