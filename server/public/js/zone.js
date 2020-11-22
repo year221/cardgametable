@@ -32,7 +32,9 @@ export class CardZone extends Phaser.GameObjects.Rectangle
         this.card_step_x=card_step_x;
         this.card_step_y=card_step_y;
         this.card_scale=card_scale;
+        
         this.max_num_cards_per_row = Math.floor((this.width- this.boundary_width*2)/this.card_step_x)+1;
+        
        
         if (local_display===undefined){
             local_display=0;
@@ -50,9 +52,10 @@ export class CardZone extends Phaser.GameObjects.Rectangle
 
         //var sin_rotation = Math.sin(this.rotation);
         //var cos_rotation = Math.cos(this.rotation);
-
+        
         const x0 = (pos_in_zone%this.max_num_cards_per_row) * this.card_step_x - this.width/2+ this.boundary_width;
         const y0 = Math.floor(pos_in_zone/this.max_num_cards_per_row) * this.card_step_y -this.height/2+ this.boundary_height;//pos_in_zone * this.delta_y;        
+        
         //const x1 = x0*cos_rotation + y0*sin_rotation;
         //const y1 = x0*sin_rotation - y0*cos_rotation;
         return {

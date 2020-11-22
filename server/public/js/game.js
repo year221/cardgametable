@@ -391,42 +391,78 @@ export default class Game extends Phaser.Scene
         this.cards_in_zones.clear();
     }
     
-    layout_zones_and_buttons(layout_cfg){
-        // layout zones
-        for (let zone_grp of layout_cfg['zones']){
-            if (zone_grp.type=='one_zone_per_player'){
+    add_zone_grp(zone_grp){
+        if (zone_grp.type=='one_zone_per_player'){
                 
-                let zone_xy = calculate_circular_zone_xy(
-                    zone_grp.starting_x, zone_grp.starting_y,
-                    zone_grp.step_x, zone_grp.step_y, this.n_active_player,
-                    zone_grp.n_row
-                    );
-                for (let player_id = 0; player_id<this.n_active_player; player_id++){
-                   let xy_pos = zone_xy[((player_id-Math.floor(this.player_id))%this.n_active_player+this.n_active_player)%this.n_active_player];
-                   let zone_id = zone_grp.name + '_' + String(player_id);
-                   let local_display = zone_grp.local_display_other_player
-                   if (String(player_id)==this.player_id){
-                    local_display = zone_grp.local_display_current_player
-                   }
-                   if (!this.all_zones.has(zone_id)){
-                      this.add_zone(zone_id, xy_pos.x, xy_pos.y,
-                        zone_grp.width, zone_grp.height, 
-                        zone_grp.fillColor, 
-                        zone_grp.boundary_width, zone_grp.boundary_height, 
-                        zone_grp.card_step_x, zone_grp.card_step_y, 
-                        zone_grp.card_scale, local_display)
-                   }
-                }
-            } else if (zone_grp.type=='public'){
-                this.add_zone(zone_grp.name,
-                    zone_grp.x, zone_grp.y,
+            let zone_xy = calculate_circular_zone_xy(
+                zone_grp.starting_x, zone_grp.starting_y,
+                zone_grp.step_x, zone_grp.step_y, this.n_active_player,
+                zone_grp.n_row
+                );
+            for (let player_id = 0; player_id<this.n_active_player; player_id++){
+               let xy_pos = zone_xy[((player_id-Math.floor(this.player_id))%this.n_active_player+this.n_active_player)%this.n_active_player];
+               let zone_id = zone_grp.name + '_' + String(player_id);
+               let local_display = zone_grp.local_display_other_player
+               if (String(player_id)==this.player_id){
+                local_display = zone_grp.local_display_current_player
+               }
+               if (!this.all_zones.has(zone_id)){
+                  this.add_zone(zone_id, xy_pos.x, xy_pos.y,
                     zone_grp.width, zone_grp.height, 
                     zone_grp.fillColor, 
                     zone_grp.boundary_width, zone_grp.boundary_height, 
                     zone_grp.card_step_x, zone_grp.card_step_y, 
-                    zone_grp.card_scale, 
-                    zone_grp.local_display)                
+                    zone_grp.card_scale, local_display)
+               }
             }
+        } else if (zone_grp.type=='public'){
+            this.add_zone(zone_grp.name,
+                zone_grp.x, zone_grp.y,
+                zone_grp.width, zone_grp.height, 
+                zone_grp.fillColor, 
+                zone_grp.boundary_width, zone_grp.boundary_height, 
+                zone_grp.card_step_x, zone_grp.card_step_y, 
+                zone_grp.card_scale, 
+                zone_grp.local_display)                
+        }        
+    }
+    layout_zones_and_buttons(layout_cfg){
+        // layout zones
+        for (let zone_grp of layout_cfg['zones']){
+            this.add_zone_grp(zone_grp);
+            // if (zone_grp.type=='one_zone_per_player'){
+                
+            //     let zone_xy = calculate_circular_zone_xy(
+            //         zone_grp.starting_x, zone_grp.starting_y,
+            //         zone_grp.step_x, zone_grp.step_y, this.n_active_player,
+            //         zone_grp.n_row
+            //         );
+            //     for (let player_id = 0; player_id<this.n_active_player; player_id++){
+            //        let xy_pos = zone_xy[((player_id-Math.floor(this.player_id))%this.n_active_player+this.n_active_player)%this.n_active_player];
+            //        let zone_id = zone_grp.name + '_' + String(player_id);
+            //        let local_display = zone_grp.local_display_other_player
+            //        if (String(player_id)==this.player_id){
+            //         local_display = zone_grp.local_display_current_player
+            //        }
+            //        if (!this.all_zones.has(zone_id)){
+            //           this.add_zone(zone_id, xy_pos.x, xy_pos.y,
+            //             zone_grp.width, zone_grp.height, 
+            //             zone_grp.fillColor, 
+            //             zone_grp.boundary_width, zone_grp.boundary_height, 
+            //             zone_grp.card_step_x, zone_grp.card_step_y, 
+            //             zone_grp.card_scale, local_display)
+            //        }
+            //     }
+            // } else if (zone_grp.type=='public'){
+            //     this.add_zone(zone_grp.name,
+            //         zone_grp.x, zone_grp.y,
+            //         zone_grp.width, zone_grp.height, 
+            //         zone_grp.fillColor, 
+            //         zone_grp.boundary_width, zone_grp.boundary_height, 
+            //         zone_grp.card_step_x, zone_grp.card_step_y, 
+            //         zone_grp.card_scale, 
+            //         zone_grp.local_display)                
+            // }
         }
         // layout buttons
 
