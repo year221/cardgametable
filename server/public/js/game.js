@@ -6,7 +6,8 @@ import {PokerCard, Card} from './cards.js';
 export default class Game extends Phaser.Scene
 {
     /** @type {Phaser.GameObjects.Zone} */
-    player_id='0';
+    player_id;
+    n_active_player;
     all_zones;
     all_cards;
     cards_in_zones;
@@ -353,7 +354,11 @@ export default class Game extends Phaser.Scene
             self.player_id = player_id;            
         });    
 
-        this.socket.on('resetLayout', function (layout_cfg) {
+        this.socket.on('resetLayout', function (layout_cfg, n_active_player) {
+            if ((n_active_player!==undefined) && (n_active_player!==null)){
+                self.n_active_player = n_active_player;
+            }
+            self.clear_all_zones();
             self.layout_zones_and_buttons(layout_cfg);
             self.cameras.main.centerOn(layout_cfg.default_camera.x, layout_cfg.default_camera.y);   
         });           
@@ -387,16 +392,17 @@ export default class Game extends Phaser.Scene
     }
     
     layout_zones_and_buttons(layout_cfg){
+        // layout zones
         for (let zone_grp of layout_cfg['zones']){
             if (zone_grp.type=='one_zone_per_player'){
                 
                 let zone_xy = calculate_circular_zone_xy(
                     zone_grp.starting_x, zone_grp.starting_y,
-                    zone_grp.step_x, zone_grp.step_y, layout_cfg.n_players,
+                    zone_grp.step_x, zone_grp.step_y, this.n_active_player,
                     zone_grp.n_row
                     );
-                for (let player_id = 0; player_id<layout_cfg.n_players; player_id++){
-                   let xy_pos = zone_xy[((player_id-Math.floor(this.player_id))%layout_cfg.n_players+layout_cfg.n_players)%layout_cfg.n_players];
+                for (let player_id = 0; player_id<this.n_active_player; player_id++){
+                   let xy_pos = zone_xy[((player_id-Math.floor(this.player_id))%this.n_active_player+this.n_active_player)%this.n_active_player];
                    let zone_id = zone_grp.name + '_' + String(player_id);
                    let local_display = zone_grp.local_display_other_player
                    if (String(player_id)==this.player_id){
@@ -422,6 +428,8 @@ export default class Game extends Phaser.Scene
                     zone_grp.local_display)                
             }
         }
+        // layout buttons
+
     }
 
     clear_all_cards(){
@@ -451,8 +459,10 @@ export default class Game extends Phaser.Scene
         let removed_card_ids_of_changed_zones=[];
         let added_card_ids_of_changed_zones=[];
         for (const [zone_id, cards_in_zone] of this.cards_in_zones) {
-            const new_cards_in_zone = new_cards_in_zones[zone_id];
-            
+            let new_cards_in_zone = new_cards_in_zones[zone_id];
+            if (new_cards_in_zone===undefined){
+                new_cards_in_zone = [];
+            }
             if (!(cards_in_zone.length === new_cards_in_zone.length && cards_in_zone.every((val, index) => val === new_cards_in_zone[index]))){
                 // update cards
                 removed_card_ids_of_changed_zones = removed_card_ids_of_changed_zones.concat(cards_in_zone.filter(card_id => !new_cards_in_zone.includes(card_id)));

@@ -28,11 +28,11 @@ game_state = {
   card_status: {},
   socket_id_to_player_id: new Map(),
   last_events: {},
+  n_active_player:0
 };
 
 
-layout_cfg = {
-  n_players:4,
+layout_cfg = {  
   default_camera:{
     x:0,
     y:110,
@@ -42,9 +42,9 @@ layout_cfg = {
       type: 'one_zone_per_player',
       name: 'Hand',
       starting_x: 0,
-      starting_y: 385,
+      starting_y: 380,
       step_x: 1015,
-      step_y: -775  ,
+      step_y: -760,
       n_row:2,
       width : 1015,
       height : 201.5,
@@ -155,25 +155,35 @@ io.on('connection', function (socket) {
   let player_id = "0"; 
   if (game_state.socket_id_to_player_id.size!=0){
     const all_values = Array.from(game_state.socket_id_to_player_id.values());
+    console.log('current_players', all_values)
     //const max_id = String(Math.max(...all_values)+1);
     let i=0;
     while (all_values.includes(String(i))){
       i++;
-      console.log(i);
+      console .log(i);
     }
+    //if (game_state.n_active_player< i+1){          
     player_id = String(i);
+  } else {
+    //game_state.n_active_player=1;
   }
+  
   console.log('new assigned player id', player_id);
   game_state.socket_id_to_player_id.set(socket.id, player_id);
+  game_state.n_active_player =game_state.socket_id_to_player_id.size;
+  console.log('current_players_map', game_state.socket_id_to_player_id);
+
   socket.emit('playerIDAssigned', game_state.socket_id_to_player_id.get(socket.id));
   game_state.last_events[player_id]=-1;
-  console.log(game_state.last_events);
-  socket.emit('resetLayout', layout_cfg);
+  console.log(game_state.n_active_player, game_state.last_events);
+  socket.emit('resetLayout', layout_cfg, game_state.n_active_player);
   socket.emit('setGameToInitialStage');
   socket.emit('gameStateSync', game_state.last_events, game_state.cards_in_zones,  game_state.card_status);
   socket.on('disconnect', function () {
+    console.log('user disconnected', socket.id);
+    const player_id = game_state.socket_id_to_player_id.get(socket.id);
     game_state.socket_id_to_player_id.delete(socket.id);
-    console.log('user disconnected', socket.id);          
+    console.log('user disconnected', socket.id, player_id);          
   }); 
 
   socket.on('cardFlipped', function (event_index, card_ids)
