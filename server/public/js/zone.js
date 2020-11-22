@@ -115,7 +115,7 @@ export function calculate_circular_zone_xy(
     11 zones: 5 6
     12 zones: 7 5
     */
-    const first_row = Math.floor(n_zones/4)*2-1;
+    const first_row = Math.ceil(n_zones/4)*2-1;
     const second_row = n_zones - first_row; 
     for (let i =0; i<Math.ceil(first_row/2); i++){
         zone_xy.push({

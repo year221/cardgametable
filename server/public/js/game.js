@@ -73,7 +73,7 @@ export default class Game extends Phaser.Scene
 
 
         this.layout_cfg = {
-            n_players:4,
+            n_players:3,
             zones:[
                 {
                     type: 'one_zone_per_player',
@@ -93,7 +93,26 @@ export default class Game extends Phaser.Scene
                     card_scale:0.5,
                     local_display_other_player:0,
                     local_display_current_player:0,
-                }
+                },
+                {
+                    type: 'one_zone_per_player',
+                    name: 'zone',
+                    starting_x: 0,
+                    starting_y: 200,
+                    step_x: 308,
+                    step_y: -400,
+                    n_row:2,
+                    width : 280,
+                    height : 118.5,
+                    fillColor : 0x333333,
+                    boundary_width:45,
+                    boundary_height:57.5,
+                    card_step_x:15,
+                    card_step_y:30,
+                    card_scale:0.25,
+                    local_display_other_player:0,
+                    local_display_current_player:0,
+                }                
             ]
         }
         //this.layout_zones_and_buttons(layout_cfg);
@@ -121,7 +140,7 @@ export default class Game extends Phaser.Scene
         //     console.log('zone1 camera');
         // }
         // console.log("camera rotation",this.cameras.main.rotation);
-        this.cameras.main.setZoom(0.8);
+        this.cameras.main.setZoom(1);
         const _sinR=Math.sin(this.cameras.main.rotation);
         const _cosR=Math.cos(this.cameras.main.rotation);       
         this.layout_cfg.dragging_card_group_delta_x = this.layout_cfg.card_delta_x*_cosR + this.layout_cfg.card_delta_y*_sinR;
@@ -162,7 +181,7 @@ export default class Game extends Phaser.Scene
         })        
 
         this.add.text(- 120 , -100, '#Decks');
-        const inputText = this.add.rexInputText(this.cameras.main.width/2 - 60 , this.cameras.main.height/2-100, 40, 40, {
+        const inputText = this.add.rexInputText(-60, -100, 40, 40, {
             type: 'number',
             text: '4',
             fontSize: '12px',
@@ -400,6 +419,13 @@ export default class Game extends Phaser.Scene
     }        
     
     // set zone and button layouts
+    clear_all_zones(){
+        for (let [zone_id, zone] of this.all_zones){
+            zone.destroy();
+        }
+        this.all_zones.clear();
+        this.cards_in_zones.clear();
+    }
     layout_zones_and_buttons(layout_cfg){
         for (let zone_grp of layout_cfg['zones']){
             if (zone_grp.type=='one_zone_per_player'){
