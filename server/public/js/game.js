@@ -30,7 +30,7 @@ export default class Game extends Phaser.Scene
         offset_x:0,
         offset_y:0,
     }
-    layout_cfg;
+    layout_cfg={};
 
 	constructor()
 	{
@@ -72,49 +72,7 @@ export default class Game extends Phaser.Scene
         const card_height=190;
 
 
-        this.layout_cfg = {
-            n_players:3,
-            zones:[
-                {
-                    type: 'one_zone_per_player',
-                    name: 'zone',
-                    starting_x: 0,
-                    starting_y: 200,
-                    step_x: 308,
-                    step_y: -400,
-                    n_row:2,
-                    width : 280,
-                    height : 118.5,
-                    fillColor : 0x333333,
-                    boundary_width:40,
-                    boundary_height:52.5,
-                    card_step_x:15,
-                    card_step_y:30,
-                    card_scale:0.5,
-                    local_display_other_player:0,
-                    local_display_current_player:0,
-                },
-                {
-                    type: 'one_zone_per_player',
-                    name: 'score',
-                    starting_x: 0,
-                    starting_y: 87,
-                    step_x: 308,
-                    step_y: -174,
-                    n_row:2,
-                    width : 280,
-                    height : 71,
-                    fillColor : 0x333333,
-                    boundary_width:22.5,
-                    boundary_height:28.5,
-                    card_step_x:7.5,
-                    card_step_y:15,
-                    card_scale:0.25,
-                    local_display_other_player:0,
-                    local_display_current_player:0,
-                }                
-            ]
-        }
+
         //this.layout_zones_and_buttons(layout_cfg);
         //this.add_zone('zone1', 400,600,300,210, 0x333333, 45, 57.5,15,30,0.5, 0);
         //this.add_zone('zone2', 700,400,300,210, 0x333333, 45, 57.5,15,30,1, 0);
@@ -395,8 +353,8 @@ export default class Game extends Phaser.Scene
             self.player_id = player_id;            
         });    
 
-        this.socket.on('resetLayout', function () {
-            self.layout_zones_and_buttons(self.layout_cfg)   
+        this.socket.on('resetLayout', function (layout_cfg) {
+            self.layout_zones_and_buttons(layout_cfg)   
         });           
         
         this.socket.on('gameStateSync', function (last_events, cards_in_zones, cards_status) {

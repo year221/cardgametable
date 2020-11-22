@@ -31,6 +31,52 @@ game_state = {
 };
 
 
+layout_cfg = {
+  n_players:4,
+  zones:[
+      {
+          type: 'one_zone_per_player',
+          name: 'zone',
+          starting_x: 0,
+          starting_y: 200,
+          step_x: 308,
+          step_y: -400,
+          n_row:2,
+          width : 280,
+          height : 118.5,
+          fillColor : 0x333333,
+          boundary_width:40,
+          boundary_height:52.5,
+          card_step_x:15,
+          card_step_y:30,
+          card_scale:0.5,
+          local_display_other_player:0,
+          local_display_current_player:0,
+      },
+      {
+          type: 'one_zone_per_player',
+          name: 'score',
+          starting_x: 0,
+          starting_y: 87,
+          step_x: 308,
+          step_y: -174,
+          n_row:2,
+          width : 280,
+          height : 71,
+          fillColor : 0x333333,
+          boundary_width:22.5,
+          boundary_height:28.5,
+          card_step_x:7.5,
+          card_step_y:15,
+          card_scale:0.25,
+          local_display_other_player:0,
+          local_display_current_player:0,
+      }                
+  ]
+};
+
+
+
 io.on('connection', function (socket) {
   console.log('a user connected', socket.id);  
   
@@ -51,7 +97,7 @@ io.on('connection', function (socket) {
   socket.emit('playerIDAssigned', game_state.socket_id_to_player_id.get(socket.id));
   game_state.last_events[player_id]=-1;
   console.log(game_state.last_events);
-  socket.emit('resetLayout');
+  socket.emit('resetLayout', layout_cfg);
   socket.emit('setGameToInitialStage');
   socket.emit('gameStateSync', game_state.last_events, game_state.cards_in_zones,  game_state.card_status);
   socket.on('disconnect', function () {
