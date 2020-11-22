@@ -77,13 +77,17 @@ export class CardZone extends Phaser.GameObjects.Rectangle
         } else if (this.local_display==2){
             //this.scene.input.setDraggable(this, false);         
             //this.input.dropZone = false; 
-            this.scene.input.disable(this);            
+            if (this.input!==null){
+                this.scene.input.disable(this);            
+            }
             this.visible=false;
             //this.active=false;            
         } else if (this.local_display==1){
             //this.scene.input.setDraggable(this, false);         
             //this.input.dropZone = false; 
-            this.scene.input.disable(this);            
+            if (this.input!==null){
+                this.scene.input.disable(this);            
+            }
             this.visible=true;
             //this.active=true;            
         }
@@ -115,7 +119,7 @@ export function calculate_circular_zone_xy(
     11 zones: 5 6
     12 zones: 7 5
     */
-    const first_row = Math.ceil(n_zones/4)*2-1;
+    const first_row = Math.ceil (n_zones/4)*2-1;
     const second_row = n_zones - first_row; 
     for (let i =0; i<Math.ceil(first_row/2); i++){
         zone_xy.push({

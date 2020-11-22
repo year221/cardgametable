@@ -98,7 +98,7 @@ export default class Game extends Phaser.Scene
         //     console.log('zone1 camera');
         // }
         // console.log("camera rotation",this.cameras.main.rotation);
-        this.cameras.main.setZoom(1);
+        //this.cameras.main.setZoom(1);
         const _sinR=Math.sin(this.cameras.main.rotation);
         const _cosR=Math.cos(this.cameras.main.rotation);       
         this.layout_cfg.dragging_card_group_delta_x = this.layout_cfg.card_delta_x*_cosR + this.layout_cfg.card_delta_y*_sinR;
@@ -354,7 +354,8 @@ export default class Game extends Phaser.Scene
         });    
 
         this.socket.on('resetLayout', function (layout_cfg) {
-            self.layout_zones_and_buttons(layout_cfg)   
+            self.layout_zones_and_buttons(layout_cfg);
+            self.cameras.main.centerOn(layout_cfg.default_camera.x, layout_cfg.default_camera.y);   
         });           
         
         this.socket.on('gameStateSync', function (last_events, cards_in_zones, cards_status) {
@@ -384,6 +385,7 @@ export default class Game extends Phaser.Scene
         this.all_zones.clear();
         this.cards_in_zones.clear();
     }
+    
     layout_zones_and_buttons(layout_cfg){
         for (let zone_grp of layout_cfg['zones']){
             if (zone_grp.type=='one_zone_per_player'){
@@ -394,7 +396,7 @@ export default class Game extends Phaser.Scene
                     zone_grp.n_row
                     );
                 for (let player_id = 0; player_id<layout_cfg.n_players; player_id++){
-                   let xy_pos = zone_xy[(player_id+layout_cfg.n_players - Math.floor(this.player_id))%layout_cfg.n_players];
+                   let xy_pos = zone_xy[((player_id-Math.floor(this.player_id))%layout_cfg.n_players+layout_cfg.n_players)%layout_cfg.n_players];
                    let zone_id = zone_grp.name + '_' + String(player_id);
                    let local_display = zone_grp.local_display_other_player
                    if (String(player_id)==this.player_id){
@@ -409,6 +411,15 @@ export default class Game extends Phaser.Scene
                         zone_grp.card_scale, local_display)
                    }
                 }
+            } else if (zone_grp.type=='public'){
+                this.add_zone(zone_grp.name,
+                    zone_grp.x, zone_grp.y,
+                    zone_grp.width, zone_grp.height, 
+                    zone_grp.fillColor, 
+                    zone_grp.boundary_width, zone_grp.boundary_height, 
+                    zone_grp.card_step_x, zone_grp.card_step_y, 
+                    zone_grp.card_scale, 
+                    zone_grp.local_display)                
             }
         }
     }

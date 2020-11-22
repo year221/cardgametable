@@ -61,7 +61,8 @@ export class Card extends Phaser.GameObjects.Sprite
             this.visible=true;
             this.update_frame();
         } else if (value==2){
-            if (!(this.scene.input ===undefined)){
+            //if (!(this.scene.input ===undefined)){
+            if (this.input!==null){                
             //    this.scene.input.setDraggable(this, false);         
                 this.scene.input.disable(this);
             }
@@ -69,7 +70,8 @@ export class Card extends Phaser.GameObjects.Sprite
             //this.active=false;  
             //this.update_frame();          
         } else if (value==1){
-            if (!(this.scene.input ===undefined)){
+            //if (!(this.scene.input ===undefined)){
+            if (this.input!==null){                
             //    this.scene.input.setDraggable(this, false);         
                 this.scene.input.disable(this);
             }
