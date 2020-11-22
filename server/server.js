@@ -28,7 +28,7 @@ game_state = {
   card_status: {},
   socket_id_to_player_id: new Map(),
   last_events: {},
-  n_active_player:0
+  n_active_player:5
 };
 
 
@@ -170,7 +170,7 @@ io.on('connection', function (socket) {
   
   console.log('new assigned player id', player_id);
   game_state.socket_id_to_player_id.set(socket.id, player_id);
-  game_state.n_active_player =game_state.socket_id_to_player_id.size;
+  //game_state.n_active_player =game_state.socket_id_to_player_id.size;
   console.log('current_players_map', game_state.socket_id_to_player_id);
 
   socket.emit('playerIDAssigned', game_state.socket_id_to_player_id.get(socket.id));
