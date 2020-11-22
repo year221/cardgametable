@@ -23,8 +23,8 @@ all_cards_prototype.push('J2');
 
 game_state = {
   status: "InGame",
-  zone_ids: ['zone_0','zone_1','zone_2','zone_3'],
-  cards_in_zones: {'zone_0':[], 'zone_1':[], 'zone_2':[], 'zone_3':[]},
+  zone_ids: [],
+  cards_in_zones: {},
   card_status: {},
   socket_id_to_player_id: new Map(),
   last_events: {},
@@ -140,6 +140,15 @@ layout_cfg = {
       card_scale:0.25,
       local_display:0,      
     }                               
+  ],
+  ui_elements:[
+    {
+      type: 'deck_generator',
+      name: 'GenerateCard',
+      target_zone: 'Hidden',
+      x: -420,
+      y: -30,
+    },     
   ]
 };
 
@@ -216,7 +225,13 @@ io.on('connection', function (socket) {
       utils.shuffle(card_id_generated); 
     } 
     console.log(card_id_generated);
-    game_state.cards_in_zones[dst_zone_id]  = game_state.cards_in_zones[dst_zone_id].concat(card_id_generated);
+    let dst_zone = game_state.cards_in_zones[dst_zone_id];
+    if (dst_zone===undefined){
+      game_state.zone_ids.push(dst_zone_id);
+      game_state.cards_in_zones[dst_zone_id] =  card_id_generated;
+    } else {
+      game_state.cards_in_zones[dst_zone_id]= game_state.cards_in_zones[dst_zone_id].concat(card_id_generated);
+    }
     io.sockets.emit('gameStateSync', game_state.last_events, game_state.cards_in_zones,  game_state.card_status);
   });
   socket.on('cardMoved', function (event_index, src_zone_id, dst_zone_id, card_ids, dst_pos_in_zone) {
@@ -234,7 +249,16 @@ io.on('connection', function (socket) {
     // update card
     game_state.last_events[game_state.socket_id_to_player_id.get(socket.id)]=event_index;
     // remove cards from src zone
+    if (game_state.cards_in_zones[src_zone_id]===undefined){
+      game_state.zone_ids.push(src_zone_id);
+      game_state.cards_in_zones[src_zone_id]=[];
+    }
+    if (game_state.cards_in_zones[dst_zone_id]===undefined){
+      game_state.zone_ids.push(dst_zone_id);
+      game_state.cards_in_zones[dst_zone_id]=[];
+    }    
     const card_removed = utils.remove_items(game_state.cards_in_zones[src_zone_id], card_ids); 
+
     // add cards to src zone   
     if ((dst_pos_in_zone === undefined) || (dst_pos_in_zone === null) || (dst_pos_in_zone>= game_state.cards_in_zones[dst_zone_id].length)){ 
       game_state.cards_in_zones[dst_zone_id]  = game_state.cards_in_zones[dst_zone_id].concat(card_removed);

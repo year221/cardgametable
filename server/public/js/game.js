@@ -1,6 +1,8 @@
 import Phaser from './phaser.js';
 import {CardZone, calculate_circular_zone_xy} from './zone.js';
 import {PokerCard, Card} from './cards.js';
+import {TextButton} from './textbutton.js';
+
 //import InputText from 'phaser3-rex-plugins/plugins/inputtext.js';  
 //import InputTextPlugin from './lib/rexinputtextplugin.min.js';
 export default class Game extends Phaser.Scene
@@ -10,6 +12,7 @@ export default class Game extends Phaser.Scene
     n_active_player;
     all_zones;
     all_cards;
+    ui_elements;
     cards_in_zones;
     event_buffer;
     last_event_index;
@@ -39,6 +42,7 @@ export default class Game extends Phaser.Scene
         this.all_zones = new Map();
         this.all_cards = new Map();
         this.cards_in_zones = new Map();
+        this.ui_elements = new Map();
         this.event_buffer = new Map();
         this.last_event_index=-1;
         //this.primary_card = null;        
@@ -130,34 +134,34 @@ export default class Game extends Phaser.Scene
             // }                  
         })
 
-        const reset_button = this.add.text(0, 50, 'RESET', {color:'#0f0', backgroundColor: '#666' });
-        reset_button.setInteractive();
-        reset_button.on('pointerdown', function(){                                               
-            self.socket.emit('resetGame');                       
-            // for (let card of all_activated_cards){
-            //     card.flip_face();
-            // }                  
-        })        
+        // const reset_button = this.add.text(0, 50, 'RESET', {color:'#0f0', backgroundColor: '#666' });
+        // reset_button.setInteractive();
+        // reset_button.on('pointerdown', function(){                                               
+        //     self.socket.emit('resetGame');                       
+        //     // for (let card of all_activated_cards){
+        //     //     card.flip_face();
+        //     // }                  
+        // })        
 
-        this.add.text(- 120 , -100, '#Decks');
-        const inputText = this.add.rexInputText(-60, -100, 40, 40, {
-            type: 'number',
-            text: '4',
-            fontSize: '12px',
-        })
-        inputText.rotate3d.set(0,0,1,-this.cameras.main.rotation/Math.PI*180);
-        this.input_text = inputText;
+        // this.add.text(- 120 , -100, '#Decks');
+        // const inputText = this.add.rexInputText(-60, -100, 40, 40, {
+        //     type: 'number',
+        //     text: '4',
+        //     fontSize: '12px',
+        // })
+        // inputText.rotate3d.set(0,0,1,-this.cameras.main.rotation/Math.PI*180);
+        // this.input_text = inputText;
         
-        const generate_button = this.add.text(0, -100, 'GENERATE CARD', {color:'#0f0', backgroundColor: '#666' });
+        const generate_button = this.add.text(500, 0, 'GENERATE CARD', {color:'#0f0', backgroundColor: '#666' });
         generate_button.setInteractive();
         generate_button.on('pointerdown', function(){
             //self.flip_cards(card_ids);
-            console.log('text', self.input_text.text);
-            const n_decks = Math.round(self.input_text.text);
+            //console.log('text', self.input_text.text);
+            //const n_decks = Math.round(self.input_text.text);
             self.last_event_index ++;            
             self.event_buffer.set(self.last_event_index, {'name':'generateCard', 'parameters':[1]});    
             //self.event_buffer.set(self.last_event_index, {'name':'cardFlipped', 'parameters':[card_ids]});                                                
-            self.socket.emit('generateCard', self.last_event_index, 'zone_0', n_decks, true);                       
+            self.socket.emit('generateCard', self.last_event_index, 'Hand_0', 1, true);                       
             // for (let card of all_activated_cards){
             //     card.flip_face();
             // }                  
@@ -330,6 +334,22 @@ export default class Game extends Phaser.Scene
             
         });
 
+        this.input.on('gameobjectdown', function(pointer, gameObject){
+            if (gameObject instanceof TextButton){
+                
+                const button_param = gameObject.params;
+                console.log('button_clicked', button_param);
+                if (button_param.event_name ==='generateCard'){
+                    //const n_decks=1;
+                    const n_decks = Math.round(button_param.num_card_textbox.text);
+                    self.last_event_index ++;            
+                    self.event_buffer.set(self.last_event_index, {'name':'generateCard', 'parameters':[button_param.target_zone, n_decks]});                        
+                    self.socket.emit('generateCard', self.last_event_index, button_param.target_zone, n_decks, true);                         
+                }
+ 
+            } 
+        });
+
         this.input.on('gameobjectover', function(pointer, gameObject){
             //self.mouse_moved=true;
             if (self.on_multiple_selection && (gameObject instanceof Card)){                
@@ -380,6 +400,7 @@ export default class Game extends Phaser.Scene
             self.clear_all_cards();
             self.clear_all_events();
         });
+        console.log("creation done");
     }        
     
     // set zone and button layouts
@@ -427,45 +448,55 @@ export default class Game extends Phaser.Scene
         }        
     }
     layout_zones_and_buttons(layout_cfg){
+        var self=this;
         // layout zones
         for (let zone_grp of layout_cfg['zones']){
             this.add_zone_grp(zone_grp);
-            // if (zone_grp.type=='one_zone_per_player'){
-                
-            //     let zone_xy = calculate_circular_zone_xy(
-            //         zone_grp.starting_x, zone_grp.starting_y,
-            //         zone_grp.step_x, zone_grp.step_y, this.n_active_player,
-            //         zone_grp.n_row
-            //         );
-            //     for (let player_id = 0; player_id<this.n_active_player; player_id++){
-            //        let xy_pos = zone_xy[((player_id-Math.floor(this.player_id))%this.n_active_player+this.n_active_player)%this.n_active_player];
-            //        let zone_id = zone_grp.name + '_' + String(player_id);
-            //        let local_display = zone_grp.local_display_other_player
-            //        if (String(player_id)==this.player_id){
-            //         local_display = zone_grp.local_display_current_player
-            //        }
-            //        if (!this.all_zones.has(zone_id)){
-            //           this.add_zone(zone_id, xy_pos.x, xy_pos.y,
-            //             zone_grp.width, zone_grp.height, 
-            //             zone_grp.fillColor, 
-            //             zone_grp.boundary_width, zone_grp.boundary_height, 
-            //             zone_grp.card_step_x, zone_grp.card_step_y, 
-            //             zone_grp.card_scale, local_display)
-            //        }
-            //     }
-            // } else if (zone_grp.type=='public'){
-            //     this.add_zone(zone_grp.name,
-            //         zone_grp.x, zone_grp.y,
-            //         zone_grp.width, zone_grp.height, 
-            //         zone_grp.fillColor, 
-            //         zone_grp.boundary_width, zone_grp.boundary_height, 
-            //         zone_grp.card_step_x, zone_grp.card_step_y, 
-            //         zone_grp.card_scale, 
-            //         zone_grp.local_display)                
-            // }
         }
         // layout buttons
+        for (let ui_element of layout_cfg['ui_elements']){
+            if (ui_element.type=='deck_generator'){
+                let deck_generator_grp = {}
+                this.ui_elements.set(ui_element.name, deck_generator_grp);
+                deck_generator_grp['target_zone']=ui_element.target_zone;
+                deck_generator_grp['LabelNDecks'] = this.add.text(ui_element.x, ui_element.y, '#Decks', {fontSize:'12px'});
 
+                deck_generator_grp['NumOfDeckSelector'] = this.add.rexInputText(
+                    ui_element.x+60,ui_element.y+5,
+                    30, 20,
+                    {
+                    type: 'number',
+                    text: '4',
+                    fontSize: '12px',
+                    }
+                );
+                deck_generator_grp['GenerateButton'] = this.add.existing(new TextButton(
+                    this, ui_element.x, ui_element.y+15, 'Generate Card',
+                    {color:'#0f0', backgroundColor: '#111',fontSize:'12px' }
+                ));
+                deck_generator_grp['GenerateButton'].params['event_name']='generateCard';
+                
+                deck_generator_grp['GenerateButton'].params['target_zone']=ui_element.target_zone;
+                deck_generator_grp['GenerateButton'].params['num_card_textbox']=deck_generator_grp['NumOfDeckSelector'];
+
+                deck_generator_grp['GenerateButton'].setInteractive();
+                // deck_generator_grp['GenerateButton'].on('gameobjectdown', function(){
+                //     console.log("clickedclicked")
+                //     //self.flip_cards(card_ids);
+                //     // console.log('generate button clicked', gameObject.name)
+                //     // const c_ui_elment = self.ui_elements.get(gameObject.name);
+                //     // const n_decks = Math.round(c_ui_elment.NumOfDeckSelector.text);
+                //     // self.last_event_index ++;            
+                //     // self.event_buffer.set(self.last_event_index, {'name':'generateCard', 'parameters':[1]});    
+                //     // //self.event_buffer.set(self.last_event_index, {'name':'cardFlipped', 'parameters':[card_ids]});                                                
+                //     // self.socket.emit('generateCard', self.last_event_index, c_ui_elment.target_zone, n_decks, true);                       
+                //     // for (let card of all_activated_cards){
+                //     //     card.flip_face();
+                //     // }                  
+                // });    
+                console.log("added button")              
+            }
+        }        
     }
 
     clear_all_cards(){
