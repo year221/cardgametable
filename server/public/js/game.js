@@ -1,31 +1,29 @@
 import Phaser from './phaser.js';
-import CardZone from './zone.js';
+import {CardZone, calculate_circular_zone_xy} from './zone.js';
 import {PokerCard, Card} from './cards.js';
+import {TextButton} from './textbutton.js';
+
 //import InputText from 'phaser3-rex-plugins/plugins/inputtext.js';  
 //import InputTextPlugin from './lib/rexinputtextplugin.min.js';
 export default class Game extends Phaser.Scene
 {
     /** @type {Phaser.GameObjects.Zone} */
     player_id;
+    n_active_player;
     all_zones;
     all_cards;
+    ui_elements;
     cards_in_zones;
     event_buffer;
     last_event_index;
 
 
     input_text;
-    activated_cards;
-    zone_id_of_activated_cards;
+    // temporary card holdlers to deal to multiple ard select and drag.
+    activated_cards;    
     to_be_deactivate_upon_pointer_up;
-    primary_card;
     on_multiple_selection;    
-    mouse_moved;    
-    previous_empty_click;
-    layout_cfg={
-        card_delta_x: 30,
-        card_delta_y: 0,
-    }
+
     dragging_cache_param={
         starting_depth:500,
         step_x:0,
@@ -33,20 +31,18 @@ export default class Game extends Phaser.Scene
         offset_x:0,
         offset_y:0,
     }
-
-
-    //dragged_cards;
     
-    // perhaps use dictionary for faster search for both. 
+
 	constructor()
 	{
         super('game')
         this.all_zones = new Map();
         this.all_cards = new Map();
         this.cards_in_zones = new Map();
+        this.ui_elements = new Map();
         this.event_buffer = new Map();
         this.last_event_index=-1;
-        this.primary_card = null;        
+        //this.primary_card = null;        
         this.on_multiple_selection=false;
         //this.zone_id_of_activated_cards=null;
         this.to_be_deactivate_upon_pointer_up=[];
@@ -76,42 +72,8 @@ export default class Game extends Phaser.Scene
         // sample card and zone placement 
         const card_width=140;
         const card_height=190;
-        this.add_zone('zone1', 400,600,300,210, 0x333333, 80, 105);
-        this.add_zone('zone2', 700,400,300,210, 0x333333, 80, 105);
-        this.all_zones.get('zone2').set_zone_angle(90);
-        this.add_zone('zone3', 400,200,300,210, 0x333333, 80, 105);
-        this.all_zones.get('zone3').set_zone_angle(180);          
 
-        const camera_view_type = Math.random(); 
-        
-        if (camera_view_type>=0.5){
-            
-            this.cameras.main.centerOn(this.all_zones.get('zone2').x, this.all_zones.get('zone2').y);
-            this.cameras.main.setAngle(this.all_zones.get('zone2').angle);
-            //this.cameras.main.startFollow(this.all_zones.get('zone2'));
-            console.log('zone2 camera');
-            this.all_zones.get('zone3').set_local_display(false);               
-        } else {
-            this.cameras.main.centerOn(this.all_zones.get('zone1').x, this.all_zones.get('zone1').y);
-            this.cameras.main.setAngle(this.all_zones.get('zone1').angle);
-            //this.cameras.main.startFollow(this.all_zones.get('zone1'));
-            console.log('zone1 camera');
-        }
-        console.log("camera rotation",this.cameras.main.rotation);
-        //this.cameras.main.setZoom(0.5);
-        const _sinR=Math.sin(this.cameras.main.rotation);
-        const _cosR=Math.cos(this.cameras.main.rotation);       
-        this.layout_cfg.dragging_card_group_delta_x = this.layout_cfg.card_delta_x*_cosR + this.layout_cfg.card_delta_y*_sinR;
-        this.layout_cfg.dragging_card_group_delta_y = -this.layout_cfg.card_delta_x*_sinR + this.layout_cfg.card_delta_y*_cosR;         
-        //self.add_new_card('zone1', undefined, 'J1');
-        //self.add_new_card('zone1', undefined, 'J2');
-        //self.add_new_card('zone2', undefined, 'C5');
-        //self.add_new_card('zone2', undefined, 'C6');
-
-        const flip_button_xy = this.cameras.main.midPoint;//getWorldPoint(this.cameras.main.width/2,this.cameras.main.height/2);
-        console.log(flip_button_xy);
-        console.log(this.cameras.main.centerX, this.cameras.main.centerY);
-        const flip_button = this.add.text(this.cameras.main.width/2, this.cameras.main.height/2, 'FLIP', {color:'#0f0', backgroundColor: '#666' });
+        const flip_button = this.add.text(500,-50, 'FLIP', {color:'#0f0', backgroundColor: '#666' });
         flip_button.setInteractive();
         flip_button.on('pointerdown', function(){
             const all_activated_cards = self.activated_cards.getChildren();   
@@ -129,37 +91,13 @@ export default class Game extends Phaser.Scene
             // }                  
         })
 
-        this.add.text(this.cameras.main.width/2 - 120 , this.cameras.main.height/2-100, '#Decks');
-        const inputText = this.add.rexInputText(this.cameras.main.width/2 - 60 , this.cameras.main.height/2-100, 40, 40, {
-            type: 'number',
-            text: '4',
-            fontSize: '12px',
-        })
-        inputText.rotate3d.set(0,0,1,-this.cameras.main.rotation/Math.PI*180);
-        this.input_text = inputText;
-        
-        const generate_button = this.add.text(this.cameras.main.width/2, this.cameras.main.height/2-100, 'GENERATE CARD', {color:'#0f0', backgroundColor: '#666' });
-        generate_button.setInteractive();
-        generate_button.on('pointerdown', function(){
-            //self.flip_cards(card_ids);
-            console.log('text', self.input_text.text);
-            const n_decks = Math.round(self.input_text.text);
-            self.last_event_index ++;            
-            self.event_buffer.set(self.last_event_index, {'name':'generateCard', 'parameters':[1]});    
-            //self.event_buffer.set(self.last_event_index, {'name':'cardFlipped', 'parameters':[card_ids]});                                                
-            self.socket.emit('generateCard', self.last_event_index, 'zone1', n_decks, true);                       
-            // for (let card of all_activated_cards){
-            //     card.flip_face();
-            // }                  
-        });  
-        // Above will be replaced by event
-        // TODO: Replace above with synchronization from server.
 
         this.input.on('dragstart', function (pointer, gameObject) {
             // cache starting depth so that we could return it to its depth
             //gameObject._drag_start_depth = gameObject.depth;            
             
             const rotation = gameObject.rotation;
+            const zone_of_object = self.all_zones.get(gameObject.zone_id);
             const all_activated_cards = self.activated_cards.getChildren();
             for (let card of all_activated_cards){
                 card.rotation = rotation;
@@ -170,8 +108,8 @@ export default class Game extends Phaser.Scene
             console.log('index_pos_primary_card',index_pos_primary_card);
             const _sinR=Math.sin(rotation);
             const _cosR=Math.cos(rotation);            
-            self.dragging_cache_param.step_x = self.layout_cfg.card_delta_x*_cosR + self.layout_cfg.card_delta_y*_sinR;
-            self.dragging_cache_param.step_y = -self.layout_cfg.card_delta_x*_sinR + self.layout_cfg.card_delta_y*_cosR;            
+            self.dragging_cache_param.step_x = zone_of_object.card_step_x*_cosR + zone_of_object.card_step_y*_sinR;
+            self.dragging_cache_param.step_y = -zone_of_object.card_step_x*_sinR + zone_of_object.card_step_y*_cosR;            
             self.dragging_cache_param.offset_x = -index_pos_primary_card*self.dragging_cache_param.step_x;
             self.dragging_cache_param.offset_y = -index_pos_primary_card*self.dragging_cache_param.step_y;                
             self.activated_cards
@@ -179,8 +117,7 @@ export default class Game extends Phaser.Scene
             .setXY(gameObject.x+self.dragging_cache_param.offset_x,
                 gameObject.y+self.dragging_cache_param.offset_y,
                 self.dragging_cache_param.step_x,
-                self.dragging_cache_param.step_y);
-                //.setXY(gameObject.x,gameObject.y,self.layout_cfg.dragging_card_group_delta_x,self.layout_cfg.dragging_card_group_delta_y);
+                self.dragging_cache_param.step_y);                
 
             //.rotate(self.cameras.main.rotation);
         });
@@ -320,6 +257,47 @@ export default class Game extends Phaser.Scene
             
         });
 
+        this.input.on('gameobjectdown', function(pointer, gameObject){
+            if (gameObject instanceof TextButton){
+                gameObject.highlight(1);                
+                const button_param = gameObject.params;
+                console.log('button_clicked', button_param);
+                if (button_param.event_name ==='generateCard'){
+                    //const n_decks=1;
+                    const n_decks = Math.round(button_param.num_card_textbox.text);
+                    self.last_event_index ++;            
+                    self.event_buffer.set(self.last_event_index, {'name':'generateCard', 'parameters':[button_param.target_zone, n_decks]});                        
+                    self.socket.emit('generateCard', self.last_event_index, button_param.target_zone, n_decks, true);                         
+                } else if (button_param.event_name ==='resetGame'){
+                    self.socket.emit('resetGame');    
+                } else if (button_param.event_name ==='moveCards'){
+                    for (let cfg of button_param.move_card_cfg){                                 
+                        let card_ids = [];
+                        if (cfg.type =='all'){
+                            card_ids = self.cards_in_zones.get(cfg.src_zone_id);                            
+                        } else if (cfg.type=='fixed'){
+                            card_ids = self.cards_in_zones.get(cfg.src_zone_id).slice(-Math.floor(cfg.num_of_card));                            
+                        } else if (cfg.type=='ui'){
+                            const num_of_cards = Math.round(cfg.textbox.text);              
+                            console.log(num_of_cards)             
+                            card_ids = self.cards_in_zones.get(cfg.src_zone_id).slice(-num_of_cards);                            
+                        }
+                        self.move_cards(cfg.src_zone_id, cfg.dst_zone_id, card_ids);
+                        self.last_event_index ++;
+                        self.event_buffer.set(self.last_event_index, {'name':'cardMoved', 'parameters':[cfg.src_zone_id, cfg.dst_zone_id, card_ids]});                                                
+                        self.socket.emit('cardMoved',  self.last_event_index, cfg.src_zone_id, cfg.dst_zone_id, card_ids,  null);                                
+                    }                    
+                }
+            } 
+        });
+
+
+        this.input.on('gameobjectup', function(pointer, gameObject){
+            if (gameObject instanceof TextButton){
+                gameObject.highlight(0);                    
+            } 
+        });        
+
         this.input.on('gameobjectover', function(pointer, gameObject){
             //self.mouse_moved=true;
             if (self.on_multiple_selection && (gameObject instanceof Card)){                
@@ -343,6 +321,16 @@ export default class Game extends Phaser.Scene
             console.log('received player ID', player_id);
             self.player_id = player_id;            
         });    
+
+        this.socket.on('resetLayout', function (layout_cfg, n_active_player) {
+            if ((n_active_player!==undefined) && (n_active_player!==null)){
+                self.n_active_player = n_active_player;
+            }
+            self.clear_all_zones_and_buttons();
+            self.layout_zones_and_buttons(layout_cfg);
+            //self.main_camera(layout_cfg);
+            self.cameras.main.centerOn(layout_cfg.default_camera.x, layout_cfg.default_camera.y);                 
+        });           
         
         this.socket.on('gameStateSync', function (last_events, cards_in_zones, cards_status) {
             console.log('received gamesStateSync', last_events, cards_in_zones, cards_status);
@@ -352,36 +340,231 @@ export default class Game extends Phaser.Scene
             if (cards_status != null){
                 self.sync_card_status(cards_status);
             }
-            self.apply_and_update_event_buffer(last_events[self.player_id]);
+            if (last_events.hasOwnProperty(self.player_id)){
+                self.apply_and_update_event_buffer(last_events[self.player_id]);
+            }
             //this.player_id = player_id;            
-        });          
+        });       
+        this.socket.on('setGameToInitialStage', function(){
+            self.clear_all_cards();
+            self.clear_all_events();
+        });
+        console.log("creation done");
     }        
     
+    // set zone and button layouts
+    clear_all_zones_and_buttons(){
+        for (let [zone_id, zone] of this.all_zones){
+            zone.destroy();
+        }
+        this.all_zones.clear();
+        this.cards_in_zones.clear();
+        for (let [element_name, element_grp] of this.ui_elements){
+            for (let element of element_grp['elements']){
+                element.destroy();
+            }            
+        }                
+    }
+    
+    add_zone_grp(zone_grp){
+        if (zone_grp.type=='one_zone_per_player'){
+                
+            let zone_xy = calculate_circular_zone_xy(
+                zone_grp.starting_x, zone_grp.starting_y,
+                zone_grp.step_x, zone_grp.step_y, this.n_active_player,
+                zone_grp.n_row
+                );
+            for (let player_id = 0; player_id<this.n_active_player; player_id++){
+               let xy_pos = zone_xy[((player_id-Math.floor(this.player_id))%this.n_active_player+this.n_active_player)%this.n_active_player];
+               let zone_id = zone_grp.name + '_' + String(player_id);
+               let local_display = zone_grp.local_display_other_player
+               if (String(player_id)==this.player_id){
+                local_display = zone_grp.local_display_current_player
+               }
+               if (!this.all_zones.has(zone_id)){
+                  this.add_zone(zone_id, xy_pos.x, xy_pos.y,
+                    zone_grp.width, zone_grp.height, 
+                    zone_grp.fillColor, 
+                    zone_grp.boundary_width, zone_grp.boundary_height, 
+                    zone_grp.card_step_x, zone_grp.card_step_y, 
+                    zone_grp.card_scale, local_display)
+               }
+            }
+        } else if (zone_grp.type=='public'){
+            this.add_zone(zone_grp.name,
+                zone_grp.x, zone_grp.y,
+                zone_grp.width, zone_grp.height, 
+                zone_grp.fillColor, 
+                zone_grp.boundary_width, zone_grp.boundary_height, 
+                zone_grp.card_step_x, zone_grp.card_step_y, 
+                zone_grp.card_scale, 
+                zone_grp.local_display)                
+        }        
+    }
+    layout_zones_and_buttons(layout_cfg){
+        var self=this;
+        // layout zones
+        for (let zone_grp of layout_cfg['zones']){
+            this.add_zone_grp(zone_grp);
+        }
+        // layout buttons
+        for (let ui_element of layout_cfg['ui_elements']){
+            if (ui_element.type=='deck_generator'){
+                let deck_generator_grp = {}
+                this.ui_elements.set(ui_element.name, deck_generator_grp);
+                //deck_generator_grp['target_zone']=ui_element.target_zone;
+                deck_generator_grp['elements']=[];
+                deck_generator_grp['elements'].push(this.add.text(
+                    ui_element.x+ui_element.label.offset_x,
+                    ui_element.y+ui_element.label.offset_y, 
+                    ui_element.label.text,
+                    {fontSize:'12px'}));
+
+                const num_deck_selector = this.add.rexInputText(
+                    ui_element.x+ui_element.input.offset_x,
+                    ui_element.y+ui_element.input.offset_y,                    
+                    30, 20,
+                    {
+                    type: 'number',
+                    text: ui_element.input.default,
+                    fontSize: '12px',
+                    }
+                );
+                deck_generator_grp['elements'].push(num_deck_selector);
+                const generate_button = this.add.existing(new TextButton(
+                    this, ui_element.x, ui_element.y, ui_element.generate_button_label,
+                    {color:'#0f0', backgroundColor: '#666',fontSize:'12px' }                    
+                ));
+                deck_generator_grp['elements'].push(generate_button);
+                generate_button.params['event_name']='generateCard';                
+                generate_button.params['target_zone']=ui_element.target_zone;
+                generate_button.params['num_card_textbox']=num_deck_selector;
+                generate_button.setInteractive();
+            } else if (ui_element.type=='reset_game'){
+                let element_grp = {elements:[]}
+                this.ui_elements.set(ui_element.name, element_grp);
+                const button = this.add.existing(new TextButton(
+                    this, ui_element.x, ui_element.y, ui_element.button_label,
+                    {color:'#0f0', backgroundColor: '#666',fontSize:'12px' }                    
+                ));      
+                element_grp['elements'].push(button);                
+                button.params['event_name']='resetGame';     
+                button.setInteractive();
+            } else if (ui_element.type=='deal_cards') {
+                let element_grp = {elements:[]}
+                this.ui_elements.set(ui_element.name, element_grp);
+                const button = this.add.existing(new TextButton(
+                    this, ui_element.x, ui_element.y, ui_element.button_label,
+                    {color:'#0f0', backgroundColor: '#666',fontSize:'12px' }                    
+                ));        
+                element_grp['elements'].push(button)     
+                button.params['event_name']='moveCards'; 
+                button.params['move_card_cfg'] = [];  
+                button.setInteractive();
+                for (let cfg of ui_element.move_card_cfg){
+                    if (cfg.type=='ui'){                        
+                        element_grp['elements'].push(
+                            this.add.text(ui_element.x+cfg.label.offset_x,
+                                ui_element.y+cfg.label.offset_y,
+                                cfg.label.text, {fontSize:'12px'}));
+                        const num_selector = this.add.rexInputText(
+                            ui_element.x+cfg.input.offset_x,
+                            ui_element.y+cfg.input.offset_y,
+                            30, 20,
+                            {
+                            type: 'number',
+                            text: String(cfg.input.default),
+                            fontSize: '12px',
+                            }
+                        );
+                        element_grp['elements'].push(num_selector);                           
+                        if (cfg.dst_zone_type == 'zone_group'){
+                            const dst_zone_ids = this.find_zone_group(cfg.dst_zone_group_name);
+                            for (let zone_id of dst_zone_ids){
+                                button.params['move_card_cfg'].push(
+                                    {
+                                        type: 'ui',
+                                        src_zone_id: cfg.src_zone_id,
+                                        dst_zone_id: zone_id,
+                                        textbox: num_selector,
+                                    }
+                                )
+                            }
+                        } else if (cfg.dst_zone_type == 'zone'){
+                            button.params['move_card_cfg'].push(
+                                {
+                                    type: 'ui',
+                                    src_zone_id: cfg.src_zone_id,
+                                    dst_zone_id: cfg.dst_zone_id,
+                                    textbox: num_selector,
+                                }
+                            )                            
+                        }
+                    }
+                }
+                
+            }
+        }
+    }
+
+    find_zone_group(group_name){  
+        const all_zones_ids = Array(...this.all_zones.keys());
+        return all_zones_ids.filter(zone_id => zone_id.split('_')[0]===group_name);        
+    }
+    clear_all_cards(){
+        this.on_multiple_selection=false;
+        this.activated_cards.clear();
+        while (this.to_be_deactivate_upon_pointer_up.length>0){
+            this.to_be_deactivate_upon_pointer_up.pop();     
+        }   
+        for (let [card_id, card] of this.all_cards){
+            this    .all_cards.delete(card_id);
+            card.destroy();// remove from pahser        
+        }
+
+        for (let zone_id of this.cards_in_zones.keys()){
+            this.cards_in_zones.set(zone_id, []);
+        }        
+    }
+
+    clear_all_events(){
+        this.event_buffer.clear;
+        this.last_event_index=-1;
+    }
     // synchronize all cards in the zones 
+
     sync_card_in_zones(new_cards_in_zones)
     {
-        let old_card_ids_of_changed_zones=[];
-        let new_card_ids_of_changed_zones=[];
+        let removed_card_ids_of_changed_zones=[];
+        let added_card_ids_of_changed_zones=[];
         for (const [zone_id, cards_in_zone] of this.cards_in_zones) {
-            const new_cards_in_zone = new_cards_in_zones[zone_id];
-            
+            let new_cards_in_zone = new_cards_in_zones[zone_id];
+            if (new_cards_in_zone===undefined){
+                new_cards_in_zone = [];
+            }
             if (!(cards_in_zone.length === new_cards_in_zone.length && cards_in_zone.every((val, index) => val === new_cards_in_zone[index]))){
                 // update cards
-                old_card_ids_of_changed_zones = old_card_ids_of_changed_zones.concat(cards_in_zone);
-                new_card_ids_of_changed_zones = old_card_ids_of_changed_zones.concat(new_cards_in_zone);
+                removed_card_ids_of_changed_zones = removed_card_ids_of_changed_zones.concat(cards_in_zone.filter(card_id => !new_cards_in_zone.includes(card_id)));
+               
+                added_card_ids_of_changed_zones = added_card_ids_of_changed_zones.concat(new_cards_in_zone.filter(card_id => !cards_in_zone.includes(card_id)));
                 this.cards_in_zones.set(zone_id, new_cards_in_zone);
                 this.update_cards_in_zone(zone_id); 
             }
         }
 
-        const cards_ids_to_be_destroyed = old_card_ids_of_changed_zones.filter(card_id => !new_card_ids_of_changed_zones.includes(card_id));
+        const cards_ids_to_be_destroyed = removed_card_ids_of_changed_zones.filter(card_id => !added_card_ids_of_changed_zones.includes(card_id));
 
         for (const card_id of cards_ids_to_be_destroyed){
             let card = self.all_cards.get(card_id);
             self.all_cards.delete(card_id);
-            card.destroy();// remove from pahser
-            self.cards_status.delete(card_id);
-        }
+            card.destroy();// remove from pahser            
+        }        
+
+        // remove those "moved away" cards from the activated cards
+        //const to_be_removed_active_cards = self.activated_cards.getChildren().filter(card=> removed_card_ids_of_changed_zones.includes(card.card_id));
+        //for (let card of to_be_removed_active_cards){
+        //    self.activated_cards.remove(card);
+        //}                
     }
 
     // synchronize all card status : which side is up or down
@@ -483,40 +666,33 @@ export default class Game extends Phaser.Scene
             
             let card = this.all_cards.get(cards_in_zone[i]); 
             if (card===undefined){
-                card = this.add_new_card(zone_id, i, cards_in_zone[i])//, new_cards_status.get(cards_in_zone[i]));                                
-            } else {
-                const new_pos = zone.calculate_xy_from_pos(i);   
-                card.setPosition(new_pos.x, new_pos.y);
-            }      
+                card = this.generate_new_card(cards_in_zone[i])//, new_cards_status.get(cards_in_zone[i]));                                
+            }
+            const new_pos = zone.calculate_xy_from_pos(i);  
+            card.set_local_display(zone.local_display); 
+            card.setPosition(new_pos.x, new_pos.y);            
             card.setDepth(i+1);
             card.zone_id=zone_id;
-            card.angle = zone.angle;
-            card.set_local_display(zone.local_display);
+            card.angle = zone.angle;            
+            card.setScale(zone.card_scale)
         }         
     }
 
-    add_new_card(dst_zone_id, insertion_location, card_id, face_up){
+    generate_new_card(card_id, face_up){
         // if ((face_up===undefined) || (face_up===null)){
         //     face_up = true;
         // }
-        const card = new PokerCard(this, 0, 0, 'cards', card_id);  
-        if (face_up===false) {card.face_up = face_up;}
+        const card = new PokerCard(this, 0, 0, 'cards', card_id);
+        card.face_up = face_up;
+        //if (face_up===false) {card.face_up = face_up;}
         this.add.existing(card);
         this.all_cards.set(card_id, card);
-        this.add_cards(dst_zone_id, [card_id], insertion_location);  
+        //this.add_cards(dst_zone_id, [card_id], insertion_location);  
         return card;       
     }
-
-    // add_new_card(dst_zone_id, insertion_location, card_id, texture, frame, frame_face_down){
-
-    //     const card = new Card(this, 0, 0, texture, frame, frame_face_down, card_id);        
-    //     this.add.existing(card);
-    //     this.all_cards.set(card_id, card);
-    //     this.add_cards(dst_zone_id, [card_id], insertion_location); 
-    // }    
-
-    add_zone(zone_id, x, y, width, height, fillColor, boundary_width, boundary_height){
-        const zone = new CardZone(this, x, y, width, height, fillColor, zone_id, boundary_width, boundary_height);
+    
+    add_zone(zone_id, x, y, width, height, fillColor, boundary_width, boundary_height, card_step_x, card_step_y, card_scale, local_display){
+        const zone = new CardZone(this, x, y, width, height, fillColor, zone_id, boundary_width, boundary_height, card_step_x, card_step_y, card_scale, local_display);
         this.all_zones.set(zone_id, zone);           
         this.add.existing(zone);  
         this.cards_in_zones.set(zone_id, []);
