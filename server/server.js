@@ -145,16 +145,60 @@ layout_cfg = {
     {
       type: 'deck_generator',
       name: 'GenerateCard',
-      target_zone: 'Hidden',
-      x: -420,
-      y: -30,
+      generate_button_label: 'NewCards',
+      target_zone: 'CardDealer',
+      x: -430,
+      y: -25,
+      input: {
+        default: '4',
+      },
+      label: {
+        offset_x: 0, offset_y: -15, text: '#Decks',
+      },
+      input: {
+        offset_x: 80, offset_y: -8, default: '4',
+      }      
     },     
     {
       type: 'reset_game',
-      name: 'Reset Game',      
+      name: 'Reset Game',   
+      button_label: 'New Round',   
       x: 500,
       y: 0,
     },    
+    {
+      type: 'deal_cards',
+      name: 'DealCards',
+      x: -430,
+      y: -5,
+      button_label: 'DealCards',
+      move_card_cfg: [
+        {
+          type: 'ui',          
+          src_zone_id: 'CardDealer',
+          dst_zone_type: 'zone_group',
+          dst_zone_group_name: 'Hand',
+          label: {
+            offset_x: 0, offset_y: 15, text: 'PerPlayer',
+          },
+          input: {
+            offset_x: 80, offset_y: 22, default: '52',
+          }
+        },
+        {
+          type: 'ui',          
+          src_zone_id: 'CardDealer',
+          dst_zone_type: 'zone',
+          dst_zone_id: 'Hidden',
+          label: {
+            offset_x: 0, offset_y: 30, text: 'Hidden',
+          },
+          input: {
+            offset_x: 80, offset_y: 38, default: '8',
+          }
+        },        
+      ]
+    },
   ]
 };
 
@@ -214,7 +258,7 @@ io.on('connection', function (socket) {
     // generate new deck id
     let max_deck_num = Math.max(...game_state.zone_ids.map(zone_id=> Math.max(...game_state.cards_in_zones[zone_id].map(card_id=> card_id.split('_')[1]))));
     if (max_deck_num<0){max_deck_num=0;}
-    console.log(max_deck_num);
+    //console.log(max_deck_num);
     // for (let cards_in_zone of game_state.cards_in_zones){
     //   Math.max(...cards_in_zone.map(card_id=> card_id.split('_')[1]))
     // }
@@ -230,7 +274,7 @@ io.on('connection', function (socket) {
     if ((shuffle === undefined) || (shuffle == null) || (shuffle)){
       utils.shuffle(card_id_generated); 
     } 
-    console.log(card_id_generated);
+    //console.log(card_id_generated);
     let dst_zone = game_state.cards_in_zones[dst_zone_id];
     if (dst_zone===undefined){
       game_state.zone_ids.push(dst_zone_id);
@@ -272,7 +316,7 @@ io.on('connection', function (socket) {
       game_state.cards_in_zones[dst_zone_id].splice(dst_pos_in_zone, 0, card_removed);
     }
 
-    console.log(game_state.cards_in_zones);
+    //console.log(game_state.cards_in_zones);
     io.sockets.emit('gameStateSync', game_state.last_events, game_state.cards_in_zones, null);
   });  
   

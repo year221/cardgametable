@@ -73,41 +73,6 @@ export default class Game extends Phaser.Scene
         const card_width=140;
         const card_height=190;
 
-
-
-        //this.layout_zones_and_buttons(layout_cfg);
-        //this.add_zone('zone1', 400,600,300,210, 0x333333, 45, 57.5,15,30,0.5, 0);
-        //this.add_zone('zone2', 700,400,300,210, 0x333333, 45, 57.5,15,30,1, 0);
-        //this.all_zones.get('zone2').set_zone_angle(90);
-        //this.add_zone('zone3', 400,200,300,210, 0x333333, 45, 57.5,15,30,0.5, 0);
-        //this.all_zones.get('zone3').set_zone_angle(180);         //this.cameras.main.startFollow(this.all_zones.get('zone_0'));
-        //this.cameras.main.setAngle(this.all_zones.get('zone2').angle);
-        // const camera_view_type = Math.random(); 
-        
-        // if (camera_view_type>=0.5){
-            
-        //     this.cameras.main.centerOn(this.all_zones.get('zone2').x, this.all_zones.get('zone2').y);
-        //     this.cameras.main.setAngle(this.all_zones.get('zone2').angle);
-        //     //this.cameras.main.startFollow(this.all_zones.get('zone2'));
-        //     console.log('zone2 camera');
-        //     this.all_zones.get('zone3').set_local_display(1);               
-        // } else {
-        //     this.cameras.main.centerOn(this.all_zones.get('zone1').x, this.all_zones.get('zone1').y);
-        //     this.cameras.main.setAngle(this.all_zones.get('zone1').angle);
-        //     //this.cameras.main.startFollow(this.all_zones.get('zone1'));
-        //     console.log('zone1 camera');
-        // }
-        // console.log("camera rotation",this.cameras.main.rotation);
-        //this.cameras.main.setZoom(1);
-     
-        //self.add_new_card('zone1', undefined, 'J1');
-        //self.add_new_card('zone1', undefined, 'J2');
-        //self.add_new_card('zone2', undefined, 'C5');
-        //self.add_new_card('zone2', undefined, 'C6');
-
-        //const flip_button_xy = this.cameras.main.c;//getWorldPoint(this.cameras.main.width/2,this.cameras.main.height/2);
-        //console.log(flip_button_xy);
-        //console.log(this.cameras.main.centerX, this.cameras.main.centerY);
         const flip_button = this.add.text(500,-50, 'FLIP', {color:'#0f0', backgroundColor: '#666' });
         flip_button.setInteractive();
         flip_button.on('pointerdown', function(){
@@ -305,7 +270,24 @@ export default class Game extends Phaser.Scene
                     self.socket.emit('generateCard', self.last_event_index, button_param.target_zone, n_decks, true);                         
                 } else if (button_param.event_name ==='resetGame'){
                     self.socket.emit('resetGame');    
-                } 
+                } else if (button_param.event_name ==='moveCards'){
+                    for (let cfg of button_param.move_card_cfg){                                 
+                        let card_ids = [];
+                        if (cfg.type =='all'){
+                            card_ids = self.cards_in_zones.get(cfg.src_zone_id);                            
+                        } else if (cfg.type=='fixed'){
+                            card_ids = self.cards_in_zones.get(cfg.src_zone_id).slice(-Math.floor(cfg.num_of_card));                            
+                        } else if (cfg.type=='ui'){
+                            const num_of_cards = Math.round(cfg.textbox.text);              
+                            console.log(num_of_cards)             
+                            card_ids = self.cards_in_zones.get(cfg.src_zone_id).slice(-num_of_cards);                            
+                        }
+                        self.move_cards(cfg.src_zone_id, cfg.dst_zone_id, card_ids);
+                        self.last_event_index ++;
+                        self.event_buffer.set(self.last_event_index, {'name':'cardMoved', 'parameters':[cfg.src_zone_id, cfg.dst_zone_id, card_ids]});                                                
+                        self.socket.emit('cardMoved',  self.last_event_index, cfg.src_zone_id, cfg.dst_zone_id, card_ids,  null);                                
+                    }                    
+                }
             } 
         });
 
@@ -432,20 +414,25 @@ export default class Game extends Phaser.Scene
                 this.ui_elements.set(ui_element.name, deck_generator_grp);
                 //deck_generator_grp['target_zone']=ui_element.target_zone;
                 deck_generator_grp['elements']=[];
-                deck_generator_grp['elements'].push(this.add.text(ui_element.x, ui_element.y, '#Decks', {fontSize:'12px'}));
+                deck_generator_grp['elements'].push(this.add.text(
+                    ui_element.x+ui_element.label.offset_x,
+                    ui_element.y+ui_element.label.offset_y, 
+                    ui_element.label.text,
+                    {fontSize:'12px'}));
 
                 const num_deck_selector = this.add.rexInputText(
-                    ui_element.x+60,ui_element.y+5,
+                    ui_element.x+ui_element.input.offset_x,
+                    ui_element.y+ui_element.input.offset_y,                    
                     30, 20,
                     {
                     type: 'number',
-                    text: '4',
+                    text: ui_element.input.default,
                     fontSize: '12px',
                     }
                 );
                 deck_generator_grp['elements'].push(num_deck_selector);
                 const generate_button = this.add.existing(new TextButton(
-                    this, ui_element.x, ui_element.y+15, 'Generate Card',
+                    this, ui_element.x, ui_element.y, ui_element.generate_button_label,
                     {color:'#0f0', backgroundColor: '#666',fontSize:'12px' }                    
                 ));
                 deck_generator_grp['elements'].push(generate_button);
@@ -457,17 +444,73 @@ export default class Game extends Phaser.Scene
                 let element_grp = {elements:[]}
                 this.ui_elements.set(ui_element.name, element_grp);
                 const button = this.add.existing(new TextButton(
-                    this, ui_element.x, ui_element.y+15, 'Reset Game',
+                    this, ui_element.x, ui_element.y, ui_element.button_label,
                     {color:'#0f0', backgroundColor: '#666',fontSize:'12px' }                    
                 ));      
                 element_grp['elements'].push(button);                
                 button.params['event_name']='resetGame';     
                 button.setInteractive();
-
+            } else if (ui_element.type=='deal_cards') {
+                let element_grp = {elements:[]}
+                this.ui_elements.set(ui_element.name, element_grp);
+                const button = this.add.existing(new TextButton(
+                    this, ui_element.x, ui_element.y, ui_element.button_label,
+                    {color:'#0f0', backgroundColor: '#666',fontSize:'12px' }                    
+                ));        
+                element_grp['elements'].push(button)     
+                button.params['event_name']='moveCards'; 
+                button.params['move_card_cfg'] = [];  
+                button.setInteractive();
+                for (let cfg of ui_element.move_card_cfg){
+                    if (cfg.type=='ui'){                        
+                        element_grp['elements'].push(
+                            this.add.text(ui_element.x+cfg.label.offset_x,
+                                ui_element.y+cfg.label.offset_y,
+                                cfg.label.text, {fontSize:'12px'}));
+                        const num_selector = this.add.rexInputText(
+                            ui_element.x+cfg.input.offset_x,
+                            ui_element.y+cfg.input.offset_y,
+                            30, 20,
+                            {
+                            type: 'number',
+                            text: String(cfg.input.default),
+                            fontSize: '12px',
+                            }
+                        );
+                        element_grp['elements'].push(num_selector);                           
+                        if (cfg.dst_zone_type == 'zone_group'){
+                            const dst_zone_ids = this.find_zone_group(cfg.dst_zone_group_name);
+                            for (let zone_id of dst_zone_ids){
+                                button.params['move_card_cfg'].push(
+                                    {
+                                        type: 'ui',
+                                        src_zone_id: cfg.src_zone_id,
+                                        dst_zone_id: zone_id,
+                                        textbox: num_selector,
+                                    }
+                                )
+                            }
+                        } else if (cfg.dst_zone_type == 'zone'){
+                            button.params['move_card_cfg'].push(
+                                {
+                                    type: 'ui',
+                                    src_zone_id: cfg.src_zone_id,
+                                    dst_zone_id: cfg.dst_zone_id,
+                                    textbox: num_selector,
+                                }
+                            )                            
+                        }
+                    }
+                }
+                
             }
         }
     }
 
+    find_zone_group(group_name){  
+        const all_zones_ids = Array(...this.all_zones.keys());
+        return all_zones_ids.filter(zone_id => zone_id.split('_')[0]===group_name);        
+    }
     clear_all_cards(){
         this.on_multiple_selection=false;
         this.activated_cards.clear();
