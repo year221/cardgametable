@@ -274,11 +274,22 @@ io.on('connection', function (socket) {
   });  
 
   socket.on('joinGame', function(){
-    if (!game_state.socket_id_to_player_info.has(socket.id)){
-      game_state.socket_id_to_player_info.set(socket.id, {player_name:'', player_type:'Unassigned'});
-    }    
-    game_state.socket_id_to_player_info.get(socket.id).player_type ='Player';
-    io.sockets.emit('playerInfo', Array(...game_state.socket_id_to_player_info.values()));
+
+    const connected_active_players = get_currently_connected_active_players();
+    if (connected_active_players!=game_state.n_active_player){
+      // provide a ID and allow to join
+      const player_id = get_available_player_id();
+      game_state.socket_id_to_player_id.set(socket.id, player_id);
+      game_state.socket_id_to_player_info.get(socket.id).player_type ='Player';
+      socket.emit('playerIDAssigned', player_id);
+      socket.emit('startGameFromGameRoom');   
+    } else {
+      if (!game_state.socket_id_to_player_info.has(socket.id)){
+        game_state.socket_id_to_player_info.set(socket.id, {player_name:'', player_type:'Unassigned'});
+      }    
+      game_state.socket_id_to_player_info.get(socket.id).player_type ='Player';
+      io.sockets.emit('playerInfo', Array(...game_state.socket_id_to_player_info.values()));
+    }
   });  
   
   socket.on('startGame', function(){
