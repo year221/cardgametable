@@ -268,8 +268,9 @@ export default class Game extends Phaser.Scene
             //         self.previous_empty_click=true;
             //     }
             // } else {self.previous_empty_click=false};
-            while (self.to_be_deactivate_upon_pointer_up.length>0){
-                const card = self.to_be_deactivate_upon_pointer_up.pop();
+            while (self.to_be_deactivate_upon_pointer_up.length>0){                
+                let card = self.to_be_deactivate_upon_pointer_up.pop();
+                console.log(card);
                 card.clearTint();
                 self.activated_cards.remove(card);
 
