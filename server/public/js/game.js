@@ -91,10 +91,29 @@ export default class Game extends Phaser.Scene
         })
 
         const sort_button = this.add.text(0, 265, 'SORT', {color:'#0f0', backgroundColor: '#666' });
+        sort_button.setData('sort_key_array', [
+            'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8', 'C9', 'C10', 'CJ', 'CQ', 'CK', 'CA',
+            'D2', 'D3', 'D4', 'D5', 'D6', 'D7', 'D8', 'D9', 'D10', 'DJ', 'DQ', 'DK', 'DA',
+            'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8', 'S9', 'S10', 'SJ', 'SQ', 'SK', 'SA',
+            'H2', 'H3', 'H4', 'H5', 'H6', 'H7', 'H8', 'H9', 'H10', 'HJ', 'HQ', 'HK', 'HA',
+            'J1', 'J2'                        
+        ]);
         sort_button.setInteractive();
-        sort_button.on('pointerdown', function(){
+        sort_button.on('pointerdown', function(pointer){
             console.log('sorting');
-            self.sort_cards_in_zone('Hand_'+ Client.player_id);
+            //self.sort_cards_in_zone('Hand_'+ Client.player_id);
+            const zone_id = 'Hand_'+ Client.player_id;
+
+            const card_ids = self.cards_in_zones.get(zone_id);
+            const sorted_card_ids = self.sort_cards(card_ids, this.getData('sort_key_array'));
+
+            //this.cards_in_zones.set(zone_id, sorted_card_ids);
+            
+            self.move_cards(zone_id, zone_id, sorted_card_ids);
+            //this.update_cards_in_zone(zone_id);
+            self.last_event_index ++;
+            self.event_buffer.set(self.last_event_index, {'name':'cardMoved', 'parameters':[zone_id, zone_id, sorted_card_ids]});                                                
+            self.socket.emit('cardMoved',  self.last_event_index, zone_id, zone_id, sorted_card_ids,  null);  
         });
 
         this.input.on('dragstart', function (pointer, gameObject) {
@@ -736,27 +755,27 @@ export default class Game extends Phaser.Scene
         return zone; 
     }
 
-    sort_cards_in_zone(zone_id){
-        const card_ids = Array.from(this.cards_in_zones.get(zone_id));
-        console.log(card_ids);
-
-        let sorted_card_ids = card_ids.sort((a,b)=>{
-            
-            const a_value = a.split('_')[0];
-            const b_value = b.split('_')[0];
-            console.log(a_value, b_value);            
-            if (a_value <b_value){
-                return(-1);
-            } else {
-                return(1);
-            }            
-        });
-        this.cards_in_zones.set(zone_id, sorted_card_ids);
-        console.log(sorted_card_ids);
-        //this.move_cards(zone_id, zone_id, sorted_card_ids);
-        this.update_cards_in_zone(zone_id);
-        this.last_event_index ++;
-        this.event_buffer.set(self.last_event_index, {'name':'cardMoved', 'parameters':[zone_id, zone_id, sorted_card_ids]});                                                
-        this.socket.emit('cardMoved',  self.last_event_index, zone_id, zone_id, sorted_card_ids,  null);                                
+    sort_cards(card_ids, sort_key_array){
+        const sorted_card_ids = Array.from(card_ids);        
+        sorted_card_ids.sort((a,b)=>sort_key_array.indexOf(a.split('_')[0])-sort_key_array.indexOf(b.split('_')[0]));
+            // const a_value = a.split('_')[0];
+            // const b_value = b.split('_')[0];            
+            // if (a_value < b_value){
+            //     return(-1);
+            // } else {
+            //     return(1);
+            // }            
+        //});          
+        return sorted_card_ids  ;      
     }
+    // sort_cards_in_zone(zone_id){
+
+    //     this.cards_in_zones.set(zone_id, sorted_card_ids);
+    //     console.log(sorted_card_ids);
+    //     this.move_cards(zone_id, zone_id, sorted_card_ids);
+    //     //this.update_cards_in_zone(zone_id);
+    //     this.last_event_index ++;
+    //     this.event_buffer.set(self.last_event_index, {'name':'cardMoved', 'parameters':[zone_id, zone_id, sorted_card_ids]});                                                
+    //     this.socket.emit('cardMoved',  self.last_event_index, zone_id, zone_id, sorted_card_ids,  null);                                
+    // }
 }
