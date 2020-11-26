@@ -1,5 +1,6 @@
 var Client = {};
 Client.player_id = '-2';
+Client.player_infos = [];
 Client.socket = io.connect();
 
 Client.socket.on('playerIDAssigned', function (player_id) {

@@ -330,12 +330,12 @@ export default class Game extends Phaser.Scene
         //     self.player_id = player_id;            
         // });    
 
-        this.socket.on('resetLayout', function (layout_cfg, n_active_player) {
+        this.socket.on('resetLayout', function (layout_cfg, n_active_player, player_info) {
             if ((n_active_player!==undefined) && (n_active_player!==null)){
                 self.n_active_player = n_active_player;
             }
             self.clear_all_zones_and_buttons();
-            self.layout_zones_and_buttons(layout_cfg);
+            self.layout_zones_and_buttons(layout_cfg, player_info);
             //self.main_camera(layout_cfg);
             self.cameras.main.centerOn(layout_cfg.default_camera.x, layout_cfg.default_camera.y);                 
         });           
@@ -368,7 +368,7 @@ export default class Game extends Phaser.Scene
         console.log('add all listeners')
         this.socket.emit('requestLayout');
         this.socket.emit('requestGameSync');
-        console.log("creation done");
+        console.log("creation done");        
     }        
     
     // set zone and button layouts
@@ -420,7 +420,7 @@ export default class Game extends Phaser.Scene
                 zone_grp.local_display)                
         }        
     }
-    layout_zones_and_buttons(layout_cfg){
+    layout_zones_and_buttons(layout_cfg, player_info){
         var self=this;
         // layout zones
         for (let zone_grp of layout_cfg['zones']){
@@ -525,6 +525,20 @@ export default class Game extends Phaser.Scene
                     }
                 }
                 
+            }
+        }
+
+        // TODO: THis will be moved to other place. Manually add name
+        console.log(player_info)
+        const player_id_to_name = {}
+        for (let player of player_info){
+            player_id_to_name[player.player_id]=player.player_name;
+        }
+        console.log(player_id_to_name);
+        for (let [zone_id, zone] of this.all_zones){
+            console.log(zone_id)
+            if (zone_id.split('_')[0]=='Show'){
+                this.add.text(zone.x, zone.y-65, player_id_to_name[zone_id.split('_')[1]],{fontSize:'12px'});
             }
         }
         console.log("Player_ID for layout", Client.player_id);
