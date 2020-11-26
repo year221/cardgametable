@@ -1,5 +1,6 @@
 import Phaser from './phaser.js'
 import Game from './game.js'
+import GameRoom from './game_room.js'
 //import InputTextPlugin from './lib/rexinputtextplugin.min.js';
 
 export default new Phaser.Game({
@@ -10,6 +11,6 @@ export default new Phaser.Game({
     dom: {
         createContainer: true
     },	
-	scene: Game,
+	scene: [GameRoom, Game],
 })
 console.log("finished");

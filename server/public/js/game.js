@@ -3,12 +3,9 @@ import {CardZone, calculate_circular_zone_xy} from './zone.js';
 import {PokerCard, Card} from './cards.js';
 import {TextButton} from './textbutton.js';
 
-//import InputText from 'phaser3-rex-plugins/plugins/inputtext.js';  
-//import InputTextPlugin from './lib/rexinputtextplugin.min.js';
 export default class Game extends Phaser.Scene
 {
-    /** @type {Phaser.GameObjects.Zone} */
-    player_id;
+    //player_id='0';
     n_active_player;
     all_zones;
     all_cards;
@@ -35,7 +32,7 @@ export default class Game extends Phaser.Scene
 
 	constructor()
 	{
-        super('game')
+        super('Game')
         this.all_zones = new Map();
         this.all_cards = new Map();
         this.cards_in_zones = new Map();
@@ -48,6 +45,7 @@ export default class Game extends Phaser.Scene
         this.to_be_deactivate_upon_pointer_up=[];
         this.tint_color_for_activated_card = 0xa0a0ff;
         this.previous_empty_click=false;
+        this.socket = window.Client.socket;
         
     }
     preload()
@@ -59,10 +57,11 @@ export default class Game extends Phaser.Scene
     create()
     {
         var self = this;
-        this.socket = io();//'http://localhost:8081');     
-        this.socket.on('connect', function () {
-            console.log('Connected!');
-        });    
+        //this.socket = Client.socket;
+        //this.socket = io();//'http://localhost:8081');     
+        // this.socket.on('connect', function () {
+        //     console.log('Connected!');
+        // });    
         
         this.activated_cards = this.add.group();
         //this.to_be_deactivate_upon_pointer_up = this.add.group();
@@ -270,6 +269,8 @@ export default class Game extends Phaser.Scene
                     self.socket.emit('generateCard', self.last_event_index, button_param.target_zone, n_decks, true);                         
                 } else if (button_param.event_name ==='resetGame'){
                     self.socket.emit('resetGame');    
+                } else if (button_param.event_name ==='exitToGameRoom'){
+                    self.socket.emit('exitToGameRoom');                        
                 } else if (button_param.event_name ==='moveCards'){
                     for (let cfg of button_param.move_card_cfg){                                 
                         let card_ids = [];
@@ -317,10 +318,10 @@ export default class Game extends Phaser.Scene
         //     self.move_cards(src_zone_id, dst_zone_id, card_ids, dst_pos_in_zone);        
         // });
 
-        this.socket.on('playerIDAssigned', function (player_id) {
-            console.log('received player ID', player_id);
-            self.player_id = player_id;            
-        });    
+        // this.socket.on('playerIDAssigned', function (player_id) {
+        //     console.log('received player ID', player_id);
+        //     self.player_id = player_id;            
+        // });    
 
         this.socket.on('resetLayout', function (layout_cfg, n_active_player) {
             if ((n_active_player!==undefined) && (n_active_player!==null)){
@@ -340,8 +341,8 @@ export default class Game extends Phaser.Scene
             if (cards_status != null){
                 self.sync_card_status(cards_status);
             }
-            if (last_events.hasOwnProperty(self.player_id)){
-                self.apply_and_update_event_buffer(last_events[self.player_id]);
+            if (last_events.hasOwnProperty(Client.player_id)){
+                self.apply_and_update_event_buffer(last_events[Client.player_id]);
             }
             //this.player_id = player_id;            
         });       
@@ -349,6 +350,17 @@ export default class Game extends Phaser.Scene
             self.clear_all_cards();
             self.clear_all_events();
         });
+        this.socket.on('returnToGameRoom', function(){
+            console.log('returnToGameRoom');
+            self.clear_all_cards();
+            self.clear_all_events();
+            self.clear_all_zones_and_buttons();
+            self.scene.start('GameRoom');
+        });
+
+        console.log('add all listeners')
+        this.socket.emit('requestLayout');
+        this.socket.emit('requestGameSync');
         console.log("creation done");
     }        
     
@@ -375,10 +387,10 @@ export default class Game extends Phaser.Scene
                 zone_grp.n_row
                 );
             for (let player_id = 0; player_id<this.n_active_player; player_id++){
-               let xy_pos = zone_xy[((player_id-Math.floor(this.player_id))%this.n_active_player+this.n_active_player)%this.n_active_player];
+               let xy_pos = zone_xy[((player_id-Math.floor(Client.player_id))%this.n_active_player+this.n_active_player)%this.n_active_player];
                let zone_id = zone_grp.name + '_' + String(player_id);
                let local_display = zone_grp.local_display_other_player
-               if (String(player_id)==this.player_id){
+               if (String(player_id)==Client.player_id){
                 local_display = zone_grp.local_display_current_player
                }
                if (!this.all_zones.has(zone_id)){
@@ -409,6 +421,7 @@ export default class Game extends Phaser.Scene
         }
         // layout buttons
         for (let ui_element of layout_cfg['ui_elements']){
+            console.log('ui_element', ui_element.type)
             if (ui_element.type=='deck_generator'){
                 let deck_generator_grp = {}
                 this.ui_elements.set(ui_element.name, deck_generator_grp);
@@ -440,7 +453,8 @@ export default class Game extends Phaser.Scene
                 generate_button.params['target_zone']=ui_element.target_zone;
                 generate_button.params['num_card_textbox']=num_deck_selector;
                 generate_button.setInteractive();
-            } else if (ui_element.type=='reset_game'){
+            } else if (ui_element.type=='simple_event'){
+                
                 let element_grp = {elements:[]}
                 this.ui_elements.set(ui_element.name, element_grp);
                 const button = this.add.existing(new TextButton(
@@ -448,7 +462,8 @@ export default class Game extends Phaser.Scene
                     {color:'#0f0', backgroundColor: '#666',fontSize:'12px' }                    
                 ));      
                 element_grp['elements'].push(button);                
-                button.params['event_name']='resetGame';     
+                button.params['event_name']=ui_element.event_name;
+                //'resetGame';     
                 button.setInteractive();
             } else if (ui_element.type=='deal_cards') {
                 let element_grp = {elements:[]}
@@ -505,6 +520,7 @@ export default class Game extends Phaser.Scene
                 
             }
         }
+        console.log("Player_ID for layout", Client.player_id);
     }
 
     find_zone_group(group_name){  
