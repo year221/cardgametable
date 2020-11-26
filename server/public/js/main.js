@@ -8,6 +8,7 @@ export default new Phaser.Game({
 	type: Phaser.AUTO,
 	width: 1400,
 	height: 770,
+	disableContextMenu: true,
     dom: {
         createContainer: true
     },	

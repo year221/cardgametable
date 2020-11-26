@@ -75,16 +75,18 @@ export default class Game extends Phaser.Scene
         const flip_button = this.add.text(500,-50, 'FLIP', {color:'#0f0', backgroundColor: '#666' });
         flip_button.setInteractive();
         flip_button.on('pointerdown', function(){
-            const all_activated_cards = self.activated_cards.getChildren();   
-            const card_ids=all_activated_cards.map(card => card.card_id);
-            self.flip_cards(card_ids);            
-            for (let card of all_activated_cards){
-                card.clearTint();
-            }                  
-            self.activated_cards.clear();                
-            self.last_event_index ++;
-            self.event_buffer.set(self.last_event_index, {'name':'cardFlipped', 'parameters':[card_ids]});                                                
-            self.socket.emit('cardFlipped', self.last_event_index, card_ids);                       
+            self.flip_cards(self.activated_cards.getChildren());
+            self.activated_cards.clear();
+            // const (all_activated_cards) = self.activated_cards.getChildren();   
+            // const card_ids=all_activated_cards.map(card => card.card_id);
+            // self.flip_cards(card_ids);            
+            // for (let card of all_activated_cards){
+            //     card.clearTint();
+            // }                  
+            // self.activated_cards.clear();                
+            // self.last_event_index ++;
+            // self.event_buffer.set(self.last_event_index, {'name':'cardFlipped', 'parameters':[card_ids]});                                                
+            // self.socket.emit('cardFlipped', self.last_event_index, card_ids);                       
             // for (let card of all_activated_cards){
             //     card.flip_face();
             // }                  
@@ -234,23 +236,34 @@ export default class Game extends Phaser.Scene
         // Activate cards
         this.input.on('pointerdown', function(pointer, gameObjects){  
             //self.mouse_moved=false;
-            if (gameObjects.length>=1){
-                
-                if (gameObjects[0] instanceof Card){
-                    //self.primary_card = gameObjects[0].card_id;      
-                    const card = gameObjects[0];
-                    if (self.activated_cards.contains(card)){
-                    //if (self.activated_cards.includes(card.card_id)){
-                        self.to_be_deactivate_upon_pointer_up.push(card);
-                    } else {
-                        self.activated_cards.add(card);
-                        card.setTint(self.tint_color_for_activated_card);
-                    }
-                } else if (gameObjects[0] instanceof CardZone){
-                    self.on_multiple_selection = true;
+            if (pointer.rightButtonDown()){
+                if ((gameObjects.length>=1) && (gameObjects[0] instanceof Card)){
+                    self.activated_cards.add(gameObjects[0]);
+                    gameObjects[0].setTint(self.tint_color_for_activated_card);                    
                 }
+                self.flip_cards(self.activated_cards.getChildren());
+
+                //self.flip_cards(self.activated_cards.getChildren());
+                self.activated_cards.clear();
             } else {
-                self.on_multiple_selection = true;                
+                
+                if (gameObjects.length>=1){
+                    
+                    if (gameObjects[0] instanceof Card){
+                        const card = gameObjects[0];
+                        if (self.activated_cards.contains(card)){
+                        //if (self.activated_cards.includes(card.card_id)){
+                            self.to_be_deactivate_upon_pointer_up.push(card);
+                        } else {
+                            self.activated_cards.add(card);
+                            card.setTint(self.tint_color_for_activated_card);
+                        }
+                    } else if (gameObjects[0] instanceof CardZone){
+                        self.on_multiple_selection = true;
+                    }
+                } else {
+                    self.on_multiple_selection = true;                
+                }
             }           
         });
 
@@ -647,18 +660,26 @@ export default class Game extends Phaser.Scene
                 if (event.name==='cardMoved'){
                     this.move_cards(...event.parameters);
                 } else if (event.name==='cardFlipped'){
-                    this.flip_cards(...event.parameters);
+                    this.flip_cards_by_id(...event.parameters);
                 }
             }
         }
     }
 
     // flip face of cards
-    flip_cards(card_ids)
+    flip_cards_by_id(card_ids)
     {
         for (let card_id of card_ids){
             this.all_cards.get(card_id).flip_face();
         }           
+    }
+
+    flip_cards(card_array){
+        card_array.forEach(card=>{card.flip_face(); card.clearTint()});
+        const card_ids=card_array.map(card => card.card_id);            
+        this.last_event_index ++;
+        this.event_buffer.set(self.last_event_index, {'name':'cardFlipped', 'parameters':[card_ids]});                                                
+        this.socket.emit('cardFlipped', self.last_event_index, card_ids);              
     }
 
 
