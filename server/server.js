@@ -14,7 +14,7 @@ app.get('/', function (req, res) {
 
 let all_cards_prototype = [];
 for (let suit of ['S', 'H', 'C','D']) {
-  for (let num of ['2']){//,'4','5','6','7','8','9','10','J','Q','K','A'])
+  for (let num of ['2','3','4','5','6','7','8','9','10','J','Q','K','A']){
     all_cards_prototype.push(suit+num)
   }
 }
