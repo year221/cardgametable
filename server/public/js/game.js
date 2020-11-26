@@ -113,8 +113,8 @@ export default class Game extends Phaser.Scene
             console.log('index_pos_primary_card',index_pos_primary_card);
             const _sinR=Math.sin(rotation);
             const _cosR=Math.cos(rotation);            
-            self.dragging_cache_param.step_x = zone_of_object.card_step_x*_cosR + zone_of_object.card_step_y*_sinR;
-            self.dragging_cache_param.step_y = -zone_of_object.card_step_x*_sinR + zone_of_object.card_step_y*_cosR;            
+            self.dragging_cache_param.step_x = zone_of_object.card_step_x*_cosR;// + zone_of_object.card_step_y*_sinR;
+            self.dragging_cache_param.step_y = -zone_of_object.card_step_x*_sinR;// + zone_of_object.card_step_y*_cosR;            
             self.dragging_cache_param.offset_x = -index_pos_primary_card*self.dragging_cache_param.step_x;
             self.dragging_cache_param.offset_y = -index_pos_primary_card*self.dragging_cache_param.step_y;                
             self.activated_cards
