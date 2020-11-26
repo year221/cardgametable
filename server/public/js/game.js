@@ -90,6 +90,12 @@ export default class Game extends Phaser.Scene
             // }                  
         })
 
+        const sort_button = this.add.text(0, 265, 'SORT', {color:'#0f0', backgroundColor: '#666' });
+        sort_button.setInteractive();
+        sort_button.on('pointerdown', function(){
+            console.log('sorting');
+            self.sort_cards_in_zone('Hand_'+ Client.player_id);
+        });
 
         this.input.on('dragstart', function (pointer, gameObject) {
             // cache starting depth so that we could return it to its depth
@@ -107,8 +113,8 @@ export default class Game extends Phaser.Scene
             console.log('index_pos_primary_card',index_pos_primary_card);
             const _sinR=Math.sin(rotation);
             const _cosR=Math.cos(rotation);            
-            self.dragging_cache_param.step_x = zone_of_object.card_step_x*_cosR + zone_of_object.card_step_y*_sinR;
-            self.dragging_cache_param.step_y = -zone_of_object.card_step_x*_sinR + zone_of_object.card_step_y*_cosR;            
+            self.dragging_cache_param.step_x = zone_of_object.card_step_x*_cosR;// + zone_of_object.card_step_y*_sinR;
+            self.dragging_cache_param.step_y = -zone_of_object.card_step_x*_sinR;// + zone_of_object.card_step_y*_cosR;            
             self.dragging_cache_param.offset_x = -index_pos_primary_card*self.dragging_cache_param.step_x;
             self.dragging_cache_param.offset_y = -index_pos_primary_card*self.dragging_cache_param.step_y;                
             self.activated_cards
@@ -166,6 +172,7 @@ export default class Game extends Phaser.Scene
                         src_zone_id  = card.zone_id;
                     }
                 }
+                // Move the remaining cards
                 if (card_ids.length>0){
                     self.move_cards(src_zone_id, dst_zone_id, card_ids);
                     self.last_event_index ++;
@@ -713,5 +720,29 @@ export default class Game extends Phaser.Scene
         this.add.existing(zone);  
         this.cards_in_zones.set(zone_id, []);
         return zone; 
+    }
+
+    sort_cards_in_zone(zone_id){
+        const card_ids = Array.from(this.cards_in_zones.get(zone_id));
+        console.log(card_ids);
+
+        let sorted_card_ids = card_ids.sort((a,b)=>{
+            
+            const a_value = a.split('_')[0];
+            const b_value = b.split('_')[0];
+            console.log(a_value, b_value);            
+            if (a_value <b_value){
+                return(-1);
+            } else {
+                return(1);
+            }            
+        });
+        this.cards_in_zones.set(zone_id, sorted_card_ids);
+        console.log(sorted_card_ids);
+        //this.move_cards(zone_id, zone_id, sorted_card_ids);
+        this.update_cards_in_zone(zone_id);
+        this.last_event_index ++;
+        this.event_buffer.set(self.last_event_index, {'name':'cardMoved', 'parameters':[zone_id, zone_id, sorted_card_ids]});                                                
+        this.socket.emit('cardMoved',  self.last_event_index, zone_id, zone_id, sorted_card_ids,  null);                                
     }
 }

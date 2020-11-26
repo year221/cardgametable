@@ -14,7 +14,7 @@ app.get('/', function (req, res) {
 
 let all_cards_prototype = [];
 for (let suit of ['S', 'H', 'C','D']) {
-  for (let num of ['2']){//,'4','5','6','7','8','9','10','J','Q','K','A'])
+  for (let num of ['2','3','4','5','6','7','8','9','10','J','Q','K','A']){
     all_cards_prototype.push(suit+num)
   }
 }
@@ -61,12 +61,12 @@ layout_cfg = {
     {
       type: 'one_zone_per_player',
       name: 'Show',
-      starting_x: 0,
+      starting_x: 35,
       starting_y: 200,
       step_x: 308,
       step_y: -400,
       n_row:2,
-      width : 280,
+      width : 210,
       height : 118.5,
       fillColor : 0x333333,
       boundary_width:40,
@@ -74,6 +74,25 @@ layout_cfg = {
       card_step_x:15,
       card_step_y:30,
       card_scale:0.5,
+      local_display_other_player:0,
+      local_display_current_player:0,
+    },
+    {
+      type: 'one_zone_per_player',
+      name: 'Trash',
+      starting_x: -115,
+      starting_y: 200,
+      step_x: 308,
+      step_y: -400,
+      n_row:2,
+      width : 65,
+      height : 71,
+      fillColor : 0x333333,
+      boundary_width:22.5,
+      boundary_height:28.5,
+      card_step_x:0,
+      card_step_y:15,
+      card_scale:0.25,
       local_display_other_player:0,
       local_display_current_player:0,
     },
