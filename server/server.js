@@ -273,12 +273,12 @@ function reset_state_to_waiting(){
 io.on('connection', function (socket) {
   console.log('a user connected', socket.id);  
   
-  game_state.socket_id_to_player_info.set(socket.id, {player_name:'', player_type:'Unassigned'});
+  game_state.socket_id_to_player_info.set(socket.id, {player_name:'', player_type:'Unassigned', player_id:''});
   
   // Game Room functionality
   socket.on('updatePlayerName', function(player_name){
     if (!game_state.socket_id_to_player_info.has(socket.id)){
-      game_state.socket_id_to_player_info.set(socket.id, {player_name:'', player_type:'Unassigned'});
+      game_state.socket_id_to_player_info.set(socket.id, {player_name:'', player_type:'Unassigned', player_id:''});
     }
     game_state.socket_id_to_player_info.get(socket.id).player_name =player_name;
     io.sockets.emit('playerInfo', Array(...game_state.socket_id_to_player_info.values()));
@@ -286,7 +286,7 @@ io.on('connection', function (socket) {
   
   socket.on('observeGame', function(){
     if (!game_state.socket_id_to_player_info.has(socket.id)){
-      game_state.socket_id_to_player_info.set(socket.id, {player_name:'', player_type:'Unassigned'});
+      game_state.socket_id_to_player_info.set(socket.id, {player_name:'', player_type:'Unassigned', player_id:''});
     }    
     game_state.socket_id_to_player_info.get(socket.id).player_type ='Observer';
     io.sockets.emit('playerInfo', Array(...game_state.socket_id_to_player_info.values()));
@@ -300,6 +300,7 @@ io.on('connection', function (socket) {
       const player_id = get_available_player_id();
       game_state.socket_id_to_player_id.set(socket.id, player_id);
       game_state.socket_id_to_player_info.get(socket.id).player_type ='Player';
+      game_state.socket_id_to_player_info.get(socket.id).player_id =player_id;
       socket.emit('playerIDAssigned', player_id);
       socket.emit('startGameFromGameRoom');   
     } else {
@@ -319,8 +320,11 @@ io.on('connection', function (socket) {
       if (player_info.player_type == 'Player'){
         const player_id = get_available_player_id()
         game_state.socket_id_to_player_id.set(socket_id, player_id);
+        game_state.socket_id_to_player_info.get(socket_id).player_id = player_id;
+
       } else if (player_info.player_type == 'Observer'){
         game_state.socket_id_to_player_id.set(socket_id, '-1');
+        game_state.socket_id_to_player_info.get(socket_id).player_id ='-1';
       }
     }
     for (let [socket_id, player_id] of game_state.socket_id_to_player_id){
@@ -384,7 +388,7 @@ io.on('connection', function (socket) {
     io.sockets.emit('returnToGameRoom');       
   });
   socket.on('requestLayout', function(){
-    socket.emit('resetLayout', layout_cfg, game_state.n_active_player);
+    socket.emit('resetLayout', layout_cfg, game_state.n_active_player, Array(...game_state.socket_id_to_player_info.values()));
   });
   socket.on('requestGameSync', function(){    
     socket.emit('gameStateSync', game_state.last_events, game_state.cards_in_zones,  game_state.card_status);    
