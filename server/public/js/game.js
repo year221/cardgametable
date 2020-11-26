@@ -550,13 +550,12 @@ export default class Game extends Phaser.Scene
 
         // TODO: THis will be moved to other place. Manually add name
         console.log(player_info)
-        const player_id_to_name = {}
+        let player_id_to_name = {}
         for (let player of player_info){
             player_id_to_name[player.player_id]=player.player_name;
         }
         console.log(player_id_to_name);
-        for (let [zone_id, zone] of this.all_zones){
-            console.log(zone_id)
+        for (let [zone_id, zone] of this.all_zones){            
             if (zone_id.split('_')[0]=='Show'){
                 this.add.text(zone.x, zone.y-65, player_id_to_name[zone_id.split('_')[1]],{fontSize:'12px'});
             }

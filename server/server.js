@@ -320,11 +320,11 @@ io.on('connection', function (socket) {
       if (player_info.player_type == 'Player'){
         const player_id = get_available_player_id()
         game_state.socket_id_to_player_id.set(socket_id, player_id);
-        game_state.socket_id_to_player_info.get(socket.id).player_id =player_id;
+        game_state.socket_id_to_player_info.get(socket_id).player_id = player_id;
 
       } else if (player_info.player_type == 'Observer'){
         game_state.socket_id_to_player_id.set(socket_id, '-1');
-        game_state.socket_id_to_player_info.get(socket.id).player_id ='-1';
+        game_state.socket_id_to_player_info.get(socket_id).player_id ='-1';
       }
     }
     for (let [socket_id, player_id] of game_state.socket_id_to_player_id){
