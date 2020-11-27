@@ -79,6 +79,17 @@ export default class Game extends Phaser.Scene
             self.activated_cards.clear();               
         })
 
+        const flip_all_button = this.add.text(100,265, 'FLIP ALL', {color:'#0f0', backgroundColor: '#666', fontSize:'12px'});
+        flip_all_button.setInteractive();
+        flip_all_button.on('pointerdown', function(){
+            const zone_id = 'Hand_'+ Client.player_id;
+            const card_ids = self.cards_in_zones.get(zone_id);
+            self.flip_cards_by_id(card_ids);                        
+            self.last_event_index ++;
+            self.event_buffer.set(self.last_event_index, {'name':'cardFlipped', 'parameters':[card_ids]});                                                
+            self.socket.emit('cardFlipped', self.last_event_index, card_ids);        
+        })        
+
         const sort_button = this.add.text(0, 265, 'SORT', {color:'#0f0', backgroundColor: '#666', fontSize:'12px' });
         sort_button.setData('sort_key_array', [
             'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8', 'C9', 'C10', 'CJ', 'CQ', 'CK', 'CA',
@@ -226,10 +237,14 @@ export default class Game extends Phaser.Scene
             if (pointer.rightButtonDown()){
                 if ((gameObjects.length>=1) && (gameObjects[0] instanceof Card)){
                     self.activated_cards.add(gameObjects[0]);
-                    gameObjects[0].setTint(self.tint_color_for_activated_card);                    
+                    gameObjects[0].setTint(self.tint_color_for_activated_card);                                    
                 }
+                const all_activated_cards = self.activated_cards.getChildren();
                 self.flip_cards(self.activated_cards.getChildren());
-
+                const card_ids=all_activated_cards.map(card => card.card_id);            
+                self.last_event_index ++;
+                self.event_buffer.set(self.last_event_index, {'name':'cardFlipped', 'parameters':[card_ids]});                                                
+                self.socket.emit('cardFlipped', self.last_event_index, card_ids); 
                 //self.flip_cards(self.activated_cards.getChildren());
                 self.activated_cards.clear();
             } else {
@@ -671,11 +686,7 @@ export default class Game extends Phaser.Scene
     }
 
     flip_cards(card_array){
-        card_array.forEach(card=>{card.flip_face(); card.clearTint()});
-        const card_ids=card_array.map(card => card.card_id);            
-        this.last_event_index ++;
-        this.event_buffer.set(self.last_event_index, {'name':'cardFlipped', 'parameters':[card_ids]});                                                
-        this.socket.emit('cardFlipped', self.last_event_index, card_ids);              
+        card_array.forEach(card=>{card.flip_face(); card.clearTint()});             
     }
 
 
