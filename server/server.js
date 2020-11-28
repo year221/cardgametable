@@ -300,6 +300,12 @@ io.on('connection', function (socket) {
     check_player_info(socket.id);    
     game_state.socket_id_to_player_info.get(socket.id).player_type ='Observer';
     io.sockets.emit('playerInfo', Array(...game_state.socket_id_to_player_info.values()));
+    if (game_state.status=='InGame'){
+        game_state.socket_id_to_player_id.set(socket.id, '-1');
+        game_state.socket_id_to_player_info.get(socket.id).player_id = '-1';
+        socket.emit('playerIDAssigned', '-1');
+        socket.emit('startGameFromGameRoom');         
+    }
   });  
 
   socket.on('joinGame', function(){
