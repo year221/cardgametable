@@ -611,6 +611,15 @@ export default class Game extends Phaser.Scene
                 const textscore = this.add.text(zone.x+120, zone.y+20, '0',{fontSize:'12px'});                                
                 this.zone_linked_update.set(zone_id, 'scorecard_'+zone_player_id);
                 element_grp.elements.push(textscore);                             
+            } else if (zone_id.split('_')[0]=='Hand'){
+                let zone_player_id = zone_id.split('_')[1];
+                if (zone_player_id == String(Client.player_id)){
+                    let element_grp = {elements:[]}
+                    this.ui_elements.set('countcard_'+zone_player_id, element_grp);
+                    const textscore = this.add.text(zone.x-400, zone.y-110, '0',{fontSize:'12px'});                                
+                    this.zone_linked_update.set(zone_id, 'countcard_'+zone_player_id);
+                    element_grp.elements.push(textscore);                    
+                }                    
             }
         }          
         
@@ -800,6 +809,9 @@ export default class Game extends Phaser.Scene
             if (ui_name.split('_')[0]=='scorecard'){
                 const score_text = this.ui_elements.get(ui_name).elements[0];
                 score_text.text=String(this.get_scores_from_card_ids(cards_in_zone));
+            } else if (ui_name.split('_')[0]=='countcard'){
+                const score_text = this.ui_elements.get(ui_name).elements[0];
+                score_text.text=String(cards_in_zone.length);
             }
         }
     }
