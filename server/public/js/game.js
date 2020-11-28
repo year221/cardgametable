@@ -10,6 +10,7 @@ export default class Game extends Phaser.Scene
     all_zones;
     all_cards;
     ui_elements;
+    zone_linked_update;
     cards_in_zones;
     event_buffer;
     last_event_index;
@@ -29,7 +30,11 @@ export default class Game extends Phaser.Scene
         offset_y:0,
     }
     
-
+    score_map = {
+        'C5': 5, 'D5': 5, 'S5':5, 'H5':5,
+        'C10': 10, 'D10': 10, 'S10':10, 'H10':10,
+        'CK': 10, 'DK': 10, 'SK':10, 'HK':10,
+    }
 	constructor()
 	{
         super('Game')
@@ -46,6 +51,9 @@ export default class Game extends Phaser.Scene
         this.tint_color_for_activated_card = 0xa0a0ff;
         this.previous_empty_click=false;
         this.socket = window.Client.socket;
+        this.zone_linked_update = new Map();
+
+        
         
     }
     preload()
@@ -408,7 +416,8 @@ export default class Game extends Phaser.Scene
             for (let element of element_grp['elements']){
                 element.destroy();
             }            
-        }                
+        }          
+        this.zone_linked_update.clear();      
     }
     
     add_zone_grp(zone_grp){
@@ -592,6 +601,19 @@ export default class Game extends Phaser.Scene
                 button.setInteractive();                                
             }
         }        
+
+        // text update
+        for (let [zone_id, zone] of this.all_zones){            
+            if (zone_id.split('_')[0]=='Score'){
+                let zone_player_id = zone_id.split('_')[1];
+                let element_grp = {elements:[]}
+                this.ui_elements.set('scorecard_'+zone_player_id, element_grp);
+                const textscore = this.add.text(zone.x+120, zone.y+20, '0',{fontSize:'12px'});                                
+                this.zone_linked_update.set(zone_id, 'scorecard_'+zone_player_id);
+                element_grp.elements.push(textscore);                             
+            }
+        }          
+        
     }
 
     find_zone_group(group_name){  
@@ -677,6 +699,16 @@ export default class Game extends Phaser.Scene
         }
     }
 
+    get_scores_from_card_ids(card_ids){
+        let score = 0;
+        for (let card_id of card_ids){
+            const card_score = this.score_map[card_id.split('_')[0]];
+            if (card_score!==undefined){
+                score += card_score;
+            }
+        }
+        return score;
+    }
     // flip face of cards
     flip_cards_by_id(card_ids)
     {
@@ -761,7 +793,15 @@ export default class Game extends Phaser.Scene
             card.zone_id=zone_id;
             card.angle = zone.angle;            
             card.setScale(zone.card_scale)
-        }         
+        }
+        // update scores
+        if (this.zone_linked_update.has(zone_id)){
+            const ui_name = this.zone_linked_update.get(zone_id);
+            if (ui_name.split('_')[0]=='scorecard'){
+                const score_text = this.ui_elements.get(ui_name).elements[0];
+                score_text.text=String(this.get_scores_from_card_ids(cards_in_zone));
+            }
+        }
     }
 
     generate_new_card(card_id, face_up){
