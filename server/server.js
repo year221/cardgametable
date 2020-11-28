@@ -515,6 +515,11 @@ io.on('connection', function (socket) {
     //console.log(game_state.cards_in_zones);
     io.sockets.emit('gameStateSync', game_state.last_events, game_state.cards_in_zones, null);
   });  
+
+  socket.on('uiElementTextSync', function(element_name, text){
+    console.log('uiElementTextSync', element_name, text); 
+    socket.broadcast.emit('uiElementTextSync', element_name, text); 
+  });
   
   socket.on('requestGameStatus', function(){
     socket.emit('returnGameStatus', game_state.status, Array(...game_state.socket_id_to_player_info.values()));    
