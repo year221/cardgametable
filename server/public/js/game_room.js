@@ -19,6 +19,7 @@ export default class GameRoom extends Phaser.Scene
     }   
     create()
     {
+        console.log('run game room creation');
         var self = this;
         const x = -100;
         const y = 0;
@@ -37,7 +38,8 @@ export default class GameRoom extends Phaser.Scene
         this.name_input.on('textchange', function(inputText){ 
             self.socket.emit('updatePlayerName', self.name_input.text);  
         });
-        this.game_info = this.add.text(x, y+60, 'Game Info', {fontSize: '12px'});
+        this.game_info = this.add.text(x, y+40, 'Game Status:', {fontSize: '12px'});
+        this.player_info = this.add.text(x, y+60, 'Player Information', {fontSize: '12px'});
 
         this.join_game = this.add.text(x,y+20, 'Join Game', {fontSize:'12px', backgroundColor: '#666'});               
         this.join_game.on('pointerdown', function(){                                             
@@ -86,7 +88,14 @@ export default class GameRoom extends Phaser.Scene
         this.socket.on('startGameFromGameRoom', function(){
             console.log('startGame');
             console.log('our_player_id',Client.player_id);
+            self.socket.removeAllListeners();
             self.scene.start('Game');
+        });
+
+        // if other players exit the game and return to game room update this one
+        this.socket.on('returnToGameRoom', function(){            
+            self.socket.emit('requestGameStatus');
+            self.socket.emit('updatePlayerName', self.name_input.text);  
         });
 
         this.socket.emit('requestGameStatus');
@@ -102,6 +111,6 @@ export default class GameRoom extends Phaser.Scene
             content.push(player.player_name+ '  '+ player.player_type);
             //}
         }           
-        this.game_info.setText(content);
+        this.player_info.setText(content);
     }
 }

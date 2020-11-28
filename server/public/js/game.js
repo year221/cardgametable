@@ -64,6 +64,7 @@ export default class Game extends Phaser.Scene
     }
     create()
     {
+        console.log("run scene creation for game")
         var self = this;
         //this.socket = Client.socket;
         //this.socket = io();//'http://localhost:8081');     
@@ -260,6 +261,7 @@ export default class Game extends Phaser.Scene
 
         // Activate cards
         this.input.on('pointerdown', function(pointer, gameObjects){  
+            console.log('pointerdown', pointer, gameObjects);
             //self.mouse_moved=false;
             if (pointer.rightButtonDown()){
                 if ((gameObjects.length>=1) && (gameObjects[0] instanceof Card)){
@@ -411,6 +413,7 @@ export default class Game extends Phaser.Scene
             self.clear_all_cards();
             self.clear_all_events();
             self.clear_all_zones_and_buttons();
+            self.socket.removeAllListeners();
             self.scene.start('GameRoom');
         });
         
