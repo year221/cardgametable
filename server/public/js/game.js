@@ -112,8 +112,7 @@ export default class Game extends Phaser.Scene
             'J1', 'J2'                        
         ]);
         sort_button.setInteractive();
-        sort_button.on('pointerdown', function(pointer){
-            console.log('sorting');
+        sort_button.on('pointerdown', function(pointer){            
             //self.sort_cards_in_zone('Hand_'+ Client.player_id);
             const zone_id = 'Hand_'+ Client.player_id;
 
@@ -141,8 +140,7 @@ export default class Game extends Phaser.Scene
             }  
             //self.children.bringToTop(all_activated_cards[0]);              
             const index_pos_primary_card = all_activated_cards.indexOf(gameObject);
-
-            console.log('index_pos_primary_card',index_pos_primary_card);
+            
             const _sinR=Math.sin(rotation);
             const _cosR=Math.cos(rotation);            
             self.dragging_cache_param.step_x = zone_of_object.card_step_x*_cosR;// + zone_of_object.card_step_y*_sinR;
@@ -178,8 +176,7 @@ export default class Game extends Phaser.Scene
 
         this.input.on('drop', function (pointer, gameObject, dropZone) {
             dropZone.highlight(false); 
-            //gameObject.clearTint();
-            console.log('drop');
+            //gameObject.clearTint();            
             if (gameObject instanceof Card && dropZone instanceof CardZone){
                 //const src_zone_id = gameObject.zone_id;
                 const dst_zone_id = dropZone.zone_id;
@@ -209,13 +206,10 @@ export default class Game extends Phaser.Scene
                 }                
                 let src_zone_id = all_activated_cards[0].zone_id;
                 let card_ids = [];
-                for (let card of all_activated_cards){
-                    console.log('-',card.card_id);
+                for (let card of all_activated_cards){                    
                     if (card.zone_id == src_zone_id){                        
-                        card_ids.push(card.card_id);
-                        console.log('zones', card.zone_id, src_zone_id, card_ids);
-                    } else {
-                        console.log('Moving', card_ids);
+                        card_ids.push(card.card_id);                        
+                    } else {                        
                         self.move_cards(src_zone_id, dst_zone_id, card_ids);
                         self.last_event_index ++;
                         self.event_buffer.set(self.last_event_index, {'name':'cardMoved', 'parameters':[src_zone_id, dst_zone_id, card_ids]});                                                
@@ -317,8 +311,7 @@ export default class Game extends Phaser.Scene
             //     }
             // } else {self.previous_empty_click=false};
             while (self.to_be_deactivate_upon_pointer_up.length>0){                
-                let card = self.to_be_deactivate_upon_pointer_up.pop();
-                console.log(card);
+                let card = self.to_be_deactivate_upon_pointer_up.pop();                
                 card.clearTint();
                 self.activated_cards.remove(card);
 
@@ -355,11 +348,9 @@ export default class Game extends Phaser.Scene
                             card_ids = self.cards_in_zones.get(cfg.src_zone_id).slice(-Math.floor(cfg.num_of_card));                            
                         } else if (cfg.type=='ui'){
                             const num_of_cards = Math.round(cfg.textbox.text);              
-                            console.log(num_of_cards)             
                             //card_ids = Array.from(self.cards_in_zones.get(cfg.src_zone_id).slice(-num_of_cards));                            
                             card_ids = self.cards_in_zones.get(cfg.src_zone_id).slice(-num_of_cards);                            
-                        }
-                        console.log('all_cards', card_ids); 
+                        }                        
                         self.move_cards(cfg.src_zone_id, cfg.dst_zone_id, card_ids);
                         self.last_event_index ++;
                         self.event_buffer.set(self.last_event_index, {'name':'cardMoved', 'parameters':[cfg.src_zone_id, cfg.dst_zone_id, card_ids]});                                                
@@ -400,8 +391,7 @@ export default class Game extends Phaser.Scene
             self.cameras.main.centerOn(layout_cfg.default_camera.x, layout_cfg.default_camera.y);                 
         });           
         
-        this.socket.on('gameStateSync', function (last_events, cards_in_zones, cards_status) {
-            console.log('received gamesStateSync', last_events, cards_in_zones, cards_status);
+        this.socket.on('gameStateSync', function (last_events, cards_in_zones, cards_status) {            
             if (cards_in_zones != null){
                 self.sync_card_in_zones(cards_in_zones);
             }
@@ -418,14 +408,12 @@ export default class Game extends Phaser.Scene
             self.clear_all_events();
         });
         this.socket.on('returnToGameRoom', function(){
-            console.log('returnToGameRoom');
             self.clear_all_cards();
             self.clear_all_events();
             self.clear_all_zones_and_buttons();
             self.scene.start('GameRoom');
         });
-
-        console.log('add all listeners')
+        
         this.socket.emit('requestLayout');
         this.socket.emit('requestGameSync');
         console.log("creation done");        
@@ -488,8 +476,7 @@ export default class Game extends Phaser.Scene
             this.add_zone_grp(zone_grp);
         }
         // layout buttons
-        for (let ui_element of layout_cfg['ui_elements']){
-            console.log('ui_element', ui_element.type)
+        for (let ui_element of layout_cfg['ui_elements']){            
             if (ui_element.type=='deck_generator'){
                 let deck_generator_grp = {}
                 this.ui_elements.set(ui_element.name, deck_generator_grp);
@@ -589,23 +576,18 @@ export default class Game extends Phaser.Scene
             }
         }
 
-        // TODO: THis will be moved to other place. Manually add name
-        console.log(player_info)
+        // TODO: THis will be moved to other place. Manually add name        
         let player_id_to_name = {}
         for (let player of player_info){
             player_id_to_name[player.player_id]=player.player_name;
-        }
-        console.log(player_id_to_name);
+        }        
         for (let [zone_id, zone] of this.all_zones){            
             if (zone_id.split('_')[0]=='Trash'){
                 this.add.text(zone.x-30, zone.y+40, player_id_to_name[zone_id.split('_')[1]],{fontSize:'12px'});
             }
         }
 
-        // Manually Add Clear button. TODO This will be moved to other place. 
-        console.log("Player_ID for layout", Client.player_id);
-
-        console.log(player_id_to_name);
+        // Manually Add Clear button. TODO This will be moved to other place.                 
         for (let [zone_id, zone] of this.all_zones){            
             if (zone_id.split('_')[0]=='Trash'){
                 let zone_player_id = zone_id.split('_')[1];
@@ -716,8 +698,8 @@ export default class Game extends Phaser.Scene
         const cards_ids_to_be_destroyed = removed_card_ids_of_changed_zones.filter(card_id => !added_card_ids_of_changed_zones.includes(card_id));
 
         for (const card_id of cards_ids_to_be_destroyed){
-            let card = self.all_cards.get(card_id);
-            self.all_cards.delete(card_id);
+            let card = this.all_cards.get(card_id);
+            this.all_cards.delete(card_id);
             card.destroy();// remove from pahser            
         }                  
     }
@@ -732,14 +714,11 @@ export default class Game extends Phaser.Scene
     apply_and_update_event_buffer(last_event_index_applied)
     {
         // update event buffer
-        // remove event in the buffer that have been recognized by the server as applied
-        console.log('last index', last_event_index_applied);
-
+        // remove event in the buffer that have been recognized by the server as applied        
         const min_event_index = Math.min(...this.event_buffer.keys());        
         for (let i=min_event_index; i<=last_event_index_applied;i++){
             this.event_buffer.delete(i);
-        }
-        console.log('after change', this.event_buffer)        
+        }        
         for (let i=last_event_index_applied+1; i<=this.last_event_index;i++){            
             const event = this.event_buffer.get(i);
             if (!(event === undefined)){            
@@ -820,10 +799,8 @@ export default class Game extends Phaser.Scene
     }
     move_cards(src_zone_id, dst_zone_id, card_ids, insertion_location)
     {
-        // event to move card from one zone to another  
-        console.log('moving_card_input: ', src_zone_id, dst_zone_id, card_ids, insertion_location)      
-        const card_id_removed = this.remove_cards(src_zone_id, card_ids, true); 
-        console.log('card_id_remove: ', card_id_removed)      
+        // event to move card from one zone to another          
+        const card_id_removed = this.remove_cards(src_zone_id, card_ids, true);         
         this.add_cards(dst_zone_id, card_id_removed, insertion_location);          
     }
 
