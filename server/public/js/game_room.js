@@ -68,14 +68,14 @@ export default class GameRoom extends Phaser.Scene
                 self.start_game.setInteractive();
                 self.join_game.visible=true;
                 self.join_game.setInteractive();
-                //self.observe_game.visible=true;
-                //self.observe_game.setInteractive();
+                self.observe_game.visible=true;
+                self.observe_game.setInteractive();
             } else if (game_status == 'InGame'){
                 self.start_game.visible=false;
                 self.join_game.visible=true;
                 self.join_game.setInteractive();
-                //self.observe_game.visible=true;
-                //self.observe_game.setInteractive();
+                self.observe_game.visible=true;
+                self.observe_game.setInteractive();
             }            
             self.display_game_info(game_status);
             self.display_player_info(player_info);
@@ -89,18 +89,38 @@ export default class GameRoom extends Phaser.Scene
         this.socket.on('startGameFromGameRoom', function(){
             console.log('startGame');
             console.log('our_player_id',Client.player_id);
+
             self.socket.removeAllListeners();
+            //self.input.removeAllListeners();
             self.scene.start('Game');
         });
 
         // if other players exit the game and return to game room update this one
-        this.socket.on('returnToGameRoom', function(){            
-            self.socket.emit('requestGameStatus');
-            self.socket.emit('updatePlayerName', self.name_input.text);  
-        });
+        // this.socket.on('returnToGameRoom', function(){                        
+        //     self.socket.removeAllListeners();
+        //     self.scene.restart('GameRoom');
+        //     //self.socket.emit('requestGameStatus');
+        //     //self.socket.emit('getMyPlayerName');
+        //     //self.socket.emit('updatePlayerName', self.name_input.text);  
+        // });
 
+        this.socket.on('returnPlayerName', function(player_name){
+            console.log('returnPlayerName', player_name);
+            if (player_name ===null){
+                self.socket.emit('updatePlayerName', self.name_input.text);  
+            } else {
+                self.name_input.setText(player_name);
+            }
+        });
+            
         this.socket.emit('requestGameStatus');
-        this.socket.emit('updatePlayerName', this.name_input.text);  
+        this.socket.emit('getMyPlayerName');
+
+        this.socket.on('playerIDAssigned', function (player_id) {
+            console.log('received player ID', player_id);
+            Client.player_id = player_id;            
+        });            
+        //this.socket.emit('updatePlayerName', this.name_input.text);  
     }  
     
     display_game_info(game_status){

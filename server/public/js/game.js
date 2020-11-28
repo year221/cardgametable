@@ -93,41 +93,43 @@ export default class Game extends Phaser.Scene
             self.activated_cards.clear();               
         })
 
-        const flip_all_button = this.add.text(100,265, 'FLIP ALL', {color:'#0f0', backgroundColor: '#666', fontSize:'12px'});
-        flip_all_button.setInteractive();
-        flip_all_button.on('pointerdown', function(){
-            const zone_id = 'Hand_'+ Client.player_id;
-            const card_ids = self.cards_in_zones.get(zone_id);
-            self.flip_cards_by_id(card_ids);                        
-            self.last_event_index ++;
-            self.event_buffer.set(self.last_event_index, {'name':'cardFlipped', 'parameters':[card_ids]});                                                
-            self.socket.emit('cardFlipped', self.last_event_index, card_ids);        
-        })        
+        if (Math.floor(Client.player_id)>=0){
+            const flip_all_button = this.add.text(100,265, 'FLIP ALL', {color:'#0f0', backgroundColor: '#666', fontSize:'12px'});
+            flip_all_button.setInteractive();
+            flip_all_button.on('pointerdown', function(){
+                const zone_id = 'Hand_'+ Client.player_id;
+                const card_ids = self.cards_in_zones.get(zone_id);
+                self.flip_cards_by_id(card_ids);                        
+                self.last_event_index ++;
+                self.event_buffer.set(self.last_event_index, {'name':'cardFlipped', 'parameters':[card_ids]});                                                
+                self.socket.emit('cardFlipped', self.last_event_index, card_ids);        
+            })        
 
-        const sort_button = this.add.text(0, 265, 'SORT', {color:'#0f0', backgroundColor: '#666', fontSize:'12px' });
-        sort_button.setData('sort_key_array', [
-            'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8', 'C9', 'C10', 'CJ', 'CQ', 'CK', 'CA',
-            'D2', 'D3', 'D4', 'D5', 'D6', 'D7', 'D8', 'D9', 'D10', 'DJ', 'DQ', 'DK', 'DA',
-            'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8', 'S9', 'S10', 'SJ', 'SQ', 'SK', 'SA',
-            'H2', 'H3', 'H4', 'H5', 'H6', 'H7', 'H8', 'H9', 'H10', 'HJ', 'HQ', 'HK', 'HA',
-            'J1', 'J2'                        
-        ]);
-        sort_button.setInteractive();
-        sort_button.on('pointerdown', function(pointer){            
-            //self.sort_cards_in_zone('Hand_'+ Client.player_id);
-            const zone_id = 'Hand_'+ Client.player_id;
+            const sort_button = this.add.text(0, 265, 'SORT', {color:'#0f0', backgroundColor: '#666', fontSize:'12px' });
+            sort_button.setData('sort_key_array', [
+                'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8', 'C9', 'C10', 'CJ', 'CQ', 'CK', 'CA',
+                'D2', 'D3', 'D4', 'D5', 'D6', 'D7', 'D8', 'D9', 'D10', 'DJ', 'DQ', 'DK', 'DA',
+                'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8', 'S9', 'S10', 'SJ', 'SQ', 'SK', 'SA',
+                'H2', 'H3', 'H4', 'H5', 'H6', 'H7', 'H8', 'H9', 'H10', 'HJ', 'HQ', 'HK', 'HA',
+                'J1', 'J2'                        
+            ]);
+            sort_button.setInteractive();
+            sort_button.on('pointerdown', function(pointer){            
+                //self.sort_cards_in_zone('Hand_'+ Client.player_id);
+                const zone_id = 'Hand_'+ Client.player_id;
 
-            const card_ids = self.cards_in_zones.get(zone_id);
-            const sorted_card_ids = self.sort_cards(card_ids, this.getData('sort_key_array'));
+                const card_ids = self.cards_in_zones.get(zone_id);
+                const sorted_card_ids = self.sort_cards(card_ids, this.getData('sort_key_array'));
 
-            //this.cards_in_zones.set(zone_id, sorted_card_ids);
-            
-            self.move_cards(zone_id, zone_id, sorted_card_ids);
-            //this.update_cards_in_zone(zone_id);
-            self.last_event_index ++;
-            self.event_buffer.set(self.last_event_index, {'name':'cardMoved', 'parameters':[zone_id, zone_id, sorted_card_ids]});                                                
-            self.socket.emit('cardMoved',  self.last_event_index, zone_id, zone_id, sorted_card_ids,  null);  
-        });
+                //this.cards_in_zones.set(zone_id, sorted_card_ids);
+                
+                self.move_cards(zone_id, zone_id, sorted_card_ids);
+                //this.update_cards_in_zone(zone_id);
+                self.last_event_index ++;
+                self.event_buffer.set(self.last_event_index, {'name':'cardMoved', 'parameters':[zone_id, zone_id, sorted_card_ids]});                                                
+                self.socket.emit('cardMoved',  self.last_event_index, zone_id, zone_id, sorted_card_ids,  null);  
+            });
+        }
 
         this.input.on('dragstart', function (pointer, gameObject) {
             // cache starting depth so that we could return it to its depth
@@ -410,15 +412,17 @@ export default class Game extends Phaser.Scene
             self.clear_all_events();
         });
         this.socket.on('returnToGameRoom', function(){
+            console.log('received return To Game Room Message');
             self.clear_all_cards();
             self.clear_all_events();
             self.clear_all_zones_and_buttons();
             self.socket.removeAllListeners();
             self.scene.start('GameRoom');
-        });
+        });      
         
         this.socket.emit('requestLayout');
         this.socket.emit('requestGameSync');
+        this.socket.emit('getMyPlayerName');
         console.log("creation done");        
     }        
     
@@ -445,8 +449,13 @@ export default class Game extends Phaser.Scene
                 zone_grp.step_x, zone_grp.step_y, this.n_active_player,
                 zone_grp.n_row
                 );
+            let position_offset = Math.floor(Client.player_id);
+            if (position_offset<0){
+                position_offset = 0;
+            }
+
             for (let player_id = 0; player_id<this.n_active_player; player_id++){
-               let xy_pos = zone_xy[((player_id-Math.floor(Client.player_id))%this.n_active_player+this.n_active_player)%this.n_active_player];
+               let xy_pos = zone_xy[((player_id-position_offset)%this.n_active_player+this.n_active_player)%this.n_active_player];
                let zone_id = zone_grp.name + '_' + String(player_id);
                let local_display = zone_grp.local_display_other_player
                if (String(player_id)==Client.player_id){
