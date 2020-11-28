@@ -620,6 +620,12 @@ export default class Game extends Phaser.Scene
                     this.zone_linked_update.set(zone_id, 'countcard_'+zone_player_id);
                     element_grp.elements.push(textscore);                    
                 }                    
+            } else if (zone_id=='SharedScore'){                
+                let element_grp = {elements:[]}
+                this.ui_elements.set('scorecard_SharedScore', element_grp);
+                const textscore = this.add.text(zone.x+220, zone.y+20, '0',{fontSize:'12px'});                                
+                this.zone_linked_update.set(zone_id, 'scorecard_SharedScore');
+                element_grp.elements.push(textscore);                    
             }
         }          
         
