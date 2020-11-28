@@ -91,7 +91,18 @@ export default class Game extends Phaser.Scene
             self.event_buffer.set(self.last_event_index, {'name':'cardFlipped', 'parameters':[card_ids]});                                                
             self.socket.emit('cardFlipped', self.last_event_index, card_ids);                                            
             self.activated_cards.clear();               
-        })
+        });
+
+        const deselect_button = this.add.text(300,265, 'Deselect', {color:'#0f0', backgroundColor: '#666', fontSize:'12px'});
+        deselect_button.setInteractive();
+        deselect_button.on('pointerdown', function(){
+            const all_activated_cards = self.activated_cards.getChildren();
+            all_activated_cards.forEach(card=>{card.clearTint()});                
+            self.activated_cards.clear();  
+            while (self.to_be_deactivate_upon_pointer_up.length>0){
+                self.to_be_deactivate_upon_pointer_up.pop();     
+            }                            
+        });        
 
         if (Math.floor(Client.player_id)>=0){
             const flip_all_button = this.add.text(100,265, 'FLIP ALL', {color:'#0f0', backgroundColor: '#666', fontSize:'12px'});
@@ -103,7 +114,7 @@ export default class Game extends Phaser.Scene
                 self.last_event_index ++;
                 self.event_buffer.set(self.last_event_index, {'name':'cardFlipped', 'parameters':[card_ids]});                                                
                 self.socket.emit('cardFlipped', self.last_event_index, card_ids);        
-            })        
+            });       
 
             const sort_button = this.add.text(0, 265, 'SORT', {color:'#0f0', backgroundColor: '#666', fontSize:'12px' });
             sort_button.setData('sort_key_array', [
