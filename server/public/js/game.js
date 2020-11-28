@@ -75,7 +75,7 @@ export default class Game extends Phaser.Scene
         //this.to_be_deactivate_upon_pointer_up = this.add.group();
         // configuration
         this.input.dragDistanceThreshold=5;
- 
+    
         // sample card and zone placement 
         const card_width=140;
         const card_height=190;
@@ -184,19 +184,19 @@ export default class Game extends Phaser.Scene
                 //const src_zone_id = gameObject.zone_id;
                 const dst_zone_id = dropZone.zone_id;
                 // get dropped card location
-                const gameObjects_on_pointer = self.input.hitTestPointer(pointer).filter(gameObject=> gameObject instanceof Card);                                    
-                let insert_position = null;
-                if (gameObjects_on_pointer.length>=1){
-                    const cards_in_dst_zones = self.cards_in_zones.get(dst_zone_id)
-                    const gameObjects_on_pointer_dst_zone_only = gameObjects_on_pointer.filter(card=> cards_in_dst_zones.includes(card.card_id));   
-                    console.log(gameObjects_on_pointer_dst_zone_only);
-                    if (gameObjects_on_pointer_dst_zone_only.length>=1){
-                        const top_object = gameObjects_on_pointer_dst_zone_only[0];
-                        console.log(top_object.card_id);
-                        insert_position = self.cards_in_zones.get(dst_zone_id).indexOf(top_object.card_id);
-                        console.log('insert_position', insert_position);                    
-                    }
-                }
+                // const gameObjects_on_pointer = self.input.hitTestPointer(pointer).filter(gameObject=> gameObject instanceof Card);                                    
+                // let insert_position = null;
+                // if (gameObjects_on_pointer.length>=1){
+                //     const cards_in_dst_zones = self.cards_in_zones.get(dst_zone_id)
+                //     const gameObjects_on_pointer_dst_zone_only = gameObjects_on_pointer.filter(card=> cards_in_dst_zones.includes(card.card_id));   
+                //     console.log(gameObjects_on_pointer_dst_zone_only);
+                //     if (gameObjects_on_pointer_dst_zone_only.length>=1){
+                //         const top_object = gameObjects_on_pointer_dst_zone_only[0];
+                //         console.log(top_object.card_id);
+                //         insert_position = self.cards_in_zones.get(dst_zone_id).indexOf(top_object.card_id);
+                //         console.log('insert_position', insert_position);                    
+                //     }
+                // }
                 // if (top_object instanceof Card){
                 //     console.log(top_object.card_id);
                 //     insert_position = self.cards_in_zones.get(dst_zone_id).indexOf(top_object.card_id);
