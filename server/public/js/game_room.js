@@ -77,6 +77,7 @@ export default class GameRoom extends Phaser.Scene
                 //self.observe_game.visible=true;
                 //self.observe_game.setInteractive();
             }            
+            self.display_game_info(game_status);
             self.display_player_info(player_info);
         });
 
@@ -102,6 +103,16 @@ export default class GameRoom extends Phaser.Scene
         this.socket.emit('updatePlayerName', this.name_input.text);  
     }  
     
+    display_game_info(game_status){
+        
+        if (game_status == 'Waiting'){
+            this.game_info.setText('Game Status: Waiting for players to join');
+            console.log('show elements')            
+        } else if (game_status == 'InGame'){
+            this.game_info.setText('Game Status: Game in play.');                        
+        } 
+
+    }
     display_player_info(player_info){
         const content = ['Player Information', ''];
         for (let player of player_info){
