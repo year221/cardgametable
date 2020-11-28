@@ -19,6 +19,7 @@ export default class GameRoom extends Phaser.Scene
     }   
     create()
     {
+        console.log('run game room creation');
         var self = this;
         const x = -100;
         const y = 0;
@@ -37,7 +38,8 @@ export default class GameRoom extends Phaser.Scene
         this.name_input.on('textchange', function(inputText){ 
             self.socket.emit('updatePlayerName', self.name_input.text);  
         });
-        this.game_info = this.add.text(x, y+60, 'Game Info', {fontSize: '12px'});
+        this.game_info = this.add.text(x, y+40, 'Game Status:', {fontSize: '12px'});
+        this.player_info = this.add.text(x, y+60, 'Player Information', {fontSize: '12px'});
 
         this.join_game = this.add.text(x,y+20, 'Join Game', {fontSize:'12px', backgroundColor: '#666'});               
         this.join_game.on('pointerdown', function(){                                             
@@ -66,15 +68,16 @@ export default class GameRoom extends Phaser.Scene
                 self.start_game.setInteractive();
                 self.join_game.visible=true;
                 self.join_game.setInteractive();
-                //self.observe_game.visible=true;
-                //self.observe_game.setInteractive();
+                self.observe_game.visible=true;
+                self.observe_game.setInteractive();
             } else if (game_status == 'InGame'){
                 self.start_game.visible=false;
                 self.join_game.visible=true;
                 self.join_game.setInteractive();
-                //self.observe_game.visible=true;
-                //self.observe_game.setInteractive();
+                self.observe_game.visible=true;
+                self.observe_game.setInteractive();
             }            
+            self.display_game_info(game_status);
             self.display_player_info(player_info);
         });
 
@@ -86,13 +89,50 @@ export default class GameRoom extends Phaser.Scene
         this.socket.on('startGameFromGameRoom', function(){
             console.log('startGame');
             console.log('our_player_id',Client.player_id);
+
+            self.socket.removeAllListeners();
+            //self.input.removeAllListeners();
             self.scene.start('Game');
         });
 
+        // if other players exit the game and return to game room update this one
+        // this.socket.on('returnToGameRoom', function(){                        
+        //     self.socket.removeAllListeners();
+        //     self.scene.restart('GameRoom');
+        //     //self.socket.emit('requestGameStatus');
+        //     //self.socket.emit('getMyPlayerName');
+        //     //self.socket.emit('updatePlayerName', self.name_input.text);  
+        // });
+
+        this.socket.on('returnPlayerName', function(player_name){
+            console.log('returnPlayerName', player_name);
+            if (player_name ===null){
+                self.socket.emit('updatePlayerName', self.name_input.text);  
+            } else {
+                self.name_input.setText(player_name);
+            }
+        });
+            
         this.socket.emit('requestGameStatus');
-        this.socket.emit('updatePlayerName', this.name_input.text);  
+        this.socket.emit('getMyPlayerName');
+
+        this.socket.on('playerIDAssigned', function (player_id) {
+            console.log('received player ID', player_id);
+            Client.player_id = player_id;            
+        });            
+        //this.socket.emit('updatePlayerName', this.name_input.text);  
     }  
     
+    display_game_info(game_status){
+        
+        if (game_status == 'Waiting'){
+            this.game_info.setText('Game Status: Waiting for players to join');
+            console.log('show elements')            
+        } else if (game_status == 'InGame'){
+            this.game_info.setText('Game Status: Game in play.');                        
+        } 
+
+    }
     display_player_info(player_info){
         const content = ['Player Information', ''];
         for (let player of player_info){
@@ -102,6 +142,6 @@ export default class GameRoom extends Phaser.Scene
             content.push(player.player_name+ '  '+ player.player_type);
             //}
         }           
-        this.game_info.setText(content);
+        this.player_info.setText(content);
     }
 }
