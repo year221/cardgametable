@@ -15,7 +15,9 @@ export default class GameRoom extends Phaser.Scene
     }       
     preload()
     {        
-        this.load.plugin('rexinputtextplugin', 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexinputtextplugin.min.js', true);               
+        if (this.plugins.get('rexinputtextplugin', false)===null){
+            this.load.plugin('rexinputtextplugin', 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexinputtextplugin.min.js', true);               
+        }
     }   
     create()
     {
@@ -60,10 +62,8 @@ export default class GameRoom extends Phaser.Scene
 
         
 
-        this.socket.on('returnGameStatus', function(game_status, player_info){
-            console.log('returnGameStatus', game_status, player_info);
-            if (game_status == 'Waiting'){
-                console.log('show elements')
+        this.socket.on('returnGameStatus', function(game_status, player_info){            
+            if (game_status == 'Waiting'){                
                 self.start_game.visible=true;
                 self.start_game.setInteractive();
                 self.join_game.visible=true;
@@ -89,23 +89,13 @@ export default class GameRoom extends Phaser.Scene
         this.socket.on('startGameFromGameRoom', function(){
             console.log('startGame');
             console.log('our_player_id',Client.player_id);
-
             self.socket.removeAllListeners();
             //self.input.removeAllListeners();
             self.scene.start('Game');
         });
 
-        // if other players exit the game and return to game room update this one
-        // this.socket.on('returnToGameRoom', function(){                        
-        //     self.socket.removeAllListeners();
-        //     self.scene.restart('GameRoom');
-        //     //self.socket.emit('requestGameStatus');
-        //     //self.socket.emit('getMyPlayerName');
-        //     //self.socket.emit('updatePlayerName', self.name_input.text);  
-        // });
 
-        this.socket.on('returnPlayerName', function(player_name){
-            console.log('returnPlayerName', player_name);
+        this.socket.on('returnPlayerName', function(player_name){            
             if (player_name ===null){
                 self.socket.emit('updatePlayerName', self.name_input.text);  
             } else {
@@ -116,8 +106,7 @@ export default class GameRoom extends Phaser.Scene
         this.socket.emit('requestGameStatus');
         this.socket.emit('getMyPlayerName');
 
-        this.socket.on('playerIDAssigned', function (player_id) {
-            console.log('received player ID', player_id);
+        this.socket.on('playerIDAssigned', function (player_id) {            
             Client.player_id = player_id;            
         });            
         //this.socket.emit('updatePlayerName', this.name_input.text);  
