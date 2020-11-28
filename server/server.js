@@ -418,6 +418,7 @@ io.on('connection', function (socket) {
     for (let i=max_deck_num+1; i<=max_deck_num+n_decks; i++){
       const str_i = String(i);        
       card_id_generated=card_id_generated.concat(all_cards_prototype.map(card_proto => card_proto+'_'+str_i));        
+      console.log(max_deck_num, n_decks, str_i, card_id_generated.length);
     }
     for (const card_id of card_id_generated){
       game_state.card_status[card_id] = false;

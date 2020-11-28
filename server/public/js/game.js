@@ -75,7 +75,7 @@ export default class Game extends Phaser.Scene
         //this.to_be_deactivate_upon_pointer_up = this.add.group();
         // configuration
         this.input.dragDistanceThreshold=5;
- 
+    
         // sample card and zone placement 
         const card_width=140;
         const card_height=190;
@@ -83,7 +83,12 @@ export default class Game extends Phaser.Scene
         const flip_button = this.add.text(400,265, 'FLIP Selected Card', {color:'#0f0', backgroundColor: '#666', fontSize:'12px'});
         flip_button.setInteractive();
         flip_button.on('pointerdown', function(){
-            self.flip_cards(self.activated_cards.getChildren());
+            const all_activated_cards = self.activated_cards.getChildren();
+            self.flip_cards(all_activated_cards);                            
+            const card_ids=all_activated_cards.map(card => card.card_id);            
+            self.last_event_index ++;
+            self.event_buffer.set(self.last_event_index, {'name':'cardFlipped', 'parameters':[card_ids]});                                                
+            self.socket.emit('cardFlipped', self.last_event_index, card_ids);                                            
             self.activated_cards.clear();               
         })
 
@@ -178,6 +183,26 @@ export default class Game extends Phaser.Scene
             if (gameObject instanceof Card && dropZone instanceof CardZone){
                 //const src_zone_id = gameObject.zone_id;
                 const dst_zone_id = dropZone.zone_id;
+                // get dropped card location
+                // const gameObjects_on_pointer = self.input.hitTestPointer(pointer).filter(gameObject=> gameObject instanceof Card);                                    
+                // let insert_position = null;
+                // if (gameObjects_on_pointer.length>=1){
+                //     const cards_in_dst_zones = self.cards_in_zones.get(dst_zone_id)
+                //     const gameObjects_on_pointer_dst_zone_only = gameObjects_on_pointer.filter(card=> cards_in_dst_zones.includes(card.card_id));   
+                //     console.log(gameObjects_on_pointer_dst_zone_only);
+                //     if (gameObjects_on_pointer_dst_zone_only.length>=1){
+                //         const top_object = gameObjects_on_pointer_dst_zone_only[0];
+                //         console.log(top_object.card_id);
+                //         insert_position = self.cards_in_zones.get(dst_zone_id).indexOf(top_object.card_id);
+                //         console.log('insert_position', insert_position);                    
+                //     }
+                // }
+                // if (top_object instanceof Card){
+                //     console.log(top_object.card_id);
+                //     insert_position = self.cards_in_zones.get(dst_zone_id).indexOf(top_object.card_id);
+                //     console.log('insert_position', insert_position);
+                // }
+
                 const all_activated_cards = self.activated_cards.getChildren();
                 for (let card of all_activated_cards){
                     card.clearTint();
@@ -248,7 +273,7 @@ export default class Game extends Phaser.Scene
                     gameObjects[0].setTint(self.tint_color_for_activated_card);                                    
                 }
                 const all_activated_cards = self.activated_cards.getChildren();
-                self.flip_cards(self.activated_cards.getChildren());
+                self.flip_cards(all_activated_cards);
                 const card_ids=all_activated_cards.map(card => card.card_id);            
                 self.last_event_index ++;
                 self.event_buffer.set(self.last_event_index, {'name':'cardFlipped', 'parameters':[card_ids]});                                                
@@ -331,6 +356,7 @@ export default class Game extends Phaser.Scene
                         } else if (cfg.type=='ui'){
                             const num_of_cards = Math.round(cfg.textbox.text);              
                             console.log(num_of_cards)             
+                            //card_ids = Array.from(self.cards_in_zones.get(cfg.src_zone_id).slice(-num_of_cards));                            
                             card_ids = self.cards_in_zones.get(cfg.src_zone_id).slice(-num_of_cards);                            
                         }
                         console.log('all_cards', card_ids); 
@@ -626,6 +652,18 @@ export default class Game extends Phaser.Scene
                 const textscore = this.add.text(zone.x+220, zone.y+20, '0',{fontSize:'12px'});                                
                 this.zone_linked_update.set(zone_id, 'scorecard_SharedScore');
                 element_grp.elements.push(textscore);                    
+            } else if (zone_id =='CardDealer'){
+                let element_grp = {elements:[]}
+                this.ui_elements.set('countcard_CardDealer', element_grp);
+                const textscore = this.add.text(zone.x, zone.y+40, '0',{fontSize:'12px'});                                
+                this.zone_linked_update.set(zone_id, 'countcard_CardDealer');
+                element_grp.elements.push(textscore);                   
+            } else if (zone_id =='Hidden'){
+                let element_grp = {elements:[]}
+                this.ui_elements.set('countcard_Hidden', element_grp);
+                const textscore = this.add.text(zone.x-100, zone.y+40, '0',{fontSize:'12px'});                                
+                this.zone_linked_update.set(zone_id, 'countcard_Hidden');
+                element_grp.elements.push(textscore);                   
             }
         }          
         
@@ -652,7 +690,7 @@ export default class Game extends Phaser.Scene
     }
 
     clear_all_events(){
-        this.event_buffer.clear;
+        this.event_buffer.clear();
         this.last_event_index=-1;
     }
 
