@@ -529,7 +529,7 @@ export default class Game extends Phaser.Scene
                 const num_deck_selector = this.add.rexInputText(
                     ui_element.x+ui_element.input.offset_x,
                     ui_element.y+ui_element.input.offset_y,                    
-                    30, 20,
+                    40, 20,
                     {
                     type: 'number',
                     text: ui_element.input.default,
@@ -596,7 +596,7 @@ export default class Game extends Phaser.Scene
                         const num_selector = this.add.rexInputText(
                             ui_element.x+cfg.input.offset_x,
                             ui_element.y+cfg.input.offset_y,
-                            30, 20,
+                            40, 20,
                             {
                             type: 'number',
                             text: String(cfg.input.default),
