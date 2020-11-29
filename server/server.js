@@ -326,6 +326,7 @@ io.on('connection', function (socket) {
     if (game_state.status=='InGame'){
         game_state.socket_id_to_player_id.set(socket.id, '-1');
         game_state.socket_id_to_player_info.get(socket.id).player_id = '-1';
+        socket.broadcast.emit('returnGameStatus', game_state.status, Array(...game_state.socket_id_to_player_info.values()), can_join_game());                
         socket.emit('playerIDAssigned', '-1');
         socket.emit('startGameFromGameRoom');         
     }
@@ -346,6 +347,7 @@ io.on('connection', function (socket) {
         game_state.socket_id_to_player_id.set(socket.id, player_id);
         game_state.socket_id_to_player_info.get(socket.id).player_type ='Player';
         game_state.socket_id_to_player_info.get(socket.id).player_id =player_id;
+        socket.broadcast.emit('returnGameStatus', game_state.status, Array(...game_state.socket_id_to_player_info.values()), can_join_game());        
         socket.emit('playerIDAssigned', player_id);
         socket.emit('startGameFromGameRoom');   
       }
@@ -426,6 +428,7 @@ io.on('connection', function (socket) {
         socket.broadcast.emit('playerInfo', Array(...game_state.socket_id_to_player_info.values()));          
       }
     }
+    socket.broadcast.emit('returnGameStatus', game_state.status, Array(...game_state.socket_id_to_player_info.values()), can_join_game());        
   }); 
 
   socket.on('exitToGameRoom', function(){
