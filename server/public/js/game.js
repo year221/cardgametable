@@ -59,6 +59,7 @@ export default class Game extends Phaser.Scene
     preload()
     {
         this.load.atlas('cards', 'assets/cards.png', 'assets/cards.json');
+        this.load.json('layout', 'assets/games/seekingfriends.json');
         //this.load.plugin('rexinputtextplugin', 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexinputtextplugin.min.js', true);           
         if (this.plugins.get('rexinputtextplugin', false)===null){
             this.load.plugin('rexinputtextplugin', 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexinputtextplugin.min.js', true);               
@@ -400,11 +401,12 @@ export default class Game extends Phaser.Scene
             }
         });
 
-        this.socket.on('resetLayout', function (layout_cfg, n_active_player, player_info) {
+        this.socket.on('resetLayout', function (server_layout_cfg, n_active_player, player_info) {
             if ((n_active_player!==undefined) && (n_active_player!==null)){
                 self.n_active_player = n_active_player;
             }
             self.clear_all_zones_and_buttons();
+            const layout_cfg = self.cache.json.get('layout')
             self.layout_zones_and_buttons(layout_cfg, player_info);
             //self.main_camera(layout_cfg);
             self.cameras.main.centerOn(layout_cfg.default_camera.x, layout_cfg.default_camera.y);                 
