@@ -277,6 +277,10 @@ function get_available_player_id(){
   return player_id;
 }
   
+function can_join_game(){
+  const connected_active_players = get_currently_connected_active_players();  
+  return (connected_active_players < game_state.n_active_player);
+}
 function check_player_info(socket_id){
     if (!game_state.socket_id_to_player_info.has(socket_id)){
       game_state.socket_id_to_player_info.set(socket_id, {player_name:null, player_type:'Unassigned', player_id:''});
@@ -522,7 +526,7 @@ io.on('connection', function (socket) {
   });
   
   socket.on('requestGameStatus', function(){
-    socket.emit('returnGameStatus', game_state.status, Array(...game_state.socket_id_to_player_info.values()));    
+    socket.emit('returnGameStatus', game_state.status, Array(...game_state.socket_id_to_player_info.values()), can_join_game());    
   });
   socket.on('resetGame', function (event_index, src_zone_id, dst_zone_id, card_ids, dst_pos_in_zone) {  
     for (let zone_id of game_state.zone_ids){
