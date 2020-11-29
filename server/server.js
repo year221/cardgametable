@@ -167,7 +167,7 @@ layout_cfg = {
     {
       type: 'public',
       name: 'CardDealer',
-      x: -460,
+      x: -480,
       y: 0,            
       width : 50,
       height : 71,
@@ -186,7 +186,7 @@ layout_cfg = {
       name: 'GenerateCard',
       generate_button_label: 'NewCards',
       target_zone: 'CardDealer',
-      x: -430,
+      x: -450,
       y: -25,
       input: {
         default: '4',
@@ -195,7 +195,7 @@ layout_cfg = {
         offset_x: 0, offset_y: -15, text: '#Decks',
       },
       input: {
-        offset_x: 80, offset_y: -8, default: '4',
+        offset_x: 90, offset_y: -8, default: '4',
       }      
     },     
     {
@@ -217,7 +217,7 @@ layout_cfg = {
     {
       type: 'deal_cards',
       name: 'DealCards',
-      x: -430,
+      x: -450,
       y: -5,
       button_label: 'DealCards',
       move_card_cfg: [
@@ -230,7 +230,7 @@ layout_cfg = {
             offset_x: 0, offset_y: 15, text: 'PerPlayer',
           },
           input: {
-            offset_x: 80, offset_y: 22, default: '52',
+            offset_x: 90, offset_y: 22, default: '52',
           }
         },
         {
@@ -242,7 +242,7 @@ layout_cfg = {
             offset_x: 0, offset_y: 30, text: 'Hidden',
           },
           input: {
-            offset_x: 80, offset_y: 38, default: '8',
+            offset_x: 90, offset_y: 38, default: '8',
           }
         },        
       ]
@@ -277,6 +277,10 @@ function get_available_player_id(){
   return player_id;
 }
   
+function can_join_game(){
+  const connected_active_players = get_currently_connected_active_players();  
+  return (connected_active_players < game_state.n_active_player);
+}
 function check_player_info(socket_id){
     if (!game_state.socket_id_to_player_info.has(socket_id)){
       game_state.socket_id_to_player_info.set(socket_id, {player_name:null, player_type:'Unassigned', player_id:''});
@@ -322,6 +326,7 @@ io.on('connection', function (socket) {
     if (game_state.status=='InGame'){
         game_state.socket_id_to_player_id.set(socket.id, '-1');
         game_state.socket_id_to_player_info.get(socket.id).player_id = '-1';
+        socket.broadcast.emit('returnGameStatus', game_state.status, Array(...game_state.socket_id_to_player_info.values()), can_join_game());                
         socket.emit('playerIDAssigned', '-1');
         socket.emit('startGameFromGameRoom');         
     }
@@ -342,6 +347,7 @@ io.on('connection', function (socket) {
         game_state.socket_id_to_player_id.set(socket.id, player_id);
         game_state.socket_id_to_player_info.get(socket.id).player_type ='Player';
         game_state.socket_id_to_player_info.get(socket.id).player_id =player_id;
+        socket.broadcast.emit('returnGameStatus', game_state.status, Array(...game_state.socket_id_to_player_info.values()), can_join_game());        
         socket.emit('playerIDAssigned', player_id);
         socket.emit('startGameFromGameRoom');   
       }
@@ -366,10 +372,10 @@ io.on('connection', function (socket) {
           game_state.socket_id_to_player_info.get(socket_id).player_id ='-2';
         }
       }
-      console.log('Assinged IOs', game_state.socket_id_to_player_id);
+      console.log('Assign IDs', game_state.socket_id_to_player_id);
       for (let [socket_id, player_id] of game_state.socket_id_to_player_id){
         io.to(socket_id).emit('playerIDAssigned', player_id);
-        console.log('send ids', socket_id, player_id);
+        //console.log('send ids', socket_id, player_id);
       } 
 
       console.log('starting game');    
@@ -412,7 +418,7 @@ io.on('connection', function (socket) {
     const player_id = game_state.socket_id_to_player_id.get(socket.id);
     game_state.socket_id_to_player_id.delete(socket.id);
     game_state.socket_id_to_player_info.delete(socket.id);
-    console.log('user disconnected', socket.id, player_id);
+    //console.log('user disconnected', socket.id, player_id);
     if (game_state.status=='InGame'){
       const n_player= get_currently_connected_active_players();
       if (n_player==0){
@@ -422,10 +428,11 @@ io.on('connection', function (socket) {
         socket.broadcast.emit('playerInfo', Array(...game_state.socket_id_to_player_info.values()));          
       }
     }
+    socket.broadcast.emit('returnGameStatus', game_state.status, Array(...game_state.socket_id_to_player_info.values()), can_join_game());        
   }); 
 
   socket.on('exitToGameRoom', function(){
-    console.log("exit_to game room")
+    //console.log("exit_to game room")
     reset_state_to_waiting();
     console.log(game_state);
     console.log("emit exit_to game room")
@@ -515,9 +522,14 @@ io.on('connection', function (socket) {
     //console.log(game_state.cards_in_zones);
     io.sockets.emit('gameStateSync', game_state.last_events, game_state.cards_in_zones, null);
   });  
+
+  socket.on('uiElementTextSync', function(element_name, text){
+    //console.log('uiElementTextSync', element_name, text); 
+    socket.broadcast.emit('uiElementTextSync', element_name, text); 
+  });
   
   socket.on('requestGameStatus', function(){
-    socket.emit('returnGameStatus', game_state.status, Array(...game_state.socket_id_to_player_info.values()));    
+    socket.emit('returnGameStatus', game_state.status, Array(...game_state.socket_id_to_player_info.values()), can_join_game());    
   });
   socket.on('resetGame', function (event_index, src_zone_id, dst_zone_id, card_ids, dst_pos_in_zone) {  
     for (let zone_id of game_state.zone_ids){

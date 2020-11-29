@@ -12,6 +12,11 @@ export default new Phaser.Game({
     dom: {
         createContainer: true
     },	
+    // plugins: {
+    //     scene: [
+    //         { key: 'rexinputtextplugin', url: 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexinputtextplugin.min.js', start: true }            
+    //     ]
+    // },    
 	scene: [GameRoom, Game],
 })
 console.log("finished");
