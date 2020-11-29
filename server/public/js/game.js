@@ -104,7 +104,9 @@ export default class Game extends Phaser.Scene
             while (self.to_be_deactivate_upon_pointer_up.length>0){
                 self.to_be_deactivate_upon_pointer_up.pop();     
             }                            
-        });        
+        });       
+
+                
 
         if (Math.floor(Client.player_id)>=0){
             const flip_all_button = this.add.text(100,265, 'FLIP ALL', {color:'#0f0', backgroundColor: '#666', fontSize:'12px'});
@@ -561,7 +563,7 @@ export default class Game extends Phaser.Scene
                 //this.ui_elements.set(ui_element.name, element_grp);
                 const button = this.add.existing(new TextButton(
                     this, ui_element.x, ui_element.y, ui_element.button_label,
-                    {color:'#0f0', backgroundColor: '#666',fontSize:'12px' }                    
+                    {color:'#0f0', backgroundColor: '#666',fontSize:'12px' }                        
                 ));  
                 button.name =  ui_element.name;    
                 this.ui_elements.set(button.name, button);
@@ -673,6 +675,25 @@ export default class Game extends Phaser.Scene
                 button.setInteractive();                                
             }
         }        
+        // white board
+        const whiteboard = this.add.rexInputText(
+            -550,
+            380,
+            90, 201.5,
+            {
+            type: 'textarea',
+            text: "WhiteBoard",
+            fontSize: '10px',
+            border: 2,    
+            borderColor: '#888888',
+            }
+        ); 
+
+        whiteboard.name =  'whiteboard';
+        this.ui_elements.set(whiteboard.name, whiteboard);
+        whiteboard.on('textchange', function(inputText){ 
+            this.socket.emit('uiElementTextSync', inputText.name, inputText.text);
+        }, this);  
 
         // text update
         for (let [zone_id, zone] of this.all_zones){            
