@@ -156,12 +156,16 @@ export default class Game extends Phaser.Scene
             const rotation = gameObject.rotation;
             const zone_of_object = self.all_zones.get(gameObject.zone_id);
             const all_activated_cards = self.activated_cards.getChildren();
+            const scaleX= gameObject.scaleX;
+            const scaleY = gameObject.scaleY;            
             for (let card of all_activated_cards){
                 card.rotation = rotation;
+                card.setScale(scaleX, scaleY);
             }  
             //self.children.bringToTop(all_activated_cards[0]);              
             const index_pos_primary_card = all_activated_cards.indexOf(gameObject);
-            
+
+            //console.log('scaleX', 'scaleY', scaleX, scaleY);
             const _sinR=Math.sin(rotation);
             const _cosR=Math.cos(rotation);            
             self.dragging_cache_param.step_x = zone_of_object.card_step_x*_cosR;// + zone_of_object.card_step_y*_sinR;
