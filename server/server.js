@@ -289,13 +289,13 @@ io.on('connection', function (socket) {
       game_state.zone_ids.push(dst_zone_id);
       game_state.cards_in_zones[dst_zone_id]=[];
     }    
-    const card_removed = utils.remove_items(game_state.cards_in_zones[src_zone_id], card_ids); 
+    const cards_removed = utils.remove_items(game_state.cards_in_zones[src_zone_id], card_ids); 
 
-    // add cards to src zone   
+    // add cards to dst zone   
     if ((dst_pos_in_zone === undefined) || (dst_pos_in_zone === null) || (dst_pos_in_zone>= game_state.cards_in_zones[dst_zone_id].length)){ 
-      game_state.cards_in_zones[dst_zone_id]  = game_state.cards_in_zones[dst_zone_id].concat(card_removed);
+      game_state.cards_in_zones[dst_zone_id]  = game_state.cards_in_zones[dst_zone_id].concat(cards_removed);
     } else {      
-      game_state.cards_in_zones[dst_zone_id].splice(dst_pos_in_zone, 0, card_removed);
+      game_state.cards_in_zones[dst_zone_id].splice(dst_pos_in_zone, 0, ...cards_removed);
     }
 
     //console.log(game_state.cards_in_zones);

@@ -64,7 +64,7 @@ export class CardZone extends Phaser.GameObjects.Rectangle
         }
     }
 
-    highlight(value){
+    highlight_dropzone(value){
         this.isStroked=value;   
     }    
 
