@@ -203,8 +203,7 @@ export default class Game extends Phaser.Scene
         });         
 
         this.input.on('drop', function (pointer, gameObject, dropZone) {
-            dropZone.highlight_dropzone(false); 
-            //gameObject.clearTint();            
+            dropZone.highlight_dropzone(false);                     
             if (gameObject instanceof Card && (dropZone instanceof CardZone || dropZone instanceof Card)){
                 //const src_zone_id = gameObject.zone_id;
                 //const dst_zone_id = dropZone.zone_id;
@@ -217,7 +216,7 @@ export default class Game extends Phaser.Scene
 
                 const all_activated_cards = self.activated_cards.getChildren();
                 for (let card of all_activated_cards){
-                    card.clearTint();
+                    card.set_activated(false);
                 }                
                 let src_zone_id = all_activated_cards[0].zone_id;
                 let card_ids = [];
@@ -254,8 +253,7 @@ export default class Game extends Phaser.Scene
             if (!dropped)
             {
                 const all_activated_cards = self.activated_cards.getChildren();
-                for (let card of all_activated_cards){
-                    //card.clearTint();
+                for (let card of all_activated_cards){                    
                     card.set_activated(false);
                 }
                 const zone_ids = new Set(all_activated_cards.map(card => card.zone_id));
