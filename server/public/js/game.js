@@ -69,11 +69,6 @@ export default class Game extends Phaser.Scene
     {
         console.log("run scene creation for game")
         var self = this;
-        //this.socket = Client.socket;
-        //this.socket = io();//'http://localhost:8081');     
-        // this.socket.on('connect', function () {
-        //     console.log('Connected!');
-        // });    
         
         this.activated_cards = this.add.group();
         //this.to_be_deactivate_upon_pointer_up = this.add.group();
@@ -349,17 +344,9 @@ export default class Game extends Phaser.Scene
             //     }
             // } else {self.previous_empty_click=false};
             while (self.to_be_deactivate_upon_pointer_up.length>0){                
-                let card = self.to_be_deactivate_upon_pointer_up.pop();    
-                //card.input.dropZone = true;             
-                //card.clearTint();
+                let card = self.to_be_deactivate_upon_pointer_up.pop();                    
                 card.set_activated(false);
-                self.activated_cards.remove(card);
-
-                // const index = self.activated_cards.indexOf(card_id);
-                // if (index>=0){
-                //     self.all_cards.get(card_id).clearTint();
-                    
-                // }                
+                self.activated_cards.remove(card);             
             }                   
         });
 
@@ -411,12 +398,8 @@ export default class Game extends Phaser.Scene
             //self.mouse_moved=true;
             if (self.on_multiple_selection && (gameObject instanceof Card)){                
                 if (self.activated_cards.contains(gameObject)){
-                //if (self.activated_cards.includes(card.card_id)){
-                    //self.activated_cards.remove(gameObject);
-                    //gameObject.clearTint();
                 } else {
-                    self.activated_cards.add(gameObject);
-                    //gameObject.setTint(self.tint_color_for_activated_card);
+                    self.activated_cards.add(gameObject);                    
                     gameObject.set_activated(true);
                 }                
             }
@@ -477,12 +460,10 @@ export default class Game extends Phaser.Scene
         }
         this.all_zones.clear();
         this.cards_in_zones.clear();
-        this.ui_elements.clear();
-        // for (let [element_name, element_grp] of this.ui_elements){
-        //     for (let element of element_grp['elements']){
-        //         element.destroy();
-        //     }            
-        // }          
+        for (let [element_name, element] of this.ui_elements){
+            element.destroy();
+        }
+        this.ui_elements.clear();        
         this.zone_linked_update.clear();      
     }
     
