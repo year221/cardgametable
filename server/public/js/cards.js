@@ -51,12 +51,31 @@ export class Card extends Phaser.GameObjects.Sprite
         return this;
     }
 
+    highlight_dropzone(value){
+        if (value==true){
+            this.setTint(0xdddda0);
+        } else {
+            this.clearTint();
+        }
+    }        
+
+    set_activated(value){
+        if (value==true){
+            this.setTint(0xa0a0ff);
+            this.input.dropZone = false;        
+        } else {
+            this.clearTint();   
+            this.input.dropZone = true;        
+        }
+    }
+
     set_local_display(value){
         // set card to be invisible and not manipulatible. 
         this._local_display = value;
         if (value==0){
             //this.active=true;
             this.setInteractive();
+            this.input.dropZone = true; 
             this.scene.input.setDraggable(this);                     
             this.visible=true;
             this.update_frame();
@@ -75,9 +94,10 @@ export class Card extends Phaser.GameObjects.Sprite
             //    this.scene.input.setDraggable(this, false);         
                 this.scene.input.disable(this);
             }
-            this.visible=true;
+            
             //this.active=true;  
             this.setFrame(this._frame_down);      
+            this.visible=true;
         }
     }
 }
