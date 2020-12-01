@@ -24,7 +24,7 @@ export default class Game extends Phaser.Scene
     // multi selection
     on_multiple_selection;  
     selection_box;
-    selected_card_group;
+    new_selected_cards;
 
     dragging_cache_param={
         starting_depth:500,
@@ -75,6 +75,7 @@ export default class Game extends Phaser.Scene
         var self = this;
         
         this.activated_cards = this.add.group();
+        this.new_selected_cards =this.add.group();
         //this.to_be_deactivate_upon_pointer_up = this.add.group();
         // configuration
         this.input.dragDistanceThreshold=5;
@@ -303,6 +304,7 @@ export default class Game extends Phaser.Scene
                         self.on_multiple_selection = true;
                         self.selection_box.x = pointer.worldX
                         self.selection_box.y = pointer.worldY 
+                        //self.previous_activated_cards.addMultiple(self.activated_cards.getChildren());
                         self.children.bringToTop(self.selection_box);
                     }
                 } else {
@@ -318,6 +320,7 @@ export default class Game extends Phaser.Scene
 
         this.input.on('pointerup', function(pointer){  
             self.on_multiple_selection = false;
+            self.new_selected_cards.clear();
             self.selection_box.width = 0
             self.selection_box.height = 0               
             while (self.to_be_deactivate_upon_pointer_up.length>0){                
@@ -329,6 +332,7 @@ export default class Game extends Phaser.Scene
 
         this.input.on('pointerupoutside', function(pointer){  
             self.on_multiple_selection = false;
+            self.new_selected_cards.clear();
             self.selection_box.width = 0
             self.selection_box.height = 0               
             while (self.to_be_deactivate_upon_pointer_up.length>0){                
@@ -367,16 +371,21 @@ export default class Game extends Phaser.Scene
                     selectionRect.height *= -1
                 }     
 
+
                 //const selected = this.list.filter(card=>selectionRect.ContainsPoint(card.getTopLeft()));
                 for (let [card_id, card] of self.all_cards){
                     if (Phaser.Geom.Rectangle.ContainsPoint(selectionRect, card.getTopLeft())) {
                         if (!self.activated_cards.contains(card)){
+                            // this is new
+                            self.new_selected_cards.add(card);
                             self.activated_cards.add(card);
-                            card.set_activated(true);
+                            card.set_activated(true);                            
                         }
                     } else {
-                        if (self.activated_cards.contains(card)){
+                        if (self.new_selected_cards.contains(card)){
+                            // this is selected this time
                             self.activated_cards.remove(card);
+                            self.new_selected_cards.remove(card);
                             card.set_activated(false);
                         }
                     }
