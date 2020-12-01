@@ -20,9 +20,11 @@ export default class Game extends Phaser.Scene
     // temporary card holdlers to deal to multiple ard select and drag.
     activated_cards;    
     to_be_deactivate_upon_pointer_up;
-    on_multiple_selection;  
 
+    // multi selection
+    on_multiple_selection;  
     selection_box;
+    selected_card_group;
 
     dragging_cache_param={
         starting_depth:500,
@@ -76,7 +78,10 @@ export default class Game extends Phaser.Scene
         //this.to_be_deactivate_upon_pointer_up = this.add.group();
         // configuration
         this.input.dragDistanceThreshold=5;
-        this.selection_box = this.add.rectangle(0, 0, 0, 0, 0x1d7196, 0.5);
+        this.selection_box = this.add.rectangle(0, 0, 0, 0, 0x1d7196, 0.4);
+        //this.selection_box.strokeColor = 0xffffff;
+        //this.selection_box.isStroked=true;
+        //this.selection_box.isFilled=false;
         // sample card and zone placement 
         const card_width=140;
         const card_height=190;
@@ -321,6 +326,17 @@ export default class Game extends Phaser.Scene
                 self.activated_cards.remove(card);             
             }                   
         });
+
+        this.input.on('pointerupoutside', function(pointer){  
+            self.on_multiple_selection = false;
+            self.selection_box.width = 0
+            self.selection_box.height = 0               
+            while (self.to_be_deactivate_upon_pointer_up.length>0){                
+                let card = self.to_be_deactivate_upon_pointer_up.pop();                    
+                card.set_activated(false);
+                self.activated_cards.remove(card);             
+            }                   
+        });        
 
         this.input.on('pointermove', function(pointer){
             if ((pointer.isDown) && (self.on_multiple_selection))
