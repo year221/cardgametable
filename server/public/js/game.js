@@ -20,7 +20,9 @@ export default class Game extends Phaser.Scene
     // temporary card holdlers to deal to multiple ard select and drag.
     activated_cards;    
     to_be_deactivate_upon_pointer_up;
-    on_multiple_selection;    
+    on_multiple_selection;  
+
+    selection_box;
 
     dragging_cache_param={
         starting_depth:500,
@@ -74,7 +76,7 @@ export default class Game extends Phaser.Scene
         //this.to_be_deactivate_upon_pointer_up = this.add.group();
         // configuration
         this.input.dragDistanceThreshold=5;
-    
+        this.selection_box = this.add.rectangle(0, 0, 0, 0, 0x1d7196, 0.5);
         // sample card and zone placement 
         const card_width=140;
         const card_height=190;
@@ -206,25 +208,6 @@ export default class Game extends Phaser.Scene
                 if (dropZone instanceof Card){
                     insertion_location = self.cards_in_zones.get(dropZone.zone_id).indexOf(dropZone.card_id)+1;                    
                 }
-                // get dropped card location
-                // const gameObjects_on_pointer = self.input.hitTestPointer(pointer).filter(gameObject=> gameObject instanceof Card);                                    
-                // let insert_position = null;
-                // if (gameObjects_on_pointer.length>=1){
-                //     const cards_in_dst_zones = self.cards_in_zones.get(dst_zone_id)
-                //     const gameObjects_on_pointer_dst_zone_only = gameObjects_on_pointer.filter(card=> cards_in_dst_zones.includes(card.card_id));   
-                //     console.log(gameObjects_on_pointer_dst_zone_only);
-                //     if (gameObjects_on_pointer_dst_zone_only.length>=1){
-                //         const top_object = gameObjects_on_pointer_dst_zone_only[0];
-                //         console.log(top_object.card_id);
-                //         insert_position = self.cards_in_zones.get(dst_zone_id).indexOf(top_object.card_id);
-                //         console.log('insert_position', insert_position);                    
-                //     }
-                // }
-                // if (top_object instanceof Card){
-                //     console.log(top_object.card_id);
-                //     insert_position = self.cards_in_zones.get(dst_zone_id).indexOf(top_object.card_id);
-                //     console.log('insert_position', insert_position);
-                // }
 
                 const all_activated_cards = self.activated_cards.getChildren();
                 for (let card of all_activated_cards){
@@ -255,11 +238,7 @@ export default class Game extends Phaser.Scene
                 self.activated_cards.clear();
                 while (self.to_be_deactivate_upon_pointer_up.length>0){
                     self.to_be_deactivate_upon_pointer_up.pop();     
-                }           
-                // self.move_cards(src_zone_id, dst_zone_id, [gameObject.card_id]);
-                // self.last_event_index ++;
-                // self.event_buffer.set(self.last_event_index, {'name':'cardMoved', 'parameters':[src_zone_id, dst_zone_id, [gameObject.card_id]]});                                                
-                // self.socket.emit('cardMoved',  self.last_event_index, src_zone_id, dst_zone_id, [gameObject.card_id],  null);        
+                }              
                 
             }
 
@@ -268,9 +247,6 @@ export default class Game extends Phaser.Scene
         this.input.on('dragend', function (pointer, gameObject, dropped) {            
             if (!dropped)
             {
-                //gameObject.x = gameObject.input.dragStartX;
-                //gameObject.y = gameObject.input.dragStartY;
-                //gameObject.depth = gameObject._drag_start_depth; /// recover it depth
                 const all_activated_cards = self.activated_cards.getChildren();
                 for (let card of all_activated_cards){
                     //card.clearTint();
@@ -280,8 +256,7 @@ export default class Game extends Phaser.Scene
                 for (let zone_id of zone_ids){
                     self.update_cards_in_zone(zone_id);
                   }
-                self.activated_cards.clear();
-                //self.update_cards_in_zone(gameObject.zone_id);
+                self.activated_cards.clear();                
             }
         });   
 
@@ -305,44 +280,41 @@ export default class Game extends Phaser.Scene
                 self.socket.emit('cardFlipped', self.last_event_index, card_ids); 
                 //self.flip_cards(self.activated_cards.getChildren());
                 self.activated_cards.clear();
-            } else {
-                
+            } else {        
+                console.log('pointer', pointer.x, pointer.y)                                 
                 if (gameObjects.length>=1){
                     
                     if (gameObjects[0] instanceof Card){
                         const card = gameObjects[0];
                         if (self.activated_cards.contains(card)){
-                        //if (self.activated_cards.includes(card.card_id)){
                             self.to_be_deactivate_upon_pointer_up.push(card);
                         } else {
                             self.activated_cards.add(card);
                             card.set_activated(true);
-                            //card.setTint(self.tint_color_for_activated_card);
-                            //card.input.dropZone = false;
+
                         }
                     } else if (gameObjects[0] instanceof CardZone){
+                        console.log('multiselection start')
                         self.on_multiple_selection = true;
+                        self.selection_box.x = pointer.worldX
+                        self.selection_box.y = pointer.worldY 
+                        self.children.bringToTop(self.selection_box);
                     }
                 } else {
-                    self.on_multiple_selection = true;                
+                    self.on_multiple_selection = true;    
+                    console.log('multiselection start') 
+                    self.selection_box.x = pointer.worldX
+                    self.selection_box.y = pointer.worldY   
+                    self.children.bringToTop(self.selection_box);
+
                 }
             }           
         });
 
         this.input.on('pointerup', function(pointer){  
             self.on_multiple_selection = false;
-            // if (!self.mouse_moved){
-            //     if (self.previous_empty_click){
-            //         // clear all selected cards'
-            //         const all_activated_cards = self.activated_cards.getChildren();
-            //         for (let card of all_activated_cards){
-            //             card.clearTint();
-            //         }                  
-            //         self.activated_cards.clear();     
-            //     } else {
-            //         self.previous_empty_click=true;
-            //     }
-            // } else {self.previous_empty_click=false};
+            self.selection_box.width = 0
+            self.selection_box.height = 0               
             while (self.to_be_deactivate_upon_pointer_up.length>0){                
                 let card = self.to_be_deactivate_upon_pointer_up.pop();                    
                 card.set_activated(false);
@@ -350,6 +322,51 @@ export default class Game extends Phaser.Scene
             }                   
         });
 
+        this.input.on('pointermove', function(pointer){
+            if ((pointer.isDown) && (self.on_multiple_selection))
+            {                
+                console.log('selection_box_change', self.selection_box.width, self.selection_box.height)
+                const dx = pointer.x - pointer.prevPosition.x
+                const dy = pointer.y - pointer.prevPosition.y
+
+                self.selection_box.width += dx
+                self.selection_box.height += dy
+
+                const selectionRect = new Phaser.Geom.Rectangle(
+                    self.selection_box.x,
+                    self.selection_box.y,
+                    self.selection_box.width,
+                    self.selection_box.height
+                )            
+                        // check if width or height is negative
+                // and then adjust
+                if (selectionRect.width < 0)
+                {
+                    selectionRect.x += selectionRect.width
+                    selectionRect.width *= -1
+                }
+                if (selectionRect.height < 0)
+                {
+                    selectionRect.y += selectionRect.height
+                    selectionRect.height *= -1
+                }     
+
+                //const selected = this.list.filter(card=>selectionRect.ContainsPoint(card.getTopLeft()));
+                for (let [card_id, card] of self.all_cards){
+                    if (Phaser.Geom.Rectangle.ContainsPoint(selectionRect, card.getTopLeft())) {
+                        if (!self.activated_cards.contains(card)){
+                            self.activated_cards.add(card);
+                            card.set_activated(true);
+                        }
+                    } else {
+                        if (self.activated_cards.contains(card)){
+                            self.activated_cards.remove(card);
+                            card.set_activated(false);
+                        }
+                    }
+                }                    
+            }
+        });
         this.input.on('gameobjectdown', function(pointer, gameObject){
             if (gameObject instanceof TextButton){
                 gameObject.highlight(1);                
@@ -394,16 +411,16 @@ export default class Game extends Phaser.Scene
             } 
         });        
 
-        this.input.on('gameobjectover', function(pointer, gameObject){
-            //self.mouse_moved=true;
-            if (self.on_multiple_selection && (gameObject instanceof Card)){                
-                if (self.activated_cards.contains(gameObject)){
-                } else {
-                    self.activated_cards.add(gameObject);                    
-                    gameObject.set_activated(true);
-                }                
-            }
-        });
+        // this.input.on('gameobjectover', function(pointer, gameObject){
+        //     //self.mouse_moved=true;
+        //     if (self.on_multiple_selection && (gameObject instanceof Card)){                
+        //         if (self.activated_cards.contains(gameObject)){
+        //         } else {
+        //             self.activated_cards.add(gameObject);                    
+        //             gameObject.set_activated(true);
+        //         }                
+        //     }
+        // });
 
         this.socket.on('resetLayout', function (server_layout_cfg, n_active_player, player_info) {
             if ((n_active_player!==undefined) && (n_active_player!==null)){
