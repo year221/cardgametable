@@ -133,6 +133,7 @@ io.on('connection', function (socket) {
         socket.broadcast.emit('returnGameStatus', game_state.status, Array(...game_state.socket_id_to_player_info.values()), can_join_game());        
         socket.emit('playerIDAssigned', player_id);
         socket.emit('startGameFromGameRoom');   
+        socket.broadcast.emit('playerInfo', Array(...game_state.socket_id_to_player_info.values()));      
       }
     }
   });  

@@ -80,10 +80,6 @@ export default class Game extends Phaser.Scene
         // configuration
         this.input.dragDistanceThreshold=5;
         this.selection_box = this.add.rectangle(0, 0, 0, 0, 0x1d7196, 0.4);
-        //this.selection_box.strokeColor = 0xffffff;
-        //this.selection_box.isStroked=true;
-        //this.selection_box.isFilled=false;
-        // sample card and zone placement 
         const card_width=140;
         const card_height=190;
 
@@ -181,13 +177,9 @@ export default class Game extends Phaser.Scene
                 gameObject.y+self.dragging_cache_param.offset_y,
                 self.dragging_cache_param.step_x,
                 self.dragging_cache_param.step_y);                
-
-            //.rotate(self.cameras.main.rotation);
         });
 
         this.input.on('drag', function (pointer, gameObject, dragX, dragY) {            
-            //gameObject.x = dragX;
-            //gameObject.y = dragY;
             self.activated_cards.setXY(dragX+self.dragging_cache_param.offset_x,
                 dragY+self.dragging_cache_param.offset_y,
                 self.dragging_cache_param.step_x,
@@ -356,8 +348,7 @@ export default class Game extends Phaser.Scene
                     self.selection_box.width,
                     self.selection_box.height
                 )            
-                        // check if width or height is negative
-                // and then adjust
+
                 if (selectionRect.width < 0)
                 {
                     selectionRect.x += selectionRect.width
@@ -368,7 +359,6 @@ export default class Game extends Phaser.Scene
                     selectionRect.y += selectionRect.height
                     selectionRect.height *= -1
                 }     
-
 
                 //const selected = this.list.filter(card=>selectionRect.ContainsPoint(card.getTopLeft()));
                 for (let [card_id, card] of self.all_cards){
@@ -490,6 +480,23 @@ export default class Game extends Phaser.Scene
         this.socket.emit('requestLayout');
         this.socket.emit('requestGameSync');
         this.socket.emit('getMyPlayerName');
+        this.socket.on('playerInfo', function(player_info){
+            const player_name_elements = Array(...self.ui_elements.keys()).filter(ui_name=> ui_name.split('_')[0]=='playername');
+            // let player_id_to_name = {}
+            // for (let player of player_info){
+            //     player_id_to_name[player.player_id]=player.player_name;
+            // }              
+            for (let element_name of player_name_elements){
+                const player_id = element_name.split('_')[1];
+                const player_names = player_info.filter(player=>player.player_id==player_id)
+                
+                if (player_names.length==0){                    
+                    self.ui_elements.get(element_name).setText('Disconnected');
+                } else {
+                    self.ui_elements.get(element_name).setText(player_names.map(player=>player.player_name));
+                }
+            }
+        });        
         console.log("creation done");        
     }        
     
@@ -556,21 +563,12 @@ export default class Game extends Phaser.Scene
         // layout buttons
         for (let ui_element of layout_cfg['ui_elements']){            
             if (ui_element.type=='deck_generator'){
-                //let deck_generator_grp = {}
-                //this.ui_elements.set(ui_element.name, deck_generator_grp);
-                //deck_generator_grp['target_zone']=ui_element.target_zone;
 
                 this.ui_elements.set(ui_element.name+'_text', this.add.text(
                     ui_element.x+ui_element.label.offset_x,
                     ui_element.y+ui_element.label.offset_y, 
                     ui_element.label.text,
                     {fontSize:'12px'}));
-                // deck_generator_grp['elements']=[];
-                // deck_generator_grp['elements'].push(this.add.text(
-                //     ui_element.x+ui_element.label.offset_x,
-                //     ui_element.y+ui_element.label.offset_y, 
-                //     ui_element.label.text,
-                //     {fontSize:'12px'}));
 
                 const num_deck_selector = this.add.rexInputText(
                     ui_element.x+ui_element.input.offset_x,
@@ -587,8 +585,6 @@ export default class Game extends Phaser.Scene
                 num_deck_selector.on('textchange', function(inputText){ 
                     this.socket.emit('uiElementTextSync', inputText.name, inputText.text);
                 }, this);                
-                //deck_generator_grp['elements'].push(num_deck_selector);
-                
 
                 const generate_button = this.add.existing(new TextButton(
                     this, ui_element.x, ui_element.y, ui_element.generate_button_label,
@@ -603,8 +599,6 @@ export default class Game extends Phaser.Scene
                 generate_button.setInteractive();
             } else if (ui_element.type=='simple_event'){
                 
-                //let element_grp = {elements:[]}
-                //this.ui_elements.set(ui_element.name, element_grp);
                 const button = this.add.existing(new TextButton(
                     this, ui_element.x, ui_element.y, ui_element.button_label,
                     {color:'#0f0', backgroundColor: '#666',fontSize:'12px' }                        
@@ -616,8 +610,7 @@ export default class Game extends Phaser.Scene
                 //'resetGame';     
                 button.setInteractive();
             } else if (ui_element.type=='deal_cards') {
-                //let element_grp = {elements:[]}
-                //this.ui_elements.set(ui_element.name, element_grp);
+
                 const button = this.add.existing(new TextButton(
                     this, ui_element.x, ui_element.y, ui_element.button_label,
                     {color:'#0f0', backgroundColor: '#666',fontSize:'12px' }                    
@@ -632,8 +625,6 @@ export default class Game extends Phaser.Scene
                 for (let cfg of ui_element.move_card_cfg){                    
                     if (cfg.type=='ui'){        
 
-
-                        //element_grp['elements'].push(
                         const text_label = this.add.text(ui_element.x+cfg.label.offset_x,
                                 ui_element.y+cfg.label.offset_y,
                                 cfg.label.text, {fontSize:'12px'});
@@ -691,7 +682,9 @@ export default class Game extends Phaser.Scene
         }        
         for (let [zone_id, zone] of this.all_zones){            
             if (zone_id.split('_')[0]=='Trash'){
-                this.add.text(zone.x-30, zone.y+40, player_id_to_name[zone_id.split('_')[1]],{fontSize:'12px'});
+                const player_name = this.add.text(zone.x-30, zone.y+40, player_id_to_name[zone_id.split('_')[1]],{fontSize:'12px'});
+                player_name.name = 'playername_'+ zone_id.split('_')[1];
+                this.ui_elements.set(player_name.name, player_name);                
             }
         }
 
