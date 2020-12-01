@@ -1,6 +1,6 @@
 {
   "name": "cardgametable",
-  "version": "1.0.0",
+  "version": "0.4.0",
   "description": "A web-based virtual reconfigurable gametable for playing card games,",
   "main": "server/server.js",
   "scripts": {
