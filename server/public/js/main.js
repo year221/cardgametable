@@ -12,6 +12,9 @@ export default new Phaser.Game({
     dom: {
         createContainer: true
     },	
+    //pixelArt: true,
+    //antialias: false,
+    resolution: window.devicePixelRatio,
     // plugins: {
     //     scene: [
     //         { key: 'rexinputtextplugin', url: 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexinputtextplugin.min.js', start: true }            
