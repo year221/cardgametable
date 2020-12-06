@@ -11,3 +11,13 @@ $ docker build -t <container name> .
 ```
 # docker run -p 8080:3000 -d <container name>
 ```
+
+## Logging
+1. Set environment variable DEBUG to 'socket.io*'.
+```
+$env:DEBUG="socket.io*"
+```
+2. Run node and redirect stdout and stderr to two txt files on the public folder. 
+```
+node server/server.js > .\server\public\serverlog.txt 2> .\server\public\serverlog2.txt
+```
