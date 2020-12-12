@@ -72,41 +72,31 @@ export default class Game extends Phaser.Scene
     create()
     {
         console.log("run scene creation for game")
-        var self = this;
-        
+        var self = this;        
         this.activated_cards = this.add.group();
         this.new_selected_cards =this.add.group();
-        //this.to_be_deactivate_upon_pointer_up = this.add.group();
         // configuration
         this.input.dragDistanceThreshold=5;
         this.selection_box = this.add.rectangle(0, 0, 0, 0, 0x1d7196, 0.4);
-        const card_width=140;
-        const card_height=190;
+        //const card_width=140;
+        //const card_height=190;
 
+        // regular buttons
         const flip_button = this.add.text(400,265, 'FLIP Selected Card', {color:'#0f0', backgroundColor: '#666', fontSize:'12px'});
         flip_button.setInteractive();
-        flip_button.on('pointerdown', function(){
-            const all_activated_cards = self.activated_cards.getChildren();
-            all_activated_cards.forEach(card=>{card.flip_face();card.set_activated(false);});   
-            //self.flip_cards(all_activated_cards);   
-            //all_activated_cards.forEach(card=> {card.set_activated(false);});
-            const card_ids=all_activated_cards.map(card => card.card_id);            
-            self.last_event_index ++;
-            self.event_buffer.set(self.last_event_index, {'name':'cardFlipped', 'parameters':[card_ids]});                                                
-            self.socket.emit('cardFlipped', self.last_event_index, card_ids);                                            
-            self.activated_cards.clear();               
-        });
+        flip_button.on('pointerdown', this.action_flip_selected_cards, this);
 
         const deselect_button = this.add.text(300,265, 'Deselect', {color:'#0f0', backgroundColor: '#666', fontSize:'12px'});
         deselect_button.setInteractive();
-        deselect_button.on('pointerdown', function(){
-            const all_activated_cards = self.activated_cards.getChildren();
-            all_activated_cards.forEach(card=>{card.set_activated(false)});                
-            self.activated_cards.clear();  
-            while (self.to_be_deactivate_upon_pointer_up.length>0){
-                self.to_be_deactivate_upon_pointer_up.pop();     
-            }                            
-        });       
+        deselect_button.on('pointerdown', this.action_deselect, this);
+        // function(){
+        //     const all_activated_cards = self.activated_cards.getChildren();
+        //     all_activated_cards.forEach(card=>{card.set_activated(false)});                
+        //     self.activated_cards.clear();  
+        //     while (self.to_be_deactivate_upon_pointer_up.length>0){
+        //         self.to_be_deactivate_upon_pointer_up.pop();     
+        //     }                            
+        // });       
 
                 
 
@@ -116,7 +106,7 @@ export default class Game extends Phaser.Scene
             flip_all_button.on('pointerdown', function(){
                 const zone_id = 'Hand_'+ Client.player_id;
                 const card_ids = self.cards_in_zones.get(zone_id);
-                self.flip_cards_by_id(card_ids);                        
+                self.event_cardFlipped(card_ids);                        
                 self.last_event_index ++;
                 self.event_buffer.set(self.last_event_index, {'name':'cardFlipped', 'parameters':[card_ids]});                                                
                 self.socket.emit('cardFlipped', self.last_event_index, card_ids);        
@@ -261,21 +251,13 @@ export default class Game extends Phaser.Scene
             //console.log('pointerdown', pointer, gameObjects);
             //self.mouse_moved=false;
             if (pointer.rightButtonDown()){
+                // Flip cards
                 if ((gameObjects.length>=1) && (gameObjects[0] instanceof Card)){
                     self.activated_cards.add(gameObjects[0]);
                     //gameObjects[0].setTint(self.tint_color_for_activated_card);                                    
                     gameObjects[0].set_activated(true);
                 }
-                const all_activated_cards = self.activated_cards.getChildren();
-                //self.flip_cards(all_activated_cards);
-                all_activated_cards.forEach(card=>{card.flip_face();card.set_activated(false);});   
-                //all_activated_cards.forEach(card=> {card.set_activated(false);});
-                const card_ids=all_activated_cards.map(card => card.card_id);            
-                self.last_event_index ++;
-                self.event_buffer.set(self.last_event_index, {'name':'cardFlipped', 'parameters':[card_ids]});                                                
-                self.socket.emit('cardFlipped', self.last_event_index, card_ids); 
-                //self.flip_cards(self.activated_cards.getChildren());
-                self.activated_cards.clear();
+                this.action_flip_selected_cards();
             } else {        
                 //console.log('pointer', pointer.x, pointer.y)                                 
                 if (gameObjects.length>=1){
@@ -306,7 +288,7 @@ export default class Game extends Phaser.Scene
 
                 }
             }           
-        });
+        }, this);
 
         this.input.on('pointerup', function(pointer){  
             self.on_multiple_selection = false;
@@ -505,6 +487,56 @@ export default class Game extends Phaser.Scene
         console.log("creation done");        
     }        
     
+    /**
+     * event to flip cards by its id
+     * @param  {Array of [int, boolean]} [[card_id, face_up]]     
+     */
+    event_cardFlipped(card_id_and_faces) 
+    {
+        for (let [card_id, card_face] of card_id_and_faces){
+            this.all_cards.get(card_id).face_up = card_face;
+        }     
+    }
+
+    /**
+     * flip selected cards
+     * @param  {boolean} if true, flip to face up. If false, face down. If null or undefined, flip the face of cards.     
+     */
+    action_flip_selected_cards(flip_up){
+        const all_activated_cards = this.activated_cards.getChildren();
+        if ((flip_up===undefined) || (flip_up===null)){
+             all_activated_cards.forEach(card=>{card.flip_face();card.set_activated(false);});   
+        } else {
+             all_activated_cards.forEach(card=>{card.face_up=flip_up;card.set_activated(false);});   
+        }
+        
+        //const card_ids=all_activated_cards.map(card => card.card_id);          
+        this.last_event_index ++;
+        const card_id_faces = all_activated_cards.map(card=>[card.card_id, card.face_up]);
+        this.activated_cards.clear();   
+        console.log(card_id_faces);
+        this.event_buffer.set(this.last_event_index, {'name':'cardFlipped', 'parameters':[card_id_faces]});                                                
+        this.socket.emit('cardFlipped', this.last_event_index, card_id_faces);
+
+
+        //this.event_cardFlipped(card_ids, flip_up);          
+        //all_activated_cards.forEach(card=>{card.set_activated(false);});                                        
+         
+    }
+
+    /**
+     * deselect selected cards     
+     */
+    action_deselect(){
+        const all_activated_cards = this.activated_cards.getChildren();
+        all_activated_cards.forEach(card=>{card.set_activated(false)});                
+        this.activated_cards.clear();  
+        while (this.to_be_deactivate_upon_pointer_up.length>0){
+            this.to_be_deactivate_upon_pointer_up.pop();     
+        }  
+    }
+
+
     // set zone and button layouts
     clear_all_zones_and_buttons(){
         for (let [zone_id, zone] of this.all_zones){
@@ -866,7 +898,7 @@ export default class Game extends Phaser.Scene
                 if (event.name==='cardMoved'){
                     this.move_cards(...event.parameters);
                 } else if (event.name==='cardFlipped'){
-                    this.flip_cards_by_id(...event.parameters);
+                    this.event_cardFlipped(...event.parameters);
                 }
             }
         }
@@ -882,13 +914,7 @@ export default class Game extends Phaser.Scene
         }
         return score;
     }
-    // flip face of cards
-    flip_cards_by_id(card_ids)
-    {
-        for (let card_id of card_ids){
-            this.all_cards.get(card_id).flip_face();
-        }           
-    }
+
 
     //flip_cards(card_array){
     //    card_array.forEach(card=>{card.flip_face();});             

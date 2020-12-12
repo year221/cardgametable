@@ -224,12 +224,12 @@ io.on('connection', function (socket) {
   socket.on('requestGameSync', function(){    
     socket.emit('gameStateSync', game_state.last_events, game_state.cards_in_zones,  game_state.card_status);    
   })
-  socket.on('cardFlipped', function (event_index, card_ids)
+  socket.on('cardFlipped', function (event_index, card_id_and_faces)
   {
-    console.log('cardFlipped', game_state.socket_id_to_player_id.get(socket.id), event_index, card_ids);
+    console.log('cardFlipped', game_state.socket_id_to_player_id.get(socket.id), event_index, card_id_and_faces);
     game_state.last_events[game_state.socket_id_to_player_id.get(socket.id)]=event_index;
-    for (const card_id of card_ids){
-      game_state.card_status[card_id]=!(game_state.card_status[card_id]);
+    for (const [card_id, face_up] of card_id_and_faces){
+      game_state.card_status[card_id]=face_up;
     }
     io.sockets.emit('gameStateSync', game_state.last_events, null, game_state.card_status);
   });
