@@ -361,25 +361,27 @@ export default class Game extends Phaser.Scene
 
                 //const selected = this.list.filter(card=>selectionRect.ContainsPoint(card.getTopLeft()));
                 for (let [zone_id, cards_in_zone] of self.cards_in_zones){
-                    for (let card_id of cards_in_zone){
-                    //for (let [card_id, card] of self.all_cards){
-                        let card = self.all_cards.get(card_id);
-                        if (Phaser.Geom.Rectangle.ContainsPoint(selectionRect, card.getTopLeft())) {
-                            if (!self.activated_cards.contains(card)){
-                                // this is new
-                                self.new_selected_cards.add(card);
-                                self.activated_cards.add(card);
-                                card.set_activated(true);                            
+                    if (self.all_zones.get(zone_id).visible==true){
+                        for (let card_id of cards_in_zone){
+                        //for (let [card_id, card] of self.all_cards){
+                            let card = self.all_cards.get(card_id);
+                            if (Phaser.Geom.Rectangle.ContainsPoint(selectionRect, card.getTopLeft())) {
+                                if (!self.activated_cards.contains(card)){
+                                    // this is new
+                                    self.new_selected_cards.add(card);
+                                    self.activated_cards.add(card);
+                                    card.set_activated(true);                            
+                                }
+                            } else {
+                                if (self.new_selected_cards.contains(card)){
+                                    // this is selected this time
+                                    self.activated_cards.remove(card);
+                                    self.new_selected_cards.remove(card);
+                                    card.set_activated(false);
+                                }
                             }
-                        } else {
-                            if (self.new_selected_cards.contains(card)){
-                                // this is selected this time
-                                self.activated_cards.remove(card);
-                                self.new_selected_cards.remove(card);
-                                card.set_activated(false);
-                            }
-                        }
-                    }                    
+                        }                    
+                    }
                 }
             }
         });
