@@ -105,11 +105,12 @@ export default class Game extends Phaser.Scene
             flip_all_button.setInteractive();
             flip_all_button.on('pointerdown', function(){
                 const zone_id = 'Hand_'+ Client.player_id;
-                const card_ids = self.cards_in_zones.get(zone_id);
-                self.event_cardFlipped(card_ids);                        
-                self.last_event_index ++;
-                self.event_buffer.set(self.last_event_index, {'name':'cardFlipped', 'parameters':[card_ids]});                                                
-                self.socket.emit('cardFlipped', self.last_event_index, card_ids);        
+                self.action_flip_cards_in_a_zone(zone_id);
+                // const card_ids = self.cards_in_zones.get(zone_id);
+                // self.event_cardFlipped(card_ids);                        
+                // self.last_event_index ++;
+                // self.event_buffer.set(self.last_event_index, {'name':'cardFlipped', 'parameters':[card_ids]});                                                
+                // self.socket.emit('cardFlipped', self.last_event_index, card_ids);        
             });       
 
             const sort_button = this.add.text(0, 265, 'SORT', {color:'#0f0', backgroundColor: '#666', fontSize:'12px' });
@@ -499,26 +500,52 @@ export default class Game extends Phaser.Scene
     }
 
     /**
+     * flip cards     
+     * @param  {boolean} if true, flip to face up. If false, face down. If null or undefined, flip the face of cards.     
+     */
+    action_flip_cards(cards, flip_up){        
+        
+
+        if ((flip_up===undefined) || (flip_up===null)){
+            cards.forEach(card=>{card.flip_face()});
+        } else {
+            cards.forEach(card=>{card.face_up=flip_up});
+
+        }
+        const card_id_faces = cards.map(card=>[card.card_id, card.face_up]);        
+        this.last_event_index ++;        
+        console.log(card_id_faces);
+        this.event_buffer.set(this.last_event_index, {'name':'cardFlipped', 'parameters':[card_id_faces]});                                                
+        this.socket.emit('cardFlipped', this.last_event_index, card_id_faces);        
+    }
+
+    action_flip_cards_in_a_zone(zone_id, flip_up){
+        const cards = this.cards_in_zones.get(zone_id).map(card_id=>this.all_cards.get(card_id));
+        this.action_flip_cards(cards, flip_up);
+    }
+    /**
      * flip selected cards
      * @param  {boolean} if true, flip to face up. If false, face down. If null or undefined, flip the face of cards.     
      */
     action_flip_selected_cards(flip_up){
         const all_activated_cards = this.activated_cards.getChildren();
-        if ((flip_up===undefined) || (flip_up===null)){
-             all_activated_cards.forEach(card=>{card.flip_face();card.set_activated(false);});   
-        } else {
-             all_activated_cards.forEach(card=>{card.face_up=flip_up;card.set_activated(false);});   
-        }
+        this.action_flip_cards(all_activated_cards, flip_up);
+        // if ((flip_up===undefined) || (flip_up===null)){
+        //      all_activated_cards.forEach(card=>{card.flip_face();card.set_activated(false);});   
+        // } else {
+        //      all_activated_cards.forEach(card=>{card.face_up=flip_up;card.set_activated(false);});   
+        // }
         
-        //const card_ids=all_activated_cards.map(card => card.card_id);          
-        this.last_event_index ++;
-        const card_id_faces = all_activated_cards.map(card=>[card.card_id, card.face_up]);
+        // //const card_ids=all_activated_cards.map(card => card.card_id);          
+        // this.last_event_index ++;
+        // const card_id_faces = all_activated_cards.map(card=>[card.card_id, card.face_up]);
+        // this.activated_cards.clear();   
+        // console.log(card_id_faces);
+        // this.event_buffer.set(this.last_event_index, {'name':'cardFlipped', 'parameters':[card_id_faces]});                                                
+        // this.socket.emit('cardFlipped', this.last_event_index, card_id_faces);
+        
+        all_activated_cards.forEach(card=>{card.set_activated(false);});
         this.activated_cards.clear();   
-        console.log(card_id_faces);
-        this.event_buffer.set(this.last_event_index, {'name':'cardFlipped', 'parameters':[card_id_faces]});                                                
-        this.socket.emit('cardFlipped', this.last_event_index, card_id_faces);
-
-
         //this.event_cardFlipped(card_ids, flip_up);          
         //all_activated_cards.forEach(card=>{card.set_activated(false);});                                        
          
