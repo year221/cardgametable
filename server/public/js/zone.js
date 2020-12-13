@@ -34,12 +34,12 @@ export class CardZone extends Phaser.GameObjects.Rectangle
         this.card_scale=card_scale;
         
         this.max_num_cards_per_row = Math.floor((this.width- this.boundary_width*2)/this.card_step_x)+1;
-        
+        this.setData('card_ids', []);
        
         if (local_display===undefined){
             local_display=0;
         }
-        this.set_local_display(local_display);
+        this.set_local_display(local_display);  
     }
 
     set_zone_angle(angle){

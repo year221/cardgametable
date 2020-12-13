@@ -1,7 +1,7 @@
 import Phaser from './phaser.js';
 import {CardZone, calculate_circular_zone_xy} from './zone.js';
 import {PokerCard, Card} from './cards.js';
-import {TextButton, SortButton, MoveCardButton} from './textbutton.js';
+import {TextButton, SortButton, MoveCardButton, ScoreText} from './textbutton.js';
 
 export default class Game extends Phaser.Scene
 {
@@ -119,7 +119,8 @@ export default class Game extends Phaser.Scene
                 ] 
             });
             this.add.existing(sort_button);
-            sort_button.add_listener_to_scene();            
+            sort_button.add_listener_to_scene();       
+
         }
 
         this.input.on('dragstart', function (pointer, gameObject) {
@@ -379,7 +380,10 @@ export default class Game extends Phaser.Scene
                             //card_ids = Array.from(self.cards_in_zones.get(cfg.src_zone_id).slice(-num_of_cards));                            
                             card_ids = self.cards_in_zones.get(cfg.src_zone_id).slice(-num_of_cards);                            
                         }                        
+                        console.log('move cards', cfg.dst_zone_id, card_ids);
+                        //console.log('before move', self.all_zones.get(cfg.dst_zone_id).data.values);
                         self.move_cards(cfg.src_zone_id, cfg.dst_zone_id, card_ids);
+                        console.log('past move', self.all_zones.get(cfg.dst_zone_id).data.values);
                         self.last_event_index ++;
                         self.event_buffer.set(self.last_event_index, {'name':'cardMoved', 'parameters':[cfg.src_zone_id, cfg.dst_zone_id, card_ids]});                                                
                         self.socket.emit('cardMoved',  self.last_event_index, cfg.src_zone_id, cfg.dst_zone_id, card_ids,  null);                                
@@ -774,6 +778,18 @@ export default class Game extends Phaser.Scene
         }, this);  
 
         // text update
+        const test_score = new ScoreText(this,
+        {
+            x:-200,
+            y:265,
+            name: 'handtext',
+            text: 'number of cards ',
+            zone_id: 'Hand_'+ Client.player_id,
+            score_type: 'count'
+        });
+        this.add.existing(test_score);
+        test_score.add_listener_to_scene();
+        //
         for (let [zone_id, zone] of this.all_zones){            
             if (zone_id.split('_')[0]=='Score'){
                 let zone_player_id = zone_id.split('_')[1];
@@ -868,6 +884,7 @@ export default class Game extends Phaser.Scene
                
                 added_card_ids_of_changed_zones = added_card_ids_of_changed_zones.concat(new_cards_in_zone.filter(card_id => !cards_in_zone.includes(card_id)));
                 this.cards_in_zones.set(zone_id, new_cards_in_zone);
+                this.all_zones.get(zone_id).setData('card_ids', new_cards_in_zone); // use this to trigger update events
                 this.update_cards_in_zone(zone_id); 
             }
         }
@@ -951,6 +968,7 @@ export default class Game extends Phaser.Scene
                 card_removed.push(card_id);
             }            
         }      
+        this.all_zones.get(zone_id).setData('card_ids', cards_in_zone);// use this to trigger update events
         if (squeeze_cards_in_zone)
         {
             // squeeze cards
@@ -963,8 +981,9 @@ export default class Game extends Phaser.Scene
         const cards_in_zone = this.cards_in_zones.get(zone_id);
 
         if ((insertion_location === undefined) || (insertion_location===null)) { insertion_location = cards_in_zone.length; }
-        if (insertion_location > cards_in_zone.length) {insertion_location=cards_in_zone.length; }
+        if (insertion_location > cards_in_zone.length) {insertion_location=cards_in_zone.length; }        
         Phaser.Utils.Array.AddAt(cards_in_zone, card_ids, insertion_location);
+        this.all_zones.get(zone_id).setData('card_ids', Array.from(cards_in_zone));// use this to trigger update events
         this.update_cards_in_zone(zone_id, insertion_location);             
 
     }

@@ -80,3 +80,51 @@ export class MoveCardButton extends TextButton
         this.setInteractive();        
     }    
 }
+
+
+export class ScoreText extends Phaser.GameObjects.Text
+{    
+    target_zone_id;
+    score_type;
+    score_map;
+    constructor(scene, button_cfg){
+        super(scene,button_cfg['x'], button_cfg['y'], button_cfg['text'], button_cfg['style'])            
+        this.name = button_cfg['name']
+        this.button_text = button_cfg['text']
+        this.target_zone_id = button_cfg['zone_id']            
+        this.score_type = button_cfg['score_type']            
+        this.score_map = button_cfg['score_map']        
+    }
+
+    update_score(card_ids){
+        let score = 0;
+        if (this.score_type == 'count'){
+            score=card_ids.length
+        } else {
+            for (let card_id of card_ids){
+                const card_score = this.score_map[card_id.split('_')[0]];
+                if (card_score!==undefined){
+                    score += card_score;
+                }
+            }            
+        }
+        return score
+                
+    }    
+    add_listener_to_scene(){
+        const zone = this.scene.all_zones.get(this.target_zone_id);
+        // if (zone.data == null){
+        //     zone.setDataEnabled();
+        // }
+        zone.on('changedata-card_ids', function(parent, value, previousValue){            
+            console.log('data card_ids changed');
+            this.text=this.button_text + String(this.update_score(value));
+        }, this);   
+        // zone.on('changedata', function(parent, key, value, previousValue){            
+        //     console.log('data changed with key', key, value)            
+        // }, this);      
+        // zone.on('setdata', function(parent, key, value){            
+        //     console.log('data set with key', key, value)    
+        // }, this);                
+    }    
+}
