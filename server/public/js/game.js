@@ -1,7 +1,7 @@
 import Phaser from './phaser.js';
 import {CardZone, calculate_circular_zone_xy} from './zone.js';
 import {PokerCard, Card} from './cards.js';
-import {TextButton, SortButton, MoveCardButton, ScoreText} from './textbutton.js';
+import {TextButton, SortButton, MoveCardButton, SimpleEventButton, ScoreText, addInputText} from './textbutton.js';
 
 export default class Game extends Phaser.Scene
 {
@@ -90,6 +90,18 @@ export default class Game extends Phaser.Scene
         deselect_button.setInteractive();
         deselect_button.on('pointerdown', this.action_deselect, this);                
 
+        // const reset_button2 = new SimpleEventButton(this, 
+        //     {
+        //         x:200,
+        //         y:265,
+        //         name: 'resetgame2',
+        //         text: 'RESET',
+        //     },
+        //     this.action_new_game_ground.bind(this)
+        //     );
+
+        // this.add.existing(reset_button2);
+        // reset_button2.add_listener_to_scene();       
         if (Math.floor(Client.player_id)>=0){
             const flip_all_button = this.add.text(100,265, 'FLIP ALL', {color:'#0f0', backgroundColor: '#666', fontSize:'12px'});
             flip_all_button.setInteractive();
@@ -380,10 +392,10 @@ export default class Game extends Phaser.Scene
                             //card_ids = Array.from(self.cards_in_zones.get(cfg.src_zone_id).slice(-num_of_cards));                            
                             card_ids = self.cards_in_zones.get(cfg.src_zone_id).slice(-num_of_cards);                            
                         }                        
-                        console.log('move cards', cfg.dst_zone_id, card_ids);
+                        //console.log('move cards', cfg.dst_zone_id, card_ids);
                         //console.log('before move', self.all_zones.get(cfg.dst_zone_id).data.values);
                         self.move_cards(cfg.src_zone_id, cfg.dst_zone_id, card_ids);
-                        console.log('past move', self.all_zones.get(cfg.dst_zone_id).data.values);
+                        //console.log('past move', self.all_zones.get(cfg.dst_zone_id).data.values);
                         self.last_event_index ++;
                         self.event_buffer.set(self.last_event_index, {'name':'cardMoved', 'parameters':[cfg.src_zone_id, cfg.dst_zone_id, card_ids]});                                                
                         self.socket.emit('cardMoved',  self.last_event_index, cfg.src_zone_id, cfg.dst_zone_id, card_ids,  null);                                
@@ -473,6 +485,10 @@ export default class Game extends Phaser.Scene
         for (let [card_id, card_face] of card_id_and_faces){
             this.all_cards.get(card_id).face_up = card_face;
         }     
+    }
+
+    action_new_game_ground(){
+        this.socket.emit('resetGame');    
     }
 
     /**
@@ -758,24 +774,40 @@ export default class Game extends Phaser.Scene
             }
         }        
         // white board
-        const whiteboard = this.add.rexInputText(
-            -550,
-            380,
-            90, 201.5,
-            {
-            type: 'textarea',
-            text: "WhiteBoard",
-            fontSize: '10px',
-            border: 2,    
-            borderColor: '#888888',
-            }
-        ); 
+        const whiteboard = addInputText(this, 
+        {
+            x: -550,
+            y: 380,
+            width: 90,
+            height: 201.5,
+            name: 'whiteboard',
+            text: 'whiteboard',
+            input_type: 'textarea',
+            style: {
+                fontSize: '12px',
+                border: 2,
+                borderColor: '#888888'
+            },
+        });
+        console.log(whiteboard);
+        // const whiteboard = this.add.rexInputText(
+        //     -550,
+        //     380,
+        //     90, 201.5,
+        //     {
+        //     type: 'textarea',
+        //     text: "WhiteBoard",
+        //     fontSize: '10px',
+        //     border: 2,    
+        //     borderColor: '#888888',
+        //     }
+        // ); 
 
-        whiteboard.name =  'whiteboard';
-        this.ui_elements.set(whiteboard.name, whiteboard);
-        whiteboard.on('textchange', function(inputText){ 
-            this.socket.emit('uiElementTextSync', inputText.name, inputText.text);
-        }, this);  
+        // whiteboard.name =  'whiteboard';
+        // this.ui_elements.set(whiteboard.name, whiteboard);
+        // whiteboard.on('textchange', function(inputText){ 
+        //     this.socket.emit('uiElementTextSync', inputText.name, inputText.text);
+        // }, this);  
 
         // text update
         const test_score = new ScoreText(this,
@@ -789,58 +821,58 @@ export default class Game extends Phaser.Scene
         });
         this.add.existing(test_score);
         test_score.add_listener_to_scene();
-        //
-        for (let [zone_id, zone] of this.all_zones){            
-            if (zone_id.split('_')[0]=='Score'){
-                let zone_player_id = zone_id.split('_')[1];
-                //let element_grp = {elements:[]}
+        // //
+        // for (let [zone_id, zone] of this.all_zones){            
+        //     if (zone_id.split('_')[0]=='Score'){
+        //         let zone_player_id = zone_id.split('_')[1];
+        //         //let element_grp = {elements:[]}
                 
-                const textscore = this.add.text(zone.x+120, zone.y+20, '0',{fontSize:'12px'});                                
-                this.zone_linked_update.set(zone_id, 'scorecard_'+zone_player_id);
-                //element_grp.elements.push(textscore); 
-                textscore.name = 'scorecard_'+zone_player_id;
-                this.ui_elements.set(textscore.name, textscore);
-            } else if (zone_id.split('_')[0]=='Hand'){
-                let zone_player_id = zone_id.split('_')[1];
-                if (zone_player_id == String(Client.player_id)){
-                    //let element_grp = {elements:[]}
-                    //this.ui_elements.set('countcard_'+zone_player_id, element_grp);
-                    const textscore = this.add.text(zone.x-400, zone.y-110, '0',{fontSize:'12px'});                                                    
-                    //element_grp.elements.push(textscore); 
-                    textscore.name = 'countcard_'+zone_player_id;
-                    this.ui_elements.set(textscore.name, textscore);                                       
-                    this.zone_linked_update.set(zone_id, textscore.name);
-                }                    
-            } else if (zone_id=='SharedScore'){                
-                //let element_grp = {elements:[]}
-                //this.ui_elements.set('scorecard_SharedScore', element_grp);
-                const textscore = this.add.text(zone.x+220, zone.y+20, '0',{fontSize:'12px'});                                
-                //this.zone_linked_update.set(zone_id, 'scorecard_SharedScore');
-                //element_grp.elements.push(textscore); 
-                textscore.name = 'scorecard_SharedScore';
-                this.ui_elements.set(textscore.name, textscore);                                       
-                this.zone_linked_update.set(zone_id, textscore.name);
-            } else if (zone_id =='CardDealer'){
-                //let element_grp = {elements:[]}
-                //this.ui_elements.set('countcard_CardDealer', element_grp);
-                const textscore = this.add.text(zone.x, zone.y+40, '0',{fontSize:'12px'});                                
-                //this.zone_linked_update.set(zone_id, 'countcard_CardDealer');
-                //element_grp.elements.push(textscore);      
-                textscore.name = 'countcard_CardDealer';
-                this.ui_elements.set(textscore.name, textscore);                                       
-                this.zone_linked_update.set(zone_id, textscore.name);                             
-            } else if (zone_id =='Hidden'){
-                //let element_grp = {elements:[]}
-                //this.ui_elements.set('countcard_Hidden', element_grp);
-                const textscore = this.add.text(zone.x-100, zone.y+40, '0',{fontSize:'12px'});                                
-                // this.zone_linked_update.set(zone_id, 'countcard_Hidden');
-                // element_grp.elements.push(textscore);  
-                //element_grp.elements.push(textscore);      
-                textscore.name = 'countcard_Hidden';
-                this.ui_elements.set(textscore.name, textscore);                                       
-                this.zone_linked_update.set(zone_id, textscore.name);                                    
-            }
-        }          
+        //         const textscore = this.add.text(zone.x+120, zone.y+20, '0',{fontSize:'12px'});                                
+        //         this.zone_linked_update.set(zone_id, 'scorecard_'+zone_player_id);
+        //         //element_grp.elements.push(textscore); 
+        //         textscore.name = 'scorecard_'+zone_player_id;
+        //         this.ui_elements.set(textscore.name, textscore);
+        //     } else if (zone_id.split('_')[0]=='Hand'){
+        //         let zone_player_id = zone_id.split('_')[1];
+        //         if (zone_player_id == String(Client.player_id)){
+        //             //let element_grp = {elements:[]}
+        //             //this.ui_elements.set('countcard_'+zone_player_id, element_grp);
+        //             const textscore = this.add.text(zone.x-400, zone.y-110, '0',{fontSize:'12px'});                                                    
+        //             //element_grp.elements.push(textscore); 
+        //             textscore.name = 'countcard_'+zone_player_id;
+        //             this.ui_elements.set(textscore.name, textscore);                                       
+        //             this.zone_linked_update.set(zone_id, textscore.name);
+        //         }                    
+        //     } else if (zone_id=='SharedScore'){                
+        //         //let element_grp = {elements:[]}
+        //         //this.ui_elements.set('scorecard_SharedScore', element_grp);
+        //         const textscore = this.add.text(zone.x+220, zone.y+20, '0',{fontSize:'12px'});                                
+        //         //this.zone_linked_update.set(zone_id, 'scorecard_SharedScore');
+        //         //element_grp.elements.push(textscore); 
+        //         textscore.name = 'scorecard_SharedScore';
+        //         this.ui_elements.set(textscore.name, textscore);                                       
+        //         this.zone_linked_update.set(zone_id, textscore.name);
+        //     } else if (zone_id =='CardDealer'){
+        //         //let element_grp = {elements:[]}
+        //         //this.ui_elements.set('countcard_CardDealer', element_grp);
+        //         const textscore = this.add.text(zone.x, zone.y+40, '0',{fontSize:'12px'});                                
+        //         //this.zone_linked_update.set(zone_id, 'countcard_CardDealer');
+        //         //element_grp.elements.push(textscore);      
+        //         textscore.name = 'countcard_CardDealer';
+        //         this.ui_elements.set(textscore.name, textscore);                                       
+        //         this.zone_linked_update.set(zone_id, textscore.name);                             
+        //     } else if (zone_id =='Hidden'){
+        //         //let element_grp = {elements:[]}
+        //         //this.ui_elements.set('countcard_Hidden', element_grp);
+        //         const textscore = this.add.text(zone.x-100, zone.y+40, '0',{fontSize:'12px'});                                
+        //         // this.zone_linked_update.set(zone_id, 'countcard_Hidden');
+        //         // element_grp.elements.push(textscore);  
+        //         //element_grp.elements.push(textscore);      
+        //         textscore.name = 'countcard_Hidden';
+        //         this.ui_elements.set(textscore.name, textscore);                                       
+        //         this.zone_linked_update.set(zone_id, textscore.name);                                    
+        //     }
+        // }          
         
     }
 

@@ -304,7 +304,7 @@ io.on('connection', function (socket) {
   });  
 
   socket.on('uiElementTextSync', function(element_name, text){
-    //console.log('uiElementTextSync', element_name, text); 
+    console.log('uiElementTextSync', element_name, text); 
     socket.broadcast.emit('uiElementTextSync', element_name, text); 
   });
   

@@ -16,7 +16,11 @@ export class TextButton extends Phaser.GameObjects.Text
         } else if (value==0){
             this.clearTint();
         }
-    }        
+    }    
+
+    add_listener_to_scene(){
+
+    }    
 }
 
 
@@ -41,6 +45,7 @@ export class SortButton extends TextButton
     }
 
     add_listener_to_scene(){
+        super.add_listener_to_scene();
         this.on('pointerdown', function(pointer, localX, localY, event){            
             const sorted_card_ids = sort_cards(this.scene.cards_in_zones.get(this.target_zone_id), this.sort_key_array);            
             //sorted_card_ids.sort((a,b)=>sort_key_array.indexOf(a.split('_')[0])-sort_key_array.indexOf(b.split('_')[0]));     
@@ -68,6 +73,7 @@ export class MoveCardButton extends TextButton
     }
 
     add_listener_to_scene(){
+        super.add_listener_to_scene();
         this.on('pointerdown', function(pointer, localX, localY, event){ 
 
             let card_ids = Array.from(this.scene.cards_in_zones.get(this.src_zone_id));
@@ -127,4 +133,41 @@ export class ScoreText extends Phaser.GameObjects.Text
         //     console.log('data set with key', key, value)    
         // }, this);                
     }    
+}
+
+export class SimpleEventButton extends TextButton
+{    
+    event_handler;
+    constructor(scene, button_cfg, event_handler){
+        super(scene,button_cfg['x'], button_cfg['y'], button_cfg['text'], button_cfg['style'])            
+        this.name = button_cfg['name']
+        this.event_handler=event_handler;//.bind(scene);
+    }
+
+    add_listener_to_scene(){
+        super.add_listener_to_scene();
+        this.on('pointerdown', function(pointer, localX, localY, event){ 
+            this.event_handler();
+            event.stopPropagation()
+        });        
+        this.setInteractive();        
+    }    
+}
+
+export function addInputText(scene, cfg){        
+        const text_cfg = Object.assign(
+            {text: cfg['text'],
+            type:cfg['input_type']},
+            cfg['style'])
+
+        const textinput = scene.add.rexInputText(
+            cfg['x'], cfg['y'], cfg['width'], cfg['height'],
+            text_cfg);
+
+        textinput.name = cfg['name'];
+        scene.ui_elements.set(textinput.name, textinput);
+        textinput.on('textchange', function(inputText, e){ 
+            this.socket.emit('uiElementTextSync', inputText.name, inputText.text);
+        }, scene);  
+        return textinput        
 }
