@@ -1,7 +1,7 @@
 import Phaser from './phaser.js';
 import {CardZone, calculate_circular_zone_xy} from './zone.js';
 import {PokerCard, Card} from './cards.js';
-import {TextButton, SortButton, MoveCardButton, SimpleEventButton, ScoreText, addInputText} from './textbutton.js';
+import {TextButton, SortButton, MoveCardButton, SimpleEventButton, ScoreText, addInputText, addNewDeck} from './textbutton.js';
 
 export default class Game extends Phaser.Scene
 {
@@ -101,7 +101,8 @@ export default class Game extends Phaser.Scene
         //     );
 
         // this.add.existing(reset_button2);
-        // reset_button2.add_listener_to_scene();       
+        // reset_button2.add_listener_to_scene();      
+
         if (Math.floor(Client.player_id)>=0){
             const flip_all_button = this.add.text(100,265, 'FLIP ALL', {color:'#0f0', backgroundColor: '#666', fontSize:'12px'});
             flip_all_button.setInteractive();
@@ -487,9 +488,13 @@ export default class Game extends Phaser.Scene
         }     
     }
 
-    action_new_game_ground(){
+    action_new_game_round(){
         this.socket.emit('resetGame');    
     }
+
+    action_exit_to_room(){ 
+        this.socket.emit('exitToGameRoom');
+    }    
 
     /**
      * flip cards     
@@ -556,13 +561,15 @@ export default class Game extends Phaser.Scene
             
     }
 
+
+
     action_move_cards(src_zone_id, dst_zone_id, card_ids, insertion_location){
         this.move_cards(src_zone_id, dst_zone_id, card_ids, insertion_location);
         //this.update_cards_in_zone(zone_id);
         this.last_event_index ++;
         this.event_buffer.set(this.last_event_index, {'name':'cardMoved', 'parameters':[src_zone_id, dst_zone_id, card_ids, insertion_location]});                                                
         this.socket.emit('cardMoved',  this.last_event_index, src_zone_id, dst_zone_id, card_ids, insertion_location);  
-    }
+    }    
     // set zone and button layouts
     clear_all_zones_and_buttons(){
         for (let [zone_id, zone] of this.all_zones){
@@ -790,6 +797,41 @@ export default class Game extends Phaser.Scene
             },
         });
         console.log(whiteboard);
+
+        let all_cards_prototype = [];
+        for (let suit of ['S', 'H', 'C','D']) {
+          for (let num of ['2','3','4','5','6','7','8','9','10','J','Q','K','A']){
+            all_cards_prototype.push(suit+num)
+          }
+        }
+        all_cards_prototype.push('J1');
+        all_cards_prototype.push('J2');
+        addNewDeck(this, 
+            {        
+                "type": "deck_generator",
+                "name": "AddNewDeck",
+                "generate_button_label": "NewCards",
+                "dst_zone_id": "CardDealer",
+                "all_card_ids_in_a_deck":all_cards_prototype,
+                "shuffle": true,
+                "x": -450,
+                "y": -200,
+                "button": {
+                "text": "AddNewDeck",
+                },
+                "input": {
+                "offset_x": 90,
+                "offset_y": -8,
+                "default": "4"
+                },
+                "label": {
+                "offset_x": 0,
+                "offset_y": -15,
+                "text": "#Decks",
+                }
+            }
+        ); 
+
         // const whiteboard = this.add.rexInputText(
         //     -550,
         //     380,

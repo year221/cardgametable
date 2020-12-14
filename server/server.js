@@ -234,6 +234,28 @@ io.on('connection', function (socket) {
     io.sockets.emit('gameStateSync', game_state.last_events, null, game_state.card_status);
   });
   
+  socket.on('addNewCard', function(event_index, dst_zone_id, card_ids, card_status, strict){
+    console.log("addNewCard", event_index, dst_zone_id, card_ids, card_status, strict);
+    game_state.last_events[game_state.socket_id_to_player_id.get(socket.id)]=event_index;
+    
+    if ((strict===undefined) || (strict===null)){
+      strict =true;
+    }
+    // remove card that already exists    
+    let new_card_ids = card_ids.filter(card_id => !game_state.card_status.hasOwnProperty(card_id))
+    // if strict, then if any card_id already exist, we will not add the whole set of cards. 
+    if ((!strict) || (new_card_ids.length==card_ids.length)){        
+       
+       if (game_state.cards_in_zones[dst_zone_id]===undefined){
+        game_state.cards_in_zones[dst_zone_id]=[]
+       };
+       game_state.cards_in_zones[dst_zone_id]  = game_state.cards_in_zones[dst_zone_id].concat(new_card_ids); 
+       for (let card_id in new_card_ids){
+          game_state.card_status[card_id]=card_status[card_id];
+       }
+    }
+    io.sockets.emit('gameStateSync', game_state.last_events, game_state.cards_in_zones,  game_state.card_status);
+  });
   socket.on('generateCard', function(event_index, dst_zone_id, n_decks, shuffle){
     console.log("generateCard", event_index, dst_zone_id, n_decks, shuffle);
     game_state.last_events[game_state.socket_id_to_player_id.get(socket.id)]=event_index;

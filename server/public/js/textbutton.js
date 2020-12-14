@@ -141,7 +141,7 @@ export class SimpleEventButton extends TextButton
     constructor(scene, button_cfg, event_handler){
         super(scene,button_cfg['x'], button_cfg['y'], button_cfg['text'], button_cfg['style'])            
         this.name = button_cfg['name']
-        this.event_handler=event_handler;//.bind(scene);
+        this.event_handler=event_handler;//.bind(scene);        
     }
 
     add_listener_to_scene(){
@@ -170,4 +170,79 @@ export function addInputText(scene, cfg){
             this.socket.emit('uiElementTextSync', inputText.name, inputText.text);
         }, scene);  
         return textinput        
+}
+const shuffle_array_in_place = function(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+      let j = Math.floor(Math.random() * (i + 1)); // random index from 0 to i
+  
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+  }
+export function addNewDeck(scene, cfg){
+
+    const label_text = scene.add.text(
+        cfg.x+cfg.label.offset_x,
+        cfg.y+cfg.label.offset_y, 
+        cfg.label.text,
+        {fontSize:'12px'});
+    scene.ui_elements.set(cfg.name+'_label', label_text)
+
+    const num_deck_selector = scene.add.rexInputText(
+        cfg.x+cfg.input.offset_x,
+        cfg.y+cfg.input.offset_y,                    
+        40, 20,
+        {
+        type: 'number',
+        text: cfg.input.default,
+        fontSize: '12px',
+        }
+    );
+    num_deck_selector.name = cfg.name+'_numdeckinput';
+    scene.ui_elements.set(num_deck_selector.name, num_deck_selector);
+    num_deck_selector.on('textchange', function(inputText){ 
+        this.socket.emit('uiElementTextSync', inputText.name, inputText.text);
+    }, scene);                
+
+    const all_card_ids_in_a_deck  = Array.from(cfg['all_card_ids_in_a_deck']);
+    const dst_zone_id = cfg['dst_zone_id']
+    const shuffle = cfg['shuffle']
+    if (shuffle===undefined){
+        shuffle = true;
+    }
+    let generate_card = function(){
+        const n_decks = Math.round(num_deck_selector.text);       
+        let max_deck_num = Math.max(...Array.from(scene.all_cards.keys()).map(card_id=> card_id.split('_')[1]));
+        if (max_deck_num<0){max_deck_num=-1;}       
+        let card_id_generated = [];
+
+        for (let i=max_deck_num+1; i<=max_deck_num+n_decks; i++){
+          const str_i = String(i);        
+          card_id_generated=card_id_generated.concat(all_card_ids_in_a_deck.map(card_proto => card_proto+'_'+str_i));                  
+        }
+        if (shuffle){
+            shuffle_array_in_place(card_id_generated); 
+        }
+        let card_status = {};
+        for (const card_id of card_id_generated){
+            card_status[card_id] = false;
+        }        
+        
+        scene.last_event_index ++;            
+        scene.event_buffer.set(scene.last_event_index, {'name':'addNewCard', 'parameters':[dst_zone_id, card_id_generated, card_status, true]});                        
+        scene.socket.emit('addNewCard', scene.last_event_index, dst_zone_id, card_id_generated, card_status, true);                           
+    };
+
+    const generate_button = new SimpleEventButton(
+        scene, 
+        {
+            x: cfg.x,
+            y: cfg.y,
+            text: cfg.button.text,
+            name : cfg.name + '_submitbutton',
+        },
+        generate_card,
+        );  
+    scene.add.existing(generate_button);   
+    scene.ui_elements.set(generate_button.name, generate_button);          
+    generate_button.add_listener_to_scene();
 }
