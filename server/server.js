@@ -12,14 +12,14 @@ app.get('/', function (req, res) {
   res.sendFile(__dirname + '/index.html');
 });
 
-let all_cards_prototype = [];
-for (let suit of ['S', 'H', 'C','D']) {
-  for (let num of ['2','3','4','5','6','7','8','9','10','J','Q','K','A']){
-    all_cards_prototype.push(suit+num)
-  }
-}
-all_cards_prototype.push('J1');
-all_cards_prototype.push('J2');
+// let all_cards_prototype = [];
+// for (let suit of ['S', 'H', 'C','D']) {
+//   for (let num of ['2','3','4','5','6','7','8','9','10','J','Q','K','A']){
+//     all_cards_prototype.push(suit+num)
+//   }
+// }
+// all_cards_prototype.push('J1');
+// all_cards_prototype.push('J2');
 
 game_state = {
   status: "Waiting",
@@ -256,39 +256,39 @@ io.on('connection', function (socket) {
     }
     io.sockets.emit('gameStateSync', game_state.last_events, game_state.cards_in_zones,  game_state.card_status);
   });
-  socket.on('generateCard', function(event_index, dst_zone_id, n_decks, shuffle){
-    console.log("generateCard", event_index, dst_zone_id, n_decks, shuffle);
-    game_state.last_events[game_state.socket_id_to_player_id.get(socket.id)]=event_index;
-    // generate new deck id
-    let max_deck_num = Math.max(...game_state.zone_ids.map(zone_id=> Math.max(...game_state.cards_in_zones[zone_id].map(card_id=> card_id.split('_')[1]))));
-    if (max_deck_num<0){max_deck_num=0;}
-    //console.log(max_deck_num);
-    // for (let cards_in_zone of game_state.cards_in_zones){
-    //   Math.max(...cards_in_zone.map(card_id=> card_id.split('_')[1]))
-    // }
-    let card_id_generated = [];
+  // socket.on('generateCard', function(event_index, dst_zone_id, n_decks, shuffle){
+  //   console.log("generateCard", event_index, dst_zone_id, n_decks, shuffle);
+  //   game_state.last_events[game_state.socket_id_to_player_id.get(socket.id)]=event_index;
+  //   // generate new deck id
+  //   let max_deck_num = Math.max(...game_state.zone_ids.map(zone_id=> Math.max(...game_state.cards_in_zones[zone_id].map(card_id=> card_id.split('_')[1]))));
+  //   if (max_deck_num<0){max_deck_num=0;}
+  //   //console.log(max_deck_num);
+  //   // for (let cards_in_zone of game_state.cards_in_zones){
+  //   //   Math.max(...cards_in_zone.map(card_id=> card_id.split('_')[1]))
+  //   // }
+  //   let card_id_generated = [];
 
-    for (let i=max_deck_num+1; i<=max_deck_num+n_decks; i++){
-      const str_i = String(i);        
-      card_id_generated=card_id_generated.concat(all_cards_prototype.map(card_proto => card_proto+'_'+str_i));        
-      console.log(max_deck_num, n_decks, str_i, card_id_generated.length);
-    }
-    for (const card_id of card_id_generated){
-      game_state.card_status[card_id] = false;
-    }
-    if ((shuffle === undefined) || (shuffle == null) || (shuffle)){
-      utils.shuffle(card_id_generated); 
-    } 
-    //console.log(card_id_generated);
-    let dst_zone = game_state.cards_in_zones[dst_zone_id];
-    if (dst_zone===undefined){
-      game_state.zone_ids.push(dst_zone_id);
-      game_state.cards_in_zones[dst_zone_id] =  card_id_generated;
-    } else {
-      game_state.cards_in_zones[dst_zone_id]= game_state.cards_in_zones[dst_zone_id].concat(card_id_generated);
-    }
-    io.sockets.emit('gameStateSync', game_state.last_events, game_state.cards_in_zones,  game_state.card_status);
-  });
+  //   for (let i=max_deck_num+1; i<=max_deck_num+n_decks; i++){
+  //     const str_i = String(i);        
+  //     card_id_generated=card_id_generated.concat(all_cards_prototype.map(card_proto => card_proto+'_'+str_i));        
+  //     console.log(max_deck_num, n_decks, str_i, card_id_generated.length);
+  //   }
+  //   for (const card_id of card_id_generated){
+  //     game_state.card_status[card_id] = false;
+  //   }
+  //   if ((shuffle === undefined) || (shuffle == null) || (shuffle)){
+  //     utils.shuffle(card_id_generated); 
+  //   } 
+  //   //console.log(card_id_generated);
+  //   let dst_zone = game_state.cards_in_zones[dst_zone_id];
+  //   if (dst_zone===undefined){
+  //     game_state.zone_ids.push(dst_zone_id);
+  //     game_state.cards_in_zones[dst_zone_id] =  card_id_generated;
+  //   } else {
+  //     game_state.cards_in_zones[dst_zone_id]= game_state.cards_in_zones[dst_zone_id].concat(card_id_generated);
+  //   }
+  //   io.sockets.emit('gameStateSync', game_state.last_events, game_state.cards_in_zones,  game_state.card_status);
+  // });
   socket.on('cardMoved', function (event_index, src_zone_id, dst_zone_id, card_ids, dst_pos_in_zone) {
     console.log('cardMoved', game_state.socket_id_to_player_id.get(socket.id), event_index, card_ids, src_zone_id, dst_zone_id, dst_pos_in_zone);
 /*     let index = game_state.cards_in_zone[src_zone_id].indexOf(card_id);

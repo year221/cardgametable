@@ -1,7 +1,7 @@
 import Phaser from './phaser.js';
 import {CardZone, calculate_circular_zone_xy} from './zone.js';
 import {PokerCard, Card} from './cards.js';
-import {TextButton, SortButton, MoveCardButton, SimpleEventButton, ScoreText, addInputText, addNewDeck} from './textbutton.js';
+import {TextButton, SortButton, MoveCardButton, SimpleEventButton, ScoreText, addInputText, addNewDeck, addNewDealer} from './textbutton.js';
 
 export default class Game extends Phaser.Scene
 {
@@ -370,37 +370,38 @@ export default class Game extends Phaser.Scene
                 gameObject.highlight(1);                
                 const button_param = gameObject.params;
                 //console.log('button_clicked', button_param);
-                if (button_param.event_name ==='generateCard'){
-                    //const n_decks=1;
-                    const n_decks = Math.round(button_param.num_card_textbox.text);
-                    self.last_event_index ++;            
-                    self.event_buffer.set(self.last_event_index, {'name':'generateCard', 'parameters':[button_param.target_zone, n_decks]});                        
-                    self.socket.emit('generateCard', self.last_event_index, button_param.target_zone, n_decks, true);                         
-                } else if (button_param.event_name ==='resetGame'){
+                // if (button_param.event_name ==='generateCard'){
+                //     //const n_decks=1;
+                //     const n_decks = Math.round(button_param.num_card_textbox.text);
+                //     self.last_event_index ++;            
+                //     self.event_buffer.set(self.last_event_index, {'name':'generateCard', 'parameters':[button_param.target_zone, n_decks]});                        
+                //     self.socket.emit('generateCard', self.last_event_index, button_param.target_zone, n_decks, true);                         
+                // } else 
+                if (button_param.event_name ==='resetGame'){
                     self.socket.emit('resetGame');    
                 } else if (button_param.event_name ==='exitToGameRoom'){
                     self.socket.emit('exitToGameRoom');                        
-                } else if (button_param.event_name ==='moveCards'){
-                    for (let cfg of button_param.move_card_cfg){                                 
-                        let card_ids = [];
-                        if (cfg.type == 'all'){
-                            card_ids = Array.from(self.cards_in_zones.get(cfg.src_zone_id));
+                // } else if (button_param.event_name ==='moveCards'){
+                //     for (let cfg of button_param.move_card_cfg){                                 
+                //         let card_ids = [];
+                //         if (cfg.type == 'all'){
+                //             card_ids = Array.from(self.cards_in_zones.get(cfg.src_zone_id));
 
-                        } else if (cfg.type=='fixed'){
-                            card_ids = self.cards_in_zones.get(cfg.src_zone_id).slice(-Math.floor(cfg.num_of_card));                            
-                        } else if (cfg.type=='ui'){
-                            const num_of_cards = Math.round(cfg.textbox.text);              
-                            //card_ids = Array.from(self.cards_in_zones.get(cfg.src_zone_id).slice(-num_of_cards));                            
-                            card_ids = self.cards_in_zones.get(cfg.src_zone_id).slice(-num_of_cards);                            
-                        }                        
-                        //console.log('move cards', cfg.dst_zone_id, card_ids);
-                        //console.log('before move', self.all_zones.get(cfg.dst_zone_id).data.values);
-                        self.move_cards(cfg.src_zone_id, cfg.dst_zone_id, card_ids);
-                        //console.log('past move', self.all_zones.get(cfg.dst_zone_id).data.values);
-                        self.last_event_index ++;
-                        self.event_buffer.set(self.last_event_index, {'name':'cardMoved', 'parameters':[cfg.src_zone_id, cfg.dst_zone_id, card_ids]});                                                
-                        self.socket.emit('cardMoved',  self.last_event_index, cfg.src_zone_id, cfg.dst_zone_id, card_ids,  null);                                
-                    }                    
+                //         } else if (cfg.type=='fixed'){
+                //             card_ids = self.cards_in_zones.get(cfg.src_zone_id).slice(-Math.floor(cfg.num_of_card));                            
+                //         } else if (cfg.type=='ui'){
+                //             const num_of_cards = Math.round(cfg.textbox.text);              
+                //             //card_ids = Array.from(self.cards_in_zones.get(cfg.src_zone_id).slice(-num_of_cards));                            
+                //             card_ids = self.cards_in_zones.get(cfg.src_zone_id).slice(-num_of_cards);                            
+                //         }                        
+                //         //console.log('move cards', cfg.dst_zone_id, card_ids);
+                //         //console.log('before move', self.all_zones.get(cfg.dst_zone_id).data.values);
+                //         self.move_cards(cfg.src_zone_id, cfg.dst_zone_id, card_ids);
+                //         //console.log('past move', self.all_zones.get(cfg.dst_zone_id).data.values);
+                //         self.last_event_index ++;
+                //         self.event_buffer.set(self.last_event_index, {'name':'cardMoved', 'parameters':[cfg.src_zone_id, cfg.dst_zone_id, card_ids]});                                                
+                //         self.socket.emit('cardMoved',  self.last_event_index, cfg.src_zone_id, cfg.dst_zone_id, card_ids,  null);                                
+                //     }                    
                 }
             } 
         });
@@ -634,40 +635,43 @@ export default class Game extends Phaser.Scene
         // layout buttons
         for (let ui_element of layout_cfg['ui_elements']){            
             if (ui_element.type=='deck_generator'){
+                addNewDeck(this, 
+                    ui_element
+                );                 
 
-                this.ui_elements.set(ui_element.name+'_text', this.add.text(
-                    ui_element.x+ui_element.label.offset_x,
-                    ui_element.y+ui_element.label.offset_y, 
-                    ui_element.label.text,
-                    {fontSize:'12px'}));
+                // this.ui_elements.set(ui_element.name+'_text', this.add.text(
+                //     ui_element.x+ui_element.label.offset_x,
+                //     ui_element.y+ui_element.label.offset_y, 
+                //     ui_element.label.text,
+                //     {fontSize:'12px'}));
 
-                const num_deck_selector = this.add.rexInputText(
-                    ui_element.x+ui_element.input.offset_x,
-                    ui_element.y+ui_element.input.offset_y,                    
-                    40, 20,
-                    {
-                    type: 'number',
-                    text: ui_element.input.default,
-                    fontSize: '12px',
-                    }
-                );
-                num_deck_selector.name = ui_element.name+'_numdeckinput';
-                this.ui_elements.set(num_deck_selector.name, num_deck_selector);
-                num_deck_selector.on('textchange', function(inputText){ 
-                    this.socket.emit('uiElementTextSync', inputText.name, inputText.text);
-                }, this);                
+                // const num_deck_selector = this.add.rexInputText(
+                //     ui_element.x+ui_element.input.offset_x,
+                //     ui_element.y+ui_element.input.offset_y,                    
+                //     40, 20,
+                //     {
+                //     type: 'number',
+                //     text: ui_element.input.default,
+                //     fontSize: '12px',
+                //     }
+                // );
+                // num_deck_selector.name = ui_element.name+'_numdeckinput';
+                // this.ui_elements.set(num_deck_selector.name, num_deck_selector);
+                // num_deck_selector.on('textchange', function(inputText){ 
+                //     this.socket.emit('uiElementTextSync', inputText.name, inputText.text);
+                // }, this);                
 
-                const generate_button = this.add.existing(new TextButton(
-                    this, ui_element.x, ui_element.y, ui_element.generate_button_label,
-                    {color:'#0f0', backgroundColor: '#666',fontSize:'12px' }                    
-                ));
-                generate_button.name =  ui_element.name+'_button';
-                this.ui_elements.set(generate_button.name, generate_button);
-                //deck_generator_grp['elements'].push(generate_button);
-                generate_button.params['event_name']='generateCard';                
-                generate_button.params['target_zone']=ui_element.target_zone;
-                generate_button.params['num_card_textbox']=num_deck_selector;
-                generate_button.setInteractive();
+                // const generate_button = this.add.existing(new TextButton(
+                //     this, ui_element.x, ui_element.y, ui_element.generate_button_label,
+                //     {color:'#0f0', backgroundColor: '#666',fontSize:'12px' }                    
+                // ));
+                // generate_button.name =  ui_element.name+'_button';
+                // this.ui_elements.set(generate_button.name, generate_button);
+                // //deck_generator_grp['elements'].push(generate_button);
+                // generate_button.params['event_name']='generateCard';                
+                // generate_button.params['target_zone']=ui_element.target_zone;
+                // generate_button.params['num_card_textbox']=num_deck_selector;
+                // generate_button.setInteractive();
             } else if (ui_element.type=='simple_event'){
                 
                 const button = this.add.existing(new TextButton(
@@ -681,67 +685,69 @@ export default class Game extends Phaser.Scene
                 //'resetGame';     
                 button.setInteractive();
             } else if (ui_element.type=='deal_cards') {
+                addNewDealer(this, 
+                    ui_element
+                ); 
+            //     const button = this.add.existing(new TextButton(
+            //         this, ui_element.x, ui_element.y, ui_element.button_label,
+            //         {color:'#0f0', backgroundColor: '#666',fontSize:'12px' }                    
+            //     ));        
+            //     button.name =  ui_element.name + '_button';    
+            //     this.ui_elements.set(button.name, button);                
+            //     //element_grp['elements'].push(button)     
+            //     button.params['event_name']='moveCards'; 
+            //     button.params['move_card_cfg'] = [];  
+            //     button.setInteractive();
+            //     let cfg_count = 0;
+            //     for (let cfg of ui_element.move_card_cfg){                    
+            //         if (cfg.type=='ui'){        
 
-                const button = this.add.existing(new TextButton(
-                    this, ui_element.x, ui_element.y, ui_element.button_label,
-                    {color:'#0f0', backgroundColor: '#666',fontSize:'12px' }                    
-                ));        
-                button.name =  ui_element.name + '_button';    
-                this.ui_elements.set(button.name, button);                
-                //element_grp['elements'].push(button)     
-                button.params['event_name']='moveCards'; 
-                button.params['move_card_cfg'] = [];  
-                button.setInteractive();
-                let cfg_count = 0;
-                for (let cfg of ui_element.move_card_cfg){                    
-                    if (cfg.type=='ui'){        
-
-                        const text_label = this.add.text(ui_element.x+cfg.label.offset_x,
-                                ui_element.y+cfg.label.offset_y,
-                                cfg.label.text, {fontSize:'12px'});
-                        text_label.name =  ui_element.name + '_'+ String(cfg_count) + '_label';    
-                        this.ui_elements.set(text_label.name, text_label);                          
-                        const num_selector = this.add.rexInputText(
-                            ui_element.x+cfg.input.offset_x,
-                            ui_element.y+cfg.input.offset_y,
-                            40, 20,
-                            {
-                            type: 'number',
-                            text: String(cfg.input.default),
-                            fontSize: '12px',
-                            }
-                        );
-                        num_selector.name = ui_element.name + '_'+ String(cfg_count) +'_numselect';
-                        this.ui_elements.set(num_selector.name, num_selector);      
-                        num_selector.on('textchange', function(inputText){ 
-                            this.socket.emit('uiElementTextSync', inputText.name, inputText.text);
-                            }, this);                                                                        
-                        //element_grp['elements'].push(num_selector);                           
-                        if (cfg.dst_zone_type == 'zone_group'){
-                            const dst_zone_ids = this.find_zone_group(cfg.dst_zone_group_name);
-                            for (let zone_id of dst_zone_ids){
-                                button.params['move_card_cfg'].push(
-                                    {
-                                        type: 'ui',
-                                        src_zone_id: cfg.src_zone_id,
-                                        dst_zone_id: zone_id,
-                                        textbox: num_selector,
-                                    }
-                                )
-                            }
-                        } else if (cfg.dst_zone_type == 'zone'){
-                            button.params['move_card_cfg'].push(
-                                {
-                                    type: 'ui',
-                                    src_zone_id: cfg.src_zone_id,
-                                    dst_zone_id: cfg.dst_zone_id,
-                                    textbox: num_selector,
-                                }
-                            )                            
-                        }
-                    }
-                    cfg_count ++;
-                }
+            //             const text_label = this.add.text(ui_element.x+cfg.label.offset_x,
+            //                     ui_element.y+cfg.label.offset_y,
+            //                     cfg.label.text, {fontSize:'12px'});
+            //             text_label.name =  ui_element.name + '_'+ String(cfg_count) + '_label';    
+            //             this.ui_elements.set(text_label.name, text_label);                          
+            //             const num_selector = this.add.rexInputText(
+            //                 ui_element.x+cfg.input.offset_x,
+            //                 ui_element.y+cfg.input.offset_y,
+            //                 40, 20,
+            //                 {
+            //                 type: 'number',
+            //                 text: String(cfg.input.default),
+            //                 fontSize: '12px',
+            //                 }
+            //             );
+            //             num_selector.name = ui_element.name + '_'+ String(cfg_count) +'_numselect';
+            //             this.ui_elements.set(num_selector.name, num_selector);      
+            //             num_selector.on('textchange', function(inputText){ 
+            //                 this.socket.emit('uiElementTextSync', inputText.name, inputText.text);
+            //                 }, this);                                                                        
+            //             //element_grp['elements'].push(num_selector);                           
+            //             if (cfg.dst_zone_type == 'zone_group'){
+            //                 const dst_zone_ids = this.find_zone_group(cfg.dst_zone_group_name);
+            //                 for (let zone_id of dst_zone_ids){
+            //                     button.params['move_card_cfg'].push(
+            //                         {
+            //                             type: 'ui',
+            //                             src_zone_id: cfg.src_zone_id,
+            //                             dst_zone_id: zone_id,
+            //                             textbox: num_selector,
+            //                         }
+            //                     )
+            //                 }
+            //             } else if (cfg.dst_zone_type == 'zone'){
+            //                 button.params['move_card_cfg'].push(
+            //                     {
+            //                         type: 'ui',
+            //                         src_zone_id: cfg.src_zone_id,
+            //                         dst_zone_id: cfg.dst_zone_id,
+            //                         textbox: num_selector,
+            //                     }
+            //                 )                            
+            //             }
+            //         }
+            //         cfg_count ++;
+            //     }
                 
             }
         }
@@ -798,39 +804,7 @@ export default class Game extends Phaser.Scene
         });
         console.log(whiteboard);
 
-        let all_cards_prototype = [];
-        for (let suit of ['S', 'H', 'C','D']) {
-          for (let num of ['2','3','4','5','6','7','8','9','10','J','Q','K','A']){
-            all_cards_prototype.push(suit+num)
-          }
-        }
-        all_cards_prototype.push('J1');
-        all_cards_prototype.push('J2');
-        addNewDeck(this, 
-            {        
-                "type": "deck_generator",
-                "name": "AddNewDeck",
-                "generate_button_label": "NewCards",
-                "dst_zone_id": "CardDealer",
-                "all_card_ids_in_a_deck":all_cards_prototype,
-                "shuffle": true,
-                "x": -450,
-                "y": -200,
-                "button": {
-                "text": "AddNewDeck",
-                },
-                "input": {
-                "offset_x": 90,
-                "offset_y": -8,
-                "default": "4"
-                },
-                "label": {
-                "offset_x": 0,
-                "offset_y": -15,
-                "text": "#Decks",
-                }
-            }
-        ); 
+
 
         // const whiteboard = this.add.rexInputText(
         //     -550,

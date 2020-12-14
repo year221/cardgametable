@@ -190,7 +190,7 @@ export function addNewDeck(scene, cfg){
     const num_deck_selector = scene.add.rexInputText(
         cfg.x+cfg.input.offset_x,
         cfg.y+cfg.input.offset_y,                    
-        40, 20,
+        cfg.input.width, cfg.input.height,
         {
         type: 'number',
         text: cfg.input.default,
@@ -246,3 +246,106 @@ export function addNewDeck(scene, cfg){
     scene.ui_elements.set(generate_button.name, generate_button);          
     generate_button.add_listener_to_scene();
 }
+
+
+export function addNewDealer(scene, group_cfg){
+
+    const button = scene.add.existing(new TextButton(
+        scene,group_cfg['x'], group_cfg['y'], group_cfg.button.text, group_cfg.button['style']              
+    ));        
+    
+    button.name = group_cfg.name + '_submitbutton';    
+    scene.ui_elements.set(button.name, button);                
+    //element_grp['elements'].push(button)         
+    button.params['move_card_cfg'] = [];  
+    
+    let cfg_count = 0;
+    for (let cfg of group_cfg.move_card_cfg){                    
+        if (cfg.type=='ui'){        
+
+            const text_label = scene.add.text(group_cfg.x+cfg.label.offset_x,
+                    group_cfg.y+cfg.label.offset_y,
+                    cfg.label.text, {fontSize:'12px'});
+            text_label.name =  group_cfg.name + '_g'+ String(cfg_count) + '_label';    
+            scene.ui_elements.set(text_label.name, text_label);                          
+            const num_selector = scene.add.rexInputText(
+                group_cfg.x+cfg.input.offset_x,
+                group_cfg.y+cfg.input.offset_y,
+                40, 20,
+                {
+                type: 'number',
+                text: String(cfg.input.default),
+                fontSize: '12px',
+                }
+            );
+            num_selector.name = group_cfg.name + '_g'+ String(cfg_count) +'_numselect';
+            scene.ui_elements.set(num_selector.name, num_selector);      
+            num_selector.on('textchange', function(inputText){ 
+                scene.socket.emit('uiElementTextSync', inputText.name, inputText.text);
+                }, scene);                                                                        
+            //element_grp['elements'].push(num_selector);                           
+            if (cfg.dst_zone_type == 'zone_group'){
+                const dst_zone_ids = scene.find_zone_group(cfg.dst_zone_group_name);
+                for (let zone_id of dst_zone_ids){
+                    button.params['move_card_cfg'].push(
+                        {
+                            type: 'ui',
+                            src_zone_id: cfg.src_zone_id,
+                            dst_zone_id: zone_id,
+                            textbox: num_selector,
+                        }
+                    )
+                }
+            } else if (cfg.dst_zone_type == 'zone'){
+                button.params['move_card_cfg'].push(
+                    {
+                        type: 'ui',
+                        src_zone_id: cfg.src_zone_id,
+                        dst_zone_id: cfg.dst_zone_id,
+                        textbox: num_selector,
+                    }
+                )                            
+            }
+        } else if (cfg.type=='fixed'){
+            button.params['move_card_cfg'].push(
+                {
+                    type: 'fixed',
+                    src_zone_id: cfg.src_zone_id,
+                    dst_zone_id: cfg.dst_zone_id,
+                    textbox: num_selector,
+                }
+            )            
+
+        }
+        cfg_count ++;
+    }
+    button.add_listener_to_scene();
+    
+    button.on('pointerdown', function(pointer, localX, localY, event){   
+        const button_param = this.params;         
+        for (let cfg of button_param.move_card_cfg){                                 
+            let card_ids = [];
+            if (cfg.type == 'all'){
+                card_ids = Array.from(scene.cards_in_zones.get(cfg.src_zone_id));
+
+            } else if (cfg.type=='fixed'){
+                card_ids = scene.cards_in_zones.get(cfg.src_zone_id).slice(-Math.floor(cfg.num_of_card));                            
+            } else if (cfg.type=='ui'){
+                const num_of_cards = Math.round(cfg.textbox.text);              
+                //card_ids = Array.from(self.cards_in_zones.get(cfg.src_zone_id).slice(-num_of_cards));                            
+                card_ids = scene.cards_in_zones.get(cfg.src_zone_id).slice(-num_of_cards);                            
+            }                        
+            //console.log('move cards', cfg.dst_zone_id, card_ids);
+            //console.log('before move', self.all_zones.get(cfg.dst_zone_id).data.values);
+            scene.move_cards(cfg.src_zone_id, cfg.dst_zone_id, card_ids);
+            //console.log('past move', self.all_zones.get(cfg.dst_zone_id).data.values);
+            scene.last_event_index ++;
+            scene.event_buffer.set(scene.last_event_index, {'name':'cardMoved', 'parameters':[cfg.src_zone_id, cfg.dst_zone_id, card_ids]});                                                
+            scene.socket.emit('cardMoved',  scene.last_event_index, cfg.src_zone_id, cfg.dst_zone_id, card_ids,  null);                                
+        } 
+        event.stopPropagation()
+    });          
+
+    
+    button.setInteractive();
+}                
