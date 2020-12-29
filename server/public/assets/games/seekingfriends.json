@@ -217,7 +217,7 @@
       "type": "DealCards",
       "name": "DealCards",
       "x": -450,
-      "y": -5,
+      "y": 25,
       "button": {
         "text":"DealCards"
       },
@@ -229,12 +229,12 @@
           "dst_zone_group_name": "Hand",
           "label": {
             "offset_x": 0,
-            "offset_y": 15,
+            "offset_y": -30,
             "text": "PerPlayer"
           },
           "input": {
             "offset_x": 90,
-            "offset_y": 22,
+            "offset_y": -23,
             "default": "52"
           }
         },
@@ -245,12 +245,12 @@
           "dst_zone_id": "Hidden",
           "label": {
             "offset_x": 0,
-            "offset_y": 30,
+            "offset_y": -15,
             "text": "Hidden"
           },
           "input": {
             "offset_x": 90,
-            "offset_y": 38,
+            "offset_y": -7,
             "default": "8"
           }
         }
@@ -261,7 +261,7 @@
       "zone_group": "Trash",
       "type": "MoveCardButton",
       "position_type": "relative_to_zone",
-      "offset_x": -10,
+      "offset_x": -20,
       "offset_y": -60,
       "name": "clear",
       "text": "CLEAR",
@@ -379,8 +379,8 @@
       "zone_group": "Hand",
       "type": "SortButton",
       "position_type": "relative_to_zone", 
-      "offset_x": 300,
-      "offset_y": -115,
+      "offset_x": 355,
+      "offset_y": -120,
       "name": "Sort",
       "text": "SORT",
       "zone_id": "{ZONEID}",
@@ -397,8 +397,8 @@
       "zone_group": "Hand",
       "type": "FlipButton",
       "position_type": "relative_to_zone", 
-      "offset_x": 350,
-      "offset_y": -115,
+      "offset_x": 395,
+      "offset_y": -120,
       "name": "Flip",
       "text": "FACE UP",
       "zone_id": "{ZONEID}",
@@ -410,7 +410,7 @@
       "type": "FlipButton",
       "position_type": "relative_to_zone", 
       "offset_x": -30,
-      "offset_y": -115,
+      "offset_y": -120,
       "name": "Flip",
       "text": "FACE UP",
       "zone_id": "{ZONEID}",
@@ -422,7 +422,7 @@
       "type": "FlipButton",
       "position_type": "relative_to_zone", 
       "offset_x": 30,
-      "offset_y": -115,
+      "offset_y": -120,
       "name": "Flip",
       "text": "FACE DOWN",
       "zone_id": "{ZONEID}",

@@ -5,21 +5,39 @@ export class TextButton extends Phaser.GameObjects.Text
     params={};
     constructor(scene, x, y, text, style){
         if ((style===undefined) || (style===null)){
-            style = {color:'#0f0', backgroundColor: '#666',fontSize:'12px'}                  
+            style = {color:'#eee',
+            backgroundColor: '#0275d8',//''#666',  
+            padding: {x:3,y:3},
+            fontSize:'12px'}                  
         }
         super(scene, x, y, text, style);
     }
 
-    highlight(value){
-        if (value==1){
-            this.setTint(0x888888);
-        } else if (value==0){
-            this.clearTint();
-        }
-    }    
+    // highlight(value){
+    //     switch (value)
+    //     if (value==1){
+    //         this.setBackgroundColor('#025aa5');
+    //         //this.setTint(0x888888);
+    //     } else if (value==0){
+    //         this.setBackgroundColor('#0275d8');
+    //         //this.clearTint();
+    //     }
+    // }    
 
     add_listener_to_scene(){
-
+        this.on('pointerover', function(pointer, localX, localY, event){               
+            this.setBackgroundColor('#025aa5'); 
+        });  
+        this.on('pointerout', function(pointer, localX, localY, event){               
+            this.setBackgroundColor('#0275d8');
+        });  
+        this.on('pointerdown', function(pointer, localX, localY, event){                  
+            this.setBackgroundColor('#014682'); 
+        });       
+        this.on('pointerup', function(pointer, localX, localY, event){                  
+            this.setBackgroundColor('#025aa5'); 
+        });                         
+        this.setInteractive({ useHandCursor: true });
     }    
 }
 
@@ -52,7 +70,7 @@ export class SortButton extends TextButton
             this.scene.action_move_cards(this.target_zone_id, this.target_zone_id, sorted_card_ids, null);
             event.stopPropagation()
         });        
-        this.setInteractive();        
+        //this.setInteractive();        
     }    
 }
 
@@ -86,7 +104,7 @@ export class FlipButton extends TextButton
             this.scene.action_flip_cards_in_a_zone(this.target_zone_id, this.flip_type);
             event.stopPropagation()
         });        
-        this.setInteractive();        
+        //this.setInteractive();        
     }    
 }
 
@@ -117,7 +135,7 @@ export class MoveCardButton extends TextButton
             this.scene.action_move_cards(this.src_zone_id, this.dst_zone_id, card_ids, this.target_position);
             event.stopPropagation()
         });        
-        this.setInteractive();        
+        //this.setInteractive();        
     }    
 }
 
@@ -219,7 +237,7 @@ export class SimpleEventButton extends TextButton
             this.event_handler();
             event.stopPropagation()
         });        
-        this.setInteractive();        
+        //this.setInteractive();        
     }    
 }
 
