@@ -82,11 +82,11 @@ export default class Game extends Phaser.Scene
         //const card_height=190;
 
         // regular buttons
-        const flip_button = this.add.text(400,265, 'FLIP Selected Card', {color:'#0f0', backgroundColor: '#666', fontSize:'12px'});
+        const flip_button = this.add.text(400,485, 'FLIP Selected Card', {color:'#0f0', backgroundColor: '#666', fontSize:'12px'});
         flip_button.setInteractive();
         flip_button.on('pointerdown', this.action_flip_selected_cards, this);
 
-        const deselect_button = this.add.text(300,265, 'Deselect', {color:'#0f0', backgroundColor: '#666', fontSize:'12px'});
+        const deselect_button = this.add.text(300,485, 'Deselect', {color:'#0f0', backgroundColor: '#666', fontSize:'12px'});
         deselect_button.setInteractive();
         deselect_button.on('pointerdown', this.action_deselect, this);                
 
