@@ -75,8 +75,7 @@ export class FlipButton extends TextButton
             case 'FaceDown':
                 this.flip_type = false;
                 break;
-        }        
-        //this.flip_type = button_cfg['flip_type']
+        }                
         this.name = button_cfg['name']
         this.target_zone_id = button_cfg['zone_id']            
     }
@@ -157,9 +156,6 @@ export class ScoreText extends Phaser.GameObjects.Text
     add_listener_to_scene(){
         const zone = this.scene.all_zones.get(this.target_zone_id);
         this.text=this.button_text + String(this.update_score(zone.data.get('card_ids')));
-        // if (zone.data == null){
-        //     zone.setDataEnabled();
-        // }
         zone.on('changedata-card_ids', function(parent, value, previousValue){            
             console.log('data card_ids changed');
             this.text=this.button_text + String(this.update_score(value));
@@ -167,13 +163,7 @@ export class ScoreText extends Phaser.GameObjects.Text
         zone.on('setdata-card_ids', function(parent, value, previousValue){            
             console.log('data card_ids set');
             this.text=this.button_text + String(this.update_score(value));
-        }, this);           
-        // zone.on('changedata', function(parent, key, value, previousValue){            
-        //     console.log('data changed with key', key, value)            
-        // }, this);      
-        // zone.on('setdata', function(parent, key, value){            
-        //     console.log('data set with key', key, value)    
-        // }, this);                
+        }, this);                         
     }    
 }
 

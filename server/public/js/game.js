@@ -136,9 +136,6 @@ export default class Game extends Phaser.Scene
         this.input.on('drop', function (pointer, gameObject, dropZone) {
             dropZone.highlight_dropzone(false);                     
             if (gameObject instanceof Card && (dropZone instanceof CardZone || dropZone instanceof Card)){
-                //const src_zone_id = gameObject.zone_id;
-                //const dst_zone_id = dropZone.zone_id;
-                //if (dropZone instanceof CardZone)
                 const dst_zone_id = dropZone.zone_id;
                 let insertion_location = null
                 if (dropZone instanceof Card){
@@ -197,8 +194,6 @@ export default class Game extends Phaser.Scene
 
         // Activate cards
         this.input.on('pointerdown', function(pointer, gameObjects){  
-            //console.log('pointerdown', pointer, gameObjects);
-            //self.mouse_moved=false;
             if (pointer.rightButtonDown()){
                 // Flip cards
                 if ((gameObjects.length>=1) && (gameObjects[0] instanceof Card)){
@@ -324,8 +319,7 @@ export default class Game extends Phaser.Scene
             self.clear_all_zones_and_buttons();
             const layout_cfg = self.cache.json.get('layout')
             self.registry.set('playerinfo', player_info);
-            self.layout_zones_and_buttons(layout_cfg)//, player_info);
-            //self.main_camera(layout_cfg);
+            self.layout_zones_and_buttons(layout_cfg)//, player_info);            
             self.cameras.main.centerOn(layout_cfg.default_camera.x, layout_cfg.default_camera.y);                 
         });           
         
@@ -339,7 +333,6 @@ export default class Game extends Phaser.Scene
             if (last_events.hasOwnProperty(Client.player_id)){
                 self.apply_and_update_event_buffer(last_events[Client.player_id]);
             }
-            //this.player_id = player_id;            
         });       
         this.socket.on('setGameToInitialStage', function(){
             self.clear_all_events();
@@ -365,21 +358,6 @@ export default class Game extends Phaser.Scene
         this.socket.emit('getMyPlayerName');
         this.socket.on('playerInfo', function(player_info){
             self.registry.set('playerinfo', player_info);
-            // const player_name_elements = Array(...self.ui_elements.keys()).filter(ui_name=> ui_name.split('_')[0]=='playername');
-            // // let player_id_to_name = {}
-            // // for (let player of player_info){
-            // //     player_id_to_name[player.player_id]=player.player_name;
-            // // }              
-            // for (let element_name of player_name_elements){
-            //     const player_id = element_name.split('_')[1];
-            //     const player_names = player_info.filter(player=>player.player_id==player_id)
-                
-            //     if (player_names.length==0){                    
-            //         self.ui_elements.get(element_name).setText('Disconnected');
-            //     } else {
-            //         self.ui_elements.get(element_name).setText(player_names.map(player=>player.player_name));
-            //     }
-            // }
         });        
         console.log("creation done");        
     }        
@@ -632,20 +610,7 @@ export default class Game extends Phaser.Scene
         // layout buttons
         for (let ui_element_grp of layout_cfg['ui_elements']){
             this.add_element_grp(ui_element_grp);
-        }
-
-        // TODO: THis will be moved to other place. Manually add name        
-        // let player_id_to_name = {}
-        // for (let player of player_info){
-        //     player_id_to_name[player.player_id]=player.player_name;
-        // }        
-        // for (let [zone_id, zone] of this.all_zones){            
-        //     if (zone_id.split('_')[0]=='Trash'){
-        //         const player_name = this.add.text(zone.x-30, zone.y+40, player_id_to_name[zone_id.split('_')[1]],{fontSize:'12px'});
-        //         player_name.name = 'playername_'+ zone_id.split('_')[1];
-        //         this.ui_elements.set(player_name.name, player_name);                
-        //     }
-        // }      
+        }   
     }
 
     find_zone_group(group_name){  
@@ -743,11 +708,6 @@ export default class Game extends Phaser.Scene
         }
     }
 
-    //flip_cards(card_array){
-    //    card_array.forEach(card=>{card.flip_face();});             
-    //}
-
-
     remove_cards(zone_id, card_ids, squeeze_cards_in_zone)
     {
         // Remove cards from card zone. 
@@ -834,15 +794,10 @@ export default class Game extends Phaser.Scene
     }
 
     generate_new_card(card_id, face_up){
-        // if ((face_up===undefined) || (face_up===null)){
-        //     face_up = true;
-        // }
         const card = new PokerCard(this, 0, 0, 'cards', card_id);
-        card.face_up = face_up;
-        //if (face_up===false) {card.face_up = face_up;}
+        card.face_up = face_up;        
         this.add.existing(card);
         this.all_cards.set(card_id, card);
-        //this.add_cards(dst_zone_id, [card_id], insertion_location);  
         return card;       
     }
     
