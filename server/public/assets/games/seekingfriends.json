@@ -251,6 +251,70 @@
       "text": "CLEAR",
       "src_zone_id": "Show{PLAYERID}",
       "dst_zone_id": "Trash{PLAYERID}"
-    }    
+    },
+    {
+      "group_type": "per_zone_group",
+      "zone_group": "Hidden",
+      "type": "ScoreText",
+      "position_type": "relative_to_zone",
+      "offset_x": 75,
+      "offset_y": 20,
+      "name": "NCardsHiddenPile",
+      "text": "#cards:",
+      "zone_id": "{ZONEID}",
+      "score_type": "count",
+      "style": 
+      {
+        "fontSize": "12px"
+      }
+    },
+    {
+      "group_type": "per_zone_group",
+      "zone_group": "CardDealer",
+      "type": "ScoreText",
+      "position_type": "relative_to_zone",
+      "offset_x": -20,
+      "offset_y": 20,
+      "name": "NCardsCardDealer",
+      "text": "",
+      "zone_id": "{ZONEID}",
+      "score_type": "count",
+      "style": 
+      {
+        "fontSize": "12px"
+      }
+    },
+    {
+      "group_type": "per_zone_group",
+      "zone_group": "Hand",
+      "type": "ScoreText",
+      "position_type": "relative_to_zone",
+      "offset_x": -440,
+      "offset_y": -112.5,
+      "name": "NCardsCardDealer",
+      "text": "#cards:",
+      "zone_id": "{ZONEID}",
+      "score_type": "count",
+      "style": 
+      {
+        "fontSize": "12px"
+      }
+    },
+    {
+      "group_type": "per_zone_group",
+      "zone_group": "PrivateHelper",
+      "type": "ScoreText",
+      "position_type": "relative_to_zone",
+      "offset_x": -100,
+      "offset_y": -112.5,
+      "name": "NCardsCardDealer",
+      "text": "#cards:",
+      "zone_id": "{ZONEID}",
+      "score_type": "count",
+      "style": 
+      {
+        "fontSize": "12px"
+      }
+    }                  
   ]
 }
