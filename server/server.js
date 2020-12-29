@@ -244,11 +244,11 @@ io.on('connection', function (socket) {
     // remove card that already exists    
     let new_card_ids = card_ids.filter(card_id => !game_state.card_status.hasOwnProperty(card_id))
     // if strict, then if any card_id already exist, we will not add the whole set of cards. 
-    if ((!strict) || (new_card_ids.length==card_ids.length)){        
-       
+    if ((!strict) || (new_card_ids.length==card_ids.length)){               
        if (game_state.cards_in_zones[dst_zone_id]===undefined){
-        game_state.cards_in_zones[dst_zone_id]=[]
-       };
+         game_state.zone_ids.push(dst_zone_id);
+         game_state.cards_in_zones[dst_zone_id]=[];
+       }       
        game_state.cards_in_zones[dst_zone_id]  = game_state.cards_in_zones[dst_zone_id].concat(new_card_ids); 
        for (let card_id in new_card_ids){
           game_state.card_status[card_id]=card_status[card_id];

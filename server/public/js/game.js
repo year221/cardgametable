@@ -386,11 +386,11 @@ export default class Game extends Phaser.Scene
         // });
 
 
-        this.input.on('gameobjectup', function(pointer, gameObject){
-            if (gameObject instanceof TextButton){
-                gameObject.highlight(0);                    
-            } 
-        });        
+        // this.input.on('gameobjectup', function(pointer, gameObject){
+        //     if (gameObject instanceof TextButton){
+        //         gameObject.highlight(0);                    
+        //     } 
+        // });        
 
         this.socket.on('resetLayout', function (server_layout_cfg, n_active_player, player_info) {
             if ((n_active_player!==undefined) && (n_active_player!==null)){
@@ -697,58 +697,27 @@ export default class Game extends Phaser.Scene
         //         player_name.name = 'playername_'+ zone_id.split('_')[1];
         //         this.ui_elements.set(player_name.name, player_name);                
         //     }
-        // }
-       
-        // white board
-        // const whiteboard = addInputText(this, 
-        // {
-        //     x: -550,
-        //     y: 380,
-        //     width: 90,
-        //     height: 201.5,
-        //     name: 'whiteboard',
-        //     text: 'whiteboard',
-        //     input_type: 'textarea',
-        //     style: {
-        //         fontSize: '12px',
-        //         border: 2,
-        //         borderColor: '#888888'
-        //     },
-        // });
-        // console.log(whiteboard);
-
-
-
-        // const whiteboard = this.add.rexInputText(
-        //     -550,
-        //     380,
-        //     90, 201.5,
-        //     {
-        //     type: 'textarea',
-        //     text: "WhiteBoard",
-        //     fontSize: '10px',
-        //     border: 2,    
-        //     borderColor: '#888888',
-        //     }
-        // ); 
-
-        // whiteboard.name =  'whiteboard';
-        // this.ui_elements.set(whiteboard.name, whiteboard);
-        // whiteboard.on('textchange', function(inputText){ 
-        //     this.socket.emit('uiElementTextSync', inputText.name, inputText.text);
-        // }, this);          
+        // }      
     }
 
     find_zone_group(group_name){  
         const all_zones_ids = Array(...this.all_zones.keys());
         return all_zones_ids.filter(zone_id => zone_id.split('_')[0]===group_name);        
     }
-    clear_all_cards(){
-        this.on_multiple_selection=false;
+
+    clear_selection_related_elements(){
         this.activated_cards.clear();
+        this.on_multiple_selection = false;
+        this.new_selected_cards.clear();
+        this.selection_box.width = 0
+        this.selection_box.height = 0 
+
         while (this.to_be_deactivate_upon_pointer_up.length>0){
             this.to_be_deactivate_upon_pointer_up.pop();     
-        }   
+        } 
+    }
+    clear_all_cards(){        
+        this.clear_selection_related_elements();
         for (let [card_id, card] of this.all_cards){
             this.all_cards.delete(card_id);
             card.destroy();// remove from pahser        
@@ -756,6 +725,7 @@ export default class Game extends Phaser.Scene
 
         for (let [zone_id, cards_in_zone]of this.cards_in_zones){
             cards_in_zone.splice(0, cards_in_zone.length);
+            this.all_zones.get(zone_id).setData('card_ids', [])  ;            
             //this.cards_in_zones.set(zone_id, []);
         }        
     }
@@ -856,7 +826,7 @@ export default class Game extends Phaser.Scene
                 card_removed.push(card_id);
             }            
         }      
-        this.all_zones.get(zone_id).setData('card_ids', cards_in_zone);// use this to trigger update events
+        this.all_zones.get(zone_id).setData('card_ids', Array.from(cards_in_zone));// use this to trigger update events
         if (squeeze_cards_in_zone)
         {
             // squeeze cards

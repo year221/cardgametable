@@ -251,7 +251,7 @@ export function addNewDeck(scene, cfg){
 export function addNewDealer(scene, group_cfg){
 
     const button = scene.add.existing(new TextButton(
-        scene,group_cfg['x'], group_cfg['y'], group_cfg.button.text, group_cfg.button['style']              
+        scene, group_cfg['x'], group_cfg['y'], group_cfg.button.text, group_cfg.button['style']              
     ));        
     
     button.name = group_cfg.name + '_submitbutton';    
@@ -323,6 +323,7 @@ export function addNewDealer(scene, group_cfg){
     
     button.on('pointerdown', function(pointer, localX, localY, event){   
         const button_param = this.params;         
+        const scene = this.scene;
         for (let cfg of button_param.move_card_cfg){                                 
             let card_ids = [];
             if (cfg.type == 'all'){
@@ -332,16 +333,22 @@ export function addNewDealer(scene, group_cfg){
                 card_ids = scene.cards_in_zones.get(cfg.src_zone_id).slice(-Math.floor(cfg.num_of_card));                            
             } else if (cfg.type=='ui'){
                 const num_of_cards = Math.round(cfg.textbox.text);              
-                //card_ids = Array.from(self.cards_in_zones.get(cfg.src_zone_id).slice(-num_of_cards));                            
-                card_ids = scene.cards_in_zones.get(cfg.src_zone_id).slice(-num_of_cards);                            
+                //card_ids = Array.from(self.cards_in_zones.get(cfg.src_zone_id).slice(-num_of_cards));
+                if (num_of_cards<=0){
+                    card_ids = [];
+                } else {
+                    card_ids = scene.cards_in_zones.get(cfg.src_zone_id).slice(-num_of_cards);                            
+                }
             }                        
             //console.log('move cards', cfg.dst_zone_id, card_ids);
             //console.log('before move', self.all_zones.get(cfg.dst_zone_id).data.values);
-            scene.move_cards(cfg.src_zone_id, cfg.dst_zone_id, card_ids);
-            //console.log('past move', self.all_zones.get(cfg.dst_zone_id).data.values);
-            scene.last_event_index ++;
-            scene.event_buffer.set(scene.last_event_index, {'name':'cardMoved', 'parameters':[cfg.src_zone_id, cfg.dst_zone_id, card_ids]});                                                
-            scene.socket.emit('cardMoved',  scene.last_event_index, cfg.src_zone_id, cfg.dst_zone_id, card_ids,  null);                                
+            if (card_ids.length >0){
+                scene.move_cards(cfg.src_zone_id, cfg.dst_zone_id, card_ids);
+                //console.log('past move', self.all_zones.get(cfg.dst_zone_id).data.values);
+                scene.last_event_index ++;
+                scene.event_buffer.set(scene.last_event_index, {'name':'cardMoved', 'parameters':[cfg.src_zone_id, cfg.dst_zone_id, card_ids]});                                                
+                scene.socket.emit('cardMoved',  scene.last_event_index, cfg.src_zone_id, cfg.dst_zone_id, card_ids,  null);                                
+            }
         } 
         event.stopPropagation()
     });          
