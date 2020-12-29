@@ -17,7 +17,7 @@
       "fillColor": 2236962,
       "boundary_width": 40,
       "boundary_height": 52.5,
-      "card_step_x": 15,
+      "card_step_x": 18,
       "card_step_y": 97.5,
       "card_scale": 0.5,
       "local_display_other_player": 2,
@@ -36,7 +36,7 @@
       "fillColor": 2236962,
       "boundary_width": 40,
       "boundary_height": 52.5,
-      "card_step_x": 15,
+      "card_step_x": 18,
       "card_step_y": 97.5,
       "card_scale": 0.5,
       "local_display_other_player": 2,
@@ -55,7 +55,7 @@
       "fillColor": 3355443,
       "boundary_width": 40,
       "boundary_height": 52.5,
-      "card_step_x": 15,
+      "card_step_x": 18,
       "card_step_y": 30,
       "card_scale": 0.5,
       "local_display_other_player": 0,
@@ -76,7 +76,7 @@
       "boundary_height": 28.5,
       "card_step_x": 0,
       "card_step_y": 15,
-      "card_scale": 0.25,
+      "card_scale": 0.3,
       "local_display_other_player": 0,
       "local_display_current_player": 0
     },
@@ -93,14 +93,14 @@
       "fillColor": 3355443,
       "boundary_width": 22.5,
       "boundary_height": 28.5,
-      "card_step_x": 7.5,
+      "card_step_x": 10,
       "card_step_y": 15,
-      "card_scale": 0.25,
+      "card_scale": 0.3,
       "local_display_other_player": 0,
       "local_display_current_player": 0
     },
     {
-      "type": "public",
+      "type": "single",
       "name": "Hidden",
       "x": -200,
       "y": 0,
@@ -109,13 +109,13 @@
       "fillColor": 3355443,
       "boundary_width": 22.5,
       "boundary_height": 28.5,
-      "card_step_x": 7.5,
+      "card_step_x": 10,
       "card_step_y": 15,
-      "card_scale": 0.25,
+      "card_scale": 0.3,
       "local_display": 0
     },
     {
-      "type": "public",
+      "type": "single",
       "name": "SharedScore",
       "x": 208,
       "y": 0,
@@ -124,13 +124,13 @@
       "fillColor": 3355443,
       "boundary_width": 22.5,
       "boundary_height": 28.5,
-      "card_step_x": 7.5,
+      "card_step_x": 10,
       "card_step_y": 15,
-      "card_scale": 0.25,
+      "card_scale": 0.3,
       "local_display": 0
     },
     {
-      "type": "public",
+      "type": "single",
       "name": "CardDealer",
       "x": -480,
       "y": 0,
@@ -141,51 +141,70 @@
       "boundary_height": 28.5,
       "card_step_x": 0,
       "card_step_y": 1,
-      "card_scale": 0.25,
+      "card_scale": 0.3,
       "local_display": 0
     }
   ],
   "ui_elements": [
-    {
-      "type": "deck_generator",
-      "name": "GenerateCard",
-      "generate_button_label": "NewCards",
-      "target_zone": "CardDealer",
-      "x": -450,
-      "y": -25,
-      "input": {
+    {        
+        "group_type": "standalone",
+        "type": "deck_generator",
+        "name": "AddNewDeck",
+        "generate_button_label": "NewCards",
+        "dst_zone_id": "CardDealer",
+        "all_card_ids_in_a_deck": [
+          "C2", "C3", "C4", "C5", "C6", "C7", "C8", "C9", "C10", "CJ", "CQ", "CK", "CA",
+          "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9", "D10", "DJ", "DQ", "DK", "DA",
+          "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "S10", "SJ", "SQ", "SK", "SA",
+          "H2", "H3", "H4", "H5", "H6", "H7", "H8", "H9", "H10", "HJ", "HQ", "HK", "HA",
+          "J1", "J2"                        
+        ],
+        "shuffle": true,
+        "x": -450,
+        "y": -25,
+        "button": {
+        "text": "AddNewDeck"
+        },
+        "input": {
         "offset_x": 90,
         "offset_y": -8,
+        "width": 40,
+        "height": 20,
         "default": "4"
-      },
-      "label": {
+        },
+        "label": {
         "offset_x": 0,
         "offset_y": -15,
         "text": "#Decks"
-      }
-    },
+        }
+    },    
     {
+      "group_type": "standalone",
       "type": "simple_event",
-      "name": "Reset Game",
+      "name": "ResetGame",
       "event_name": "resetGame",
       "button_label": "New Round",
       "x": 500,
       "y": -10
     },
     {
+      "group_type": "standalone",
       "type": "simple_event",
-      "name": "Return To Game Room",
+      "name": "ReturnToGameRoom",
       "event_name": "exitToGameRoom",
       "button_label": "Reset To Game Room",
       "x": 500,
       "y": 15
     },
     {
+      "group_type": "standalone",
       "type": "deal_cards",
       "name": "DealCards",
       "x": -450,
       "y": -5,
-      "button_label": "DealCards",
+      "button": {
+        "text":"DealCards"
+      },
       "move_card_cfg": [
         {
           "type": "ui",
@@ -220,6 +239,18 @@
           }
         }
       ]
-    }
+    },
+    {
+      "group_type": "per_zone_group",
+      "zone_group": "Trash",
+      "type": "MoveCardButton",
+      "position_type": "relative_to_zone",
+      "offset_x": -10,
+      "offset_y": -60,
+      "name": "clear",
+      "text": "CLEAR",
+      "src_zone_id": "Show{PLAYERID}",
+      "dst_zone_id": "Trash{PLAYERID}"
+    }    
   ]
 }
