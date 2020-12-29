@@ -654,10 +654,10 @@ export default class Game extends Phaser.Scene
     }
     add_single_ui_element(element_cfg){
         switch(element_cfg.type){
-            case 'deck_generator':
+            case 'DeckGenerator':
                 addNewDeck(this, element_cfg);                  
                 break;
-            case 'deal_cards':
+            case 'DealCards':
                 addNewDealer(this, element_cfg);
                 break; 
             case 'MoveCardButton':
@@ -673,9 +673,29 @@ export default class Game extends Phaser.Scene
                         element_cfg));                
                 test_score.add_listener_to_scene();
                 this.ui_elements.set(test_score.name, test_score); 
-                break;                     
+                break;  
+            case 'InputText':
+                addInputText(this, element_cfg);
+                break; 
+            case 'SimpleEvent':
+                let event_handler = null;
+                switch (element_cfg.event_name) {
+                    case 'exitToGameRoom':
+                        event_handler = this.action_exit_to_room.bind(this);
+                        break;
+                    case 'NewGameRound':
+                        event_handler = this.action_new_game_round.bind(this);
+                        break;
+                }
+                const event_button = this.add.existing(
+                    new SimpleEventButton(this,
+                        element_cfg, event_handler));                
+                event_button.add_listener_to_scene();
+                this.ui_elements.set(event_button.name, event_button);                 
+                break;
         }
     }
+    
     layout_zones_and_buttons(layout_cfg, player_info){
         var self=this;
         // layout zones
@@ -686,90 +706,6 @@ export default class Game extends Phaser.Scene
         for (let ui_element_grp of layout_cfg['ui_elements']){
             this.add_element_grp(ui_element_grp);
         }
-        // for (let ui_element of layout_cfg['ui_elements']){            
-        //     if (ui_element.type=='deck_generator'){
-        //         addNewDeck(this, 
-        //             ui_element
-        //         );                 
-        //     } else if (ui_element.type=='simple_event'){
-                
-        //         const button = this.add.existing(new TextButton(
-        //             this, ui_element.x, ui_element.y, ui_element.button_label,
-        //             {color:'#0f0', backgroundColor: '#666',fontSize:'12px' }                        
-        //         ));  
-        //         button.name =  ui_element.name;    
-        //         this.ui_elements.set(button.name, button);
-        //         //element_grp['elements'].push(button);                
-        //         button.params['event_name']=ui_element.event_name;
-        //         //'resetGame';     
-        //         button.setInteractive();
-        //     } else if (ui_element.type=='deal_cards') {
-        //         addNewDealer(this, 
-        //             ui_element
-        //         ); 
-        //     //     const button = this.add.existing(new TextButton(
-        //     //         this, ui_element.x, ui_element.y, ui_element.button_label,
-        //     //         {color:'#0f0', backgroundColor: '#666',fontSize:'12px' }                    
-        //     //     ));        
-        //     //     button.name =  ui_element.name + '_button';    
-        //     //     this.ui_elements.set(button.name, button);                
-        //     //     //element_grp['elements'].push(button)     
-        //     //     button.params['event_name']='moveCards'; 
-        //     //     button.params['move_card_cfg'] = [];  
-        //     //     button.setInteractive();
-        //     //     let cfg_count = 0;
-        //     //     for (let cfg of ui_element.move_card_cfg){                    
-        //     //         if (cfg.type=='ui'){        
-
-        //     //             const text_label = this.add.text(ui_element.x+cfg.label.offset_x,
-        //     //                     ui_element.y+cfg.label.offset_y,
-        //     //                     cfg.label.text, {fontSize:'12px'});
-        //     //             text_label.name =  ui_element.name + '_'+ String(cfg_count) + '_label';    
-        //     //             this.ui_elements.set(text_label.name, text_label);                          
-        //     //             const num_selector = this.add.rexInputText(
-        //     //                 ui_element.x+cfg.input.offset_x,
-        //     //                 ui_element.y+cfg.input.offset_y,
-        //     //                 40, 20,
-        //     //                 {
-        //     //                 type: 'number',
-        //     //                 text: String(cfg.input.default),
-        //     //                 fontSize: '12px',
-        //     //                 }
-        //     //             );
-        //     //             num_selector.name = ui_element.name + '_'+ String(cfg_count) +'_numselect';
-        //     //             this.ui_elements.set(num_selector.name, num_selector);      
-        //     //             num_selector.on('textchange', function(inputText){ 
-        //     //                 this.socket.emit('uiElementTextSync', inputText.name, inputText.text);
-        //     //                 }, this);                                                                        
-        //     //             //element_grp['elements'].push(num_selector);                           
-        //     //             if (cfg.dst_zone_type == 'zone_group'){
-        //     //                 const dst_zone_ids = this.find_zone_group(cfg.dst_zone_group_name);
-        //     //                 for (let zone_id of dst_zone_ids){
-        //     //                     button.params['move_card_cfg'].push(
-        //     //                         {
-        //     //                             type: 'ui',
-        //     //                             src_zone_id: cfg.src_zone_id,
-        //     //                             dst_zone_id: zone_id,
-        //     //                             textbox: num_selector,
-        //     //                         }
-        //     //                     )
-        //     //                 }
-        //     //             } else if (cfg.dst_zone_type == 'zone'){
-        //     //                 button.params['move_card_cfg'].push(
-        //     //                     {
-        //     //                         type: 'ui',
-        //     //                         src_zone_id: cfg.src_zone_id,
-        //     //                         dst_zone_id: cfg.dst_zone_id,
-        //     //                         textbox: num_selector,
-        //     //                     }
-        //     //                 )                            
-        //     //             }
-        //     //         }
-        //     //         cfg_count ++;
-        //     //     }
-                
-        //     }
-        // }
 
         // TODO: THis will be moved to other place. Manually add name        
         // let player_id_to_name = {}

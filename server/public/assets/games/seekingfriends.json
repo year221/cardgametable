@@ -148,7 +148,7 @@
   "ui_elements": [
     {        
         "group_type": "standalone",
-        "type": "deck_generator",
+        "type": "DeckGenerator",
         "name": "AddNewDeck",
         "generate_button_label": "NewCards",
         "dst_zone_id": "CardDealer",
@@ -180,25 +180,41 @@
     },    
     {
       "group_type": "standalone",
-      "type": "simple_event",
+      "type": "SimpleEvent",
       "name": "ResetGame",
-      "event_name": "resetGame",
+      "event_name": "NewGameRound",
       "button_label": "New Round",
       "x": 500,
       "y": -10
     },
     {
       "group_type": "standalone",
-      "type": "simple_event",
+      "type": "SimpleEvent",
       "name": "ReturnToGameRoom",
       "event_name": "exitToGameRoom",
       "button_label": "Reset To Game Room",
       "x": 500,
       "y": 15
     },
+    {  
+      "group_type": "standalone",
+      "type": "InputText",        
+      "x": -550,
+      "y": 380,
+      "width": 90,
+      "height": 201.5,
+      "name": "WhiteBoard",
+      "text": "whiteboard",
+      "input_type": "textarea",
+      "style": {
+          "fontSize": "12px",
+          "border": 2,
+          "borderColor": "#888888"
+      }
+    },
     {
       "group_type": "standalone",
-      "type": "deal_cards",
+      "type": "DealCards",
       "name": "DealCards",
       "x": -450,
       "y": -5,
