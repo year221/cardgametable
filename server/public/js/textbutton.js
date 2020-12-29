@@ -84,9 +84,6 @@ export class FlipButton extends TextButton
     add_listener_to_scene(){
         super.add_listener_to_scene();
         this.on('pointerdown', function(pointer, localX, localY, event){            
-            //const sorted_card_ids = sort_cards(this.scene.cards_in_zones.get(this.target_zone_id), this.sort_key_array);            
-            //sorted_card_ids.sort((a,b)=>sort_key_array.indexOf(a.split('_')[0])-sort_key_array.indexOf(b.split('_')[0]));     
-            //this.scene.action_move_cards(this.target_zone_id, this.target_zone_id, sorted_card_ids, null);
             this.scene.action_flip_cards_in_a_zone(this.target_zone_id, this.flip_type);
             event.stopPropagation()
         });        
@@ -159,6 +156,7 @@ export class ScoreText extends Phaser.GameObjects.Text
     }    
     add_listener_to_scene(){
         const zone = this.scene.all_zones.get(this.target_zone_id);
+        this.text=this.button_text + String(this.update_score(zone.data.get('card_ids')));
         // if (zone.data == null){
         //     zone.setDataEnabled();
         // }
@@ -166,6 +164,10 @@ export class ScoreText extends Phaser.GameObjects.Text
             console.log('data card_ids changed');
             this.text=this.button_text + String(this.update_score(value));
         }, this);   
+        zone.on('setdata-card_ids', function(parent, value, previousValue){            
+            console.log('data card_ids set');
+            this.text=this.button_text + String(this.update_score(value));
+        }, this);           
         // zone.on('changedata', function(parent, key, value, previousValue){            
         //     console.log('data changed with key', key, value)            
         // }, this);      
