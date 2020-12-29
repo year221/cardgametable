@@ -640,9 +640,11 @@ export default class Game extends Phaser.Scene
                     element_cfg.name = element_cfg.name + '_' + zone_id;
                     if (grp_cfg['position_type']=='relative_to_zone'){
                         element_cfg['x'] = zone.x + element_cfg['offset_x'];
-                        element_cfg['y'] = zone.y + element_cfg['offset_y'];                          
-                        this.add_single_ui_element(element_cfg)                    
+                        element_cfg['y'] = zone.y + element_cfg['offset_y'];                                                  
                     }
+                    if (zone.local_display==0){
+                        this.add_single_ui_element(element_cfg);
+                    }                    
                 }                
                 break;
             case 'standalone':

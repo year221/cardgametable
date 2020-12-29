@@ -1,6 +1,7 @@
 import Phaser from './phaser.js';
 
 export const ZoneDisplayType = {'visible':0, 'back_only':1, 'non_visible':2}
+//local_display: 0. Normal. 1. Backonly 2. Insivible
 export class CardZone extends Phaser.GameObjects.Rectangle
 {
     zone_id;   
