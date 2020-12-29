@@ -365,46 +365,25 @@ export default class Game extends Phaser.Scene
                 }
             }
         });
-        this.input.on('gameobjectdown', function(pointer, gameObject){
-            if (gameObject instanceof TextButton){
-                gameObject.highlight(1);                
-                const button_param = gameObject.params;
-                //console.log('button_clicked', button_param);
-                // if (button_param.event_name ==='generateCard'){
-                //     //const n_decks=1;
-                //     const n_decks = Math.round(button_param.num_card_textbox.text);
-                //     self.last_event_index ++;            
-                //     self.event_buffer.set(self.last_event_index, {'name':'generateCard', 'parameters':[button_param.target_zone, n_decks]});                        
-                //     self.socket.emit('generateCard', self.last_event_index, button_param.target_zone, n_decks, true);                         
-                // } else 
-                if (button_param.event_name ==='resetGame'){
-                    self.socket.emit('resetGame');    
-                } else if (button_param.event_name ==='exitToGameRoom'){
-                    self.socket.emit('exitToGameRoom');                        
-                // } else if (button_param.event_name ==='moveCards'){
-                //     for (let cfg of button_param.move_card_cfg){                                 
-                //         let card_ids = [];
-                //         if (cfg.type == 'all'){
-                //             card_ids = Array.from(self.cards_in_zones.get(cfg.src_zone_id));
-
-                //         } else if (cfg.type=='fixed'){
-                //             card_ids = self.cards_in_zones.get(cfg.src_zone_id).slice(-Math.floor(cfg.num_of_card));                            
-                //         } else if (cfg.type=='ui'){
-                //             const num_of_cards = Math.round(cfg.textbox.text);              
-                //             //card_ids = Array.from(self.cards_in_zones.get(cfg.src_zone_id).slice(-num_of_cards));                            
-                //             card_ids = self.cards_in_zones.get(cfg.src_zone_id).slice(-num_of_cards);                            
-                //         }                        
-                //         //console.log('move cards', cfg.dst_zone_id, card_ids);
-                //         //console.log('before move', self.all_zones.get(cfg.dst_zone_id).data.values);
-                //         self.move_cards(cfg.src_zone_id, cfg.dst_zone_id, card_ids);
-                //         //console.log('past move', self.all_zones.get(cfg.dst_zone_id).data.values);
-                //         self.last_event_index ++;
-                //         self.event_buffer.set(self.last_event_index, {'name':'cardMoved', 'parameters':[cfg.src_zone_id, cfg.dst_zone_id, card_ids]});                                                
-                //         self.socket.emit('cardMoved',  self.last_event_index, cfg.src_zone_id, cfg.dst_zone_id, card_ids,  null);                                
-                //     }                    
-                }
-            } 
-        });
+        // this.input.on('gameobjectdown', function(pointer, gameObject){
+        //     if (gameObject instanceof TextButton){
+        //         gameObject.highlight(1);                
+        //         const button_param = gameObject.params;
+        //         //console.log('button_clicked', button_param);
+        //         // if (button_param.event_name ==='generateCard'){
+        //         //     //const n_decks=1;
+        //         //     const n_decks = Math.round(button_param.num_card_textbox.text);
+        //         //     self.last_event_index ++;            
+        //         //     self.event_buffer.set(self.last_event_index, {'name':'generateCard', 'parameters':[button_param.target_zone, n_decks]});                        
+        //         //     self.socket.emit('generateCard', self.last_event_index, button_param.target_zone, n_decks, true);                         
+        //         // } else 
+        //         // if (button_param.event_name ==='resetGame'){
+        //         //     self.socket.emit('resetGame');    
+        //         // } else if (button_param.event_name ==='exitToGameRoom'){
+        //         //     self.socket.emit('exitToGameRoom');                                           
+        //         // }
+        //     } 
+        // });
 
 
         this.input.on('gameobjectup', function(pointer, gameObject){
@@ -437,8 +416,8 @@ export default class Game extends Phaser.Scene
             //this.player_id = player_id;            
         });       
         this.socket.on('setGameToInitialStage', function(){
-            self.clear_all_cards();
             self.clear_all_events();
+            self.clear_all_cards();            
         });
         this.socket.on('returnToGameRoom', function(){
             console.log('received return To Game Room Message');
@@ -838,6 +817,10 @@ export default class Game extends Phaser.Scene
                     this.event_cardFlipped(...event.parameters);
                 }
             }
+        }
+        // sync if sever event index is ahead
+        if (last_event_index_applied > this.last_event_index){
+            this.last_event_index = last_event_index_applied;
         }
     }
 
