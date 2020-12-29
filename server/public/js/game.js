@@ -971,16 +971,16 @@ export default class Game extends Phaser.Scene
         }
     }
 
-    get_scores_from_card_ids(card_ids){
-        let score = 0;
-        for (let card_id of card_ids){
-            const card_score = this.score_map[card_id.split('_')[0]];
-            if (card_score!==undefined){
-                score += card_score;
-            }
-        }
-        return score;
-    }
+    // get_scores_from_card_ids(card_ids){
+    //     let score = 0;
+    //     for (let card_id of card_ids){
+    //         const card_score = this.score_map[card_id.split('_')[0]];
+    //         if (card_score!==undefined){
+    //             score += card_score;
+    //         }
+    //     }
+    //     return score;
+    // }
 
 
     //flip_cards(card_array){

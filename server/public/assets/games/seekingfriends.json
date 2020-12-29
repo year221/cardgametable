@@ -290,7 +290,7 @@
       "type": "ScoreText",
       "position_type": "relative_to_zone",
       "offset_x": -440,
-      "offset_y": -112.5,
+      "offset_y": -115,
       "name": "NCardsCardDealer",
       "text": "#cards:",
       "zone_id": "{ZONEID}",
@@ -306,7 +306,7 @@
       "type": "ScoreText",
       "position_type": "relative_to_zone",
       "offset_x": -100,
-      "offset_y": -112.5,
+      "offset_y": -115,
       "name": "NCardsCardDealer",
       "text": "#cards:",
       "zone_id": "{ZONEID}",
@@ -315,6 +315,48 @@
       {
         "fontSize": "12px"
       }
-    }                  
+    },
+    {
+      "group_type": "per_zone_group",
+      "zone_group": "Score",
+      "type": "ScoreText",
+      "position_type": "relative_to_zone",
+      "offset_x": 75,
+      "offset_y": 20,
+      "name": "NCardsCardDealer",
+      "text": "score:",
+      "zone_id": "{ZONEID}",
+      "score_type": "score",
+      "score_map": {
+        "C5": 5, "D5": 5, "S5":5, "H5":5,
+        "C10": 10, "D10": 10, "S10":10, "H10":10,
+        "CK": 10, "DK": 10, "SK":10, "HK":10
+      },
+      "style": 
+      {
+        "fontSize": "12px"
+      }
+    },
+    {
+      "group_type": "per_zone_group",
+      "zone_group": "SharedScore",
+      "type": "ScoreText",
+      "position_type": "relative_to_zone",
+      "offset_x": 170,
+      "offset_y": 20,
+      "name": "NCardsCardDealer",
+      "text": "score:",
+      "zone_id": "{ZONEID}",
+      "score_type": "score",
+      "score_map": {
+        "C5": 5, "D5": 5, "S5":5, "H5":5,
+        "C10": 10, "D10": 10, "S10":10, "H10":10,
+        "CK": 10, "DK": 10, "SK":10, "HK":10
+      },
+      "style": 
+      {
+        "fontSize": "12px"
+      }
+    }                       
   ]
 }
