@@ -750,12 +750,13 @@ export default class Game extends Phaser.Scene
             this.to_be_deactivate_upon_pointer_up.pop();     
         }   
         for (let [card_id, card] of this.all_cards){
-            this    .all_cards.delete(card_id);
+            this.all_cards.delete(card_id);
             card.destroy();// remove from pahser        
         }
 
-        for (let zone_id of this.cards_in_zones.keys()){
-            this.cards_in_zones.set(zone_id, []);
+        for (let [zone_id, cards_in_zone]of this.cards_in_zones){
+            cards_in_zone.splice(0, cards_in_zone.length);
+            //this.cards_in_zones.set(zone_id, []);
         }        
     }
 

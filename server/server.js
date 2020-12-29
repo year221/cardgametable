@@ -333,7 +333,8 @@ io.on('connection', function (socket) {
   socket.on('requestGameStatus', function(){
     socket.emit('returnGameStatus', game_state.status, Array(...game_state.socket_id_to_player_info.values()), can_join_game());    
   });
-  socket.on('resetGame', function (event_index, src_zone_id, dst_zone_id, card_ids, dst_pos_in_zone) {  
+  socket.on('resetGame', function () {  
+    console.log('reset Game');
     for (let zone_id of game_state.zone_ids){
       game_state.cards_in_zones[zone_id] = [];
     }

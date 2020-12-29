@@ -211,7 +211,7 @@ export function addNewDeck(scene, cfg){
     }
     let generate_card = function(){
         const n_decks = Math.round(num_deck_selector.text);       
-        let max_deck_num = Math.max(...Array.from(scene.all_cards.keys()).map(card_id=> card_id.split('_')[1]));
+        let max_deck_num = Math.max(...Array.from(this.all_cards.keys()).map(card_id=> card_id.split('_')[1]));
         if (max_deck_num<0){max_deck_num=-1;}       
         let card_id_generated = [];
 
@@ -227,9 +227,9 @@ export function addNewDeck(scene, cfg){
             card_status[card_id] = false;
         }        
         
-        scene.last_event_index ++;            
-        scene.event_buffer.set(scene.last_event_index, {'name':'addNewCard', 'parameters':[dst_zone_id, card_id_generated, card_status, true]});                        
-        scene.socket.emit('addNewCard', scene.last_event_index, dst_zone_id, card_id_generated, card_status, true);                           
+        this.last_event_index ++;            
+        this.event_buffer.set(this.last_event_index, {'name':'addNewCard', 'parameters':[dst_zone_id, card_id_generated, card_status, true]});                        
+        this.socket.emit('addNewCard', this.last_event_index, dst_zone_id, card_id_generated, card_status, true);                           
     };
 
     const generate_button = new SimpleEventButton(
@@ -240,7 +240,7 @@ export function addNewDeck(scene, cfg){
             text: cfg.button.text,
             name : cfg.name + '_submitbutton',
         },
-        generate_card,
+        generate_card.bind(scene),
         );  
     scene.add.existing(generate_button);   
     scene.ui_elements.set(generate_button.name, generate_button);          
