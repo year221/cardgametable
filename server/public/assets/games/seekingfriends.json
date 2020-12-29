@@ -183,7 +183,7 @@
       "type": "SimpleEvent",
       "name": "ResetGame",
       "event_name": "NewGameRound",
-      "button_label": "New Round",
+      "text": "New Round",
       "x": 500,
       "y": -10
     },
@@ -192,7 +192,7 @@
       "type": "SimpleEvent",
       "name": "ReturnToGameRoom",
       "event_name": "exitToGameRoom",
-      "button_label": "Reset To Game Room",
+      "text": "Reset To Game Room",
       "x": 500,
       "y": 15
     },
