@@ -781,28 +781,7 @@ export default class Game extends Phaser.Scene
         //         this.ui_elements.set(player_name.name, player_name);                
         //     }
         // }
-
-        // // Manually Add Clear button. TODO This will be moved to other place.                 
-        // for (let [zone_id, zone] of this.all_zones){            
-        //     if (zone_id.split('_')[0]=='Trash'){
-        //         let zone_player_id = zone_id.split('_')[1];
-        //         //let element_grp = {elements:[]}                
-        //         const button = this.add.existing(new MoveCardButton(
-
-        //             this,
-        //             {
-    //                 x: zone.x-10,
-    //                 y: zone.y-60,
-    //                 name: 'clear'+ zone_player_id,
-    //                 text: 'CLEAR',
-    //                 src_zone_id: 'Show_' + zone_player_id,
-    //                 dst_zone_id: 'Trash_' + zone_player_id,
-        //             }
-        //             ));
-        //         button.add_listener_to_scene();
-        //         this.ui_elements.set(button.name, button);                                            
-        //     }
-        // }        
+       
         // white board
         // const whiteboard = addInputText(this, 
         // {
