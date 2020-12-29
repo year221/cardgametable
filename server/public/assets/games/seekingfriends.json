@@ -265,8 +265,8 @@
       "offset_y": -60,
       "name": "clear",
       "text": "CLEAR",
-      "src_zone_id": "Show{PLAYERID}",
-      "dst_zone_id": "Trash{PLAYERID}"
+      "src_zone_id": "Show_{PLAYERID}",
+      "dst_zone_id": "Trash_{PLAYERID}"
     },
     {
       "group_type": "per_zone_group",
@@ -292,7 +292,7 @@
       "offset_x": -20,
       "offset_y": 20,
       "name": "NCardsCardDealer",
-      "text": "",
+      "text": "#:",
       "zone_id": "{ZONEID}",
       "score_type": "count",
       "style": 
@@ -307,7 +307,7 @@
       "position_type": "relative_to_zone",
       "offset_x": -440,
       "offset_y": -115,
-      "name": "NCardsCardDealer",
+      "name": "NCards",
       "text": "#cards:",
       "zone_id": "{ZONEID}",
       "score_type": "count",
@@ -323,7 +323,7 @@
       "position_type": "relative_to_zone",
       "offset_x": -100,
       "offset_y": -115,
-      "name": "NCardsCardDealer",
+      "name": "NCards",
       "text": "#cards:",
       "zone_id": "{ZONEID}",
       "score_type": "count",
@@ -403,6 +403,21 @@
       "text": "FLIP UP",
       "zone_id": "{ZONEID}",
       "flip_type": "FaceUp"
-    }                            
+    },
+    {
+      "group_type": "per_zone_group",
+      "zone_group": "Show",
+      "type": "PlayerName",
+      "position_type": "relative_to_zone",
+      "offset_x": -110,
+      "offset_y": 42.5,
+      "name": "PlayerName",
+      "text": "",
+      "player_id": "{PLAYERID}",
+      "style": 
+      {
+        "fontSize": "12px"
+      }
+    }                                
   ]
 }

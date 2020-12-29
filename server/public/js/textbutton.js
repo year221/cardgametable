@@ -177,6 +177,43 @@ export class ScoreText extends Phaser.GameObjects.Text
     }    
 }
 
+export class PlayerName extends Phaser.GameObjects.Text
+{    
+    leading_text
+    player_id
+    constructor(scene, button_cfg){
+        super(scene,button_cfg['x'], button_cfg['y'], button_cfg['text'], button_cfg['style'])            
+        this.leading_text = button_cfg['text'];
+        this.name = button_cfg['name']        
+        this.player_id = parseInt(button_cfg['player_id']);
+    }
+
+    extract_player_name(player_info){
+        if (player_info===undefined){
+            return '';
+        } else {
+            const player_names = player_info.filter(player=>parseInt(player.player_id)==this.player_id)
+                
+            if (player_names.length==0){         
+                return 'Disconnected'                       
+            } else {
+                return player_names[0].player_name;            
+            }       
+        }             
+    }    
+    add_listener_to_scene(){        
+        this.text=this.leading_text + this.extract_player_name(this.scene.registry.get('playerinfo'));
+        this.scene.registry.events.on('changedata-playerinfo', function(parent, value, previousValue){            
+            console.log('player name changed');
+            this.text=this.leading_text + this.extract_player_name(value);
+        }, this);   
+        this.scene.registry.events.on('setdata-playerinfo', function(parent, value, previousValue){            
+            console.log('data card_ids set');
+            this.text=this.leading_text + this.extract_player_name(value);            
+        }, this);                     
+    }    
+}
+
 export class SimpleEventButton extends TextButton
 {    
     event_handler;
