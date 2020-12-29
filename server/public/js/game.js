@@ -25,6 +25,7 @@ export default class Game extends Phaser.Scene
     on_multiple_selection;  
     selection_box;
     new_selected_cards;
+    allow_selection_across_zone;
 
     dragging_cache_param={
         starting_depth:500,
@@ -54,6 +55,7 @@ export default class Game extends Phaser.Scene
         this.previous_empty_click=false;
         this.socket = window.Client.socket;
         this.zone_linked_update = new Map();
+        this.allow_selection_across_zone = false;
 
         
         
@@ -211,17 +213,27 @@ export default class Game extends Phaser.Scene
                         if (self.activated_cards.contains(card)){
                             self.to_be_deactivate_upon_pointer_up.push(card);
                         } else {
-                            self.activated_cards.add(card);
-                            card.set_activated(true);
+                            self.add_card_to_activated(card);
+                            //self.activated_cards.add(card);
+                            //card.set_activated(true);
 
                         }
                     } else if (gameObjects[0] instanceof CardZone){
                         //console.log('multiselection start')
+                        
                         self.on_multiple_selection = true;
                         self.selection_box.x = pointer.worldX
                         self.selection_box.y = pointer.worldY 
                         //self.previous_activated_cards.addMultiple(self.activated_cards.getChildren());
                         self.children.bringToTop(self.selection_box);
+
+                        // if do not allow selection across multiple zones, starting a new zone will deselect existing ones
+                        if (!self.allow_selection_across_zone){
+                            if (self.is_zone_id_different_from_activated(gameObjects[0].zone_id)){
+                                self.action_deselect();
+                            }
+                        }
+                        
                     }
                 } else {
                     self.on_multiple_selection = true;    
@@ -234,7 +246,7 @@ export default class Game extends Phaser.Scene
             }           
         }, this);
 
-        this.input.on('pointerup', function(pointer){  
+        this.input.on('pointerup', function(pointer){              
             self.on_multiple_selection = false;
             self.new_selected_cards.clear();
             self.selection_box.width = 0
@@ -291,12 +303,13 @@ export default class Game extends Phaser.Scene
                         for (let card_id of cards_in_zone){
                         //for (let [card_id, card] of self.all_cards){
                             let card = self.all_cards.get(card_id);
-                            if (Phaser.Geom.Rectangle.ContainsPoint(selectionRect, card.getTopLeft())) {
-                                if (!self.activated_cards.contains(card)){
+                            if (Phaser.Geom.Rectangle.ContainsPoint(selectionRect, card.getTopLeft())) {                                
+                                if (!self.activated_cards.contains(card)){                               
                                     // this is new
                                     self.new_selected_cards.add(card);
-                                    self.activated_cards.add(card);
-                                    card.set_activated(true);                            
+                                    //self.activated_cards.add(card);
+                                    //card.set_activated(true);                            
+                                    self.add_card_to_activated(card);
                                 }
                             } else {
                                 if (self.new_selected_cards.contains(card)){
@@ -363,6 +376,23 @@ export default class Game extends Phaser.Scene
         console.log("creation done");        
     }        
     
+    is_zone_id_different_from_activated(zone_id){        
+        if (this.activated_cards.children.size>=1){                        
+            return zone_id!=this.activated_cards.getChildren()[0].zone_id                
+        } else {
+            return false;
+        }
+               
+    }
+    add_card_to_activated(card){
+        if (!this.allow_selection_across_zone){
+            if (this.is_zone_id_different_from_activated(card.zone_id)){
+                this.action_deselect();
+            }
+        }                
+        this.activated_cards.add(card);
+        card.set_activated(true);
+    }
     /**
      * event to flip cards by its id
      * @param  {Array of [int, boolean]} [[card_id, face_up]]     
