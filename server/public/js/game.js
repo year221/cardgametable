@@ -116,23 +116,23 @@ export default class Game extends Phaser.Scene
                 // self.socket.emit('cardFlipped', self.last_event_index, card_ids);        
             });       
 
-            const sort_button = new SortButton(this, 
-            {
-                x:0,
-                y:265,
-                name: 'sort',
-                text: 'SORT',
-                zone_id: 'Hand_'+ Client.player_id,
-                sort_key_array:[
-                'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8', 'C9', 'C10', 'CJ', 'CQ', 'CK', 'CA',
-                'D2', 'D3', 'D4', 'D5', 'D6', 'D7', 'D8', 'D9', 'D10', 'DJ', 'DQ', 'DK', 'DA',
-                'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8', 'S9', 'S10', 'SJ', 'SQ', 'SK', 'SA',
-                'H2', 'H3', 'H4', 'H5', 'H6', 'H7', 'H8', 'H9', 'H10', 'HJ', 'HQ', 'HK', 'HA',
-                'J1', 'J2'                        
-                ] 
-            });
-            this.add.existing(sort_button);
-            sort_button.add_listener_to_scene();       
+            // const sort_button = new SortButton(this, 
+            // {
+            //     x:0,
+            //     y:265,
+            //     name: 'sort',
+            //     text: 'SORT',
+            //     zone_id: 'Hand_'+ Client.player_id,
+            //     sort_key_array:[
+            //     'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8', 'C9', 'C10', 'CJ', 'CQ', 'CK', 'CA',
+            //     'D2', 'D3', 'D4', 'D5', 'D6', 'D7', 'D8', 'D9', 'D10', 'DJ', 'DQ', 'DK', 'DA',
+            //     'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8', 'S9', 'S10', 'SJ', 'SQ', 'SK', 'SA',
+            //     'H2', 'H3', 'H4', 'H5', 'H6', 'H7', 'H8', 'H9', 'H10', 'HJ', 'HQ', 'HK', 'HA',
+            //     'J1', 'J2'                        
+            //     ] 
+            // });
+            // this.add.existing(sort_button);
+            // sort_button.add_listener_to_scene();       
 
         }
 
@@ -620,6 +620,13 @@ export default class Game extends Phaser.Scene
                 button.add_listener_to_scene();
                 this.ui_elements.set(button.name, button);              
                 break;
+            case 'SortButton':
+                const sort_button = this.add.existing(
+                    new SortButton(this,
+                        element_cfg));
+                sort_button.add_listener_to_scene();
+                this.ui_elements.set(sort_button.name, sort_button);              
+                break;                            
             case 'ScoreText':
                 const test_score = this.add.existing(
                     new ScoreText(this,
