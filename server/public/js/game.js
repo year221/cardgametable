@@ -364,33 +364,7 @@ export default class Game extends Phaser.Scene
                     }
                 }
             }
-        });
-        // this.input.on('gameobjectdown', function(pointer, gameObject){
-        //     if (gameObject instanceof TextButton){
-        //         gameObject.highlight(1);                
-        //         const button_param = gameObject.params;
-        //         //console.log('button_clicked', button_param);
-        //         // if (button_param.event_name ==='generateCard'){
-        //         //     //const n_decks=1;
-        //         //     const n_decks = Math.round(button_param.num_card_textbox.text);
-        //         //     self.last_event_index ++;            
-        //         //     self.event_buffer.set(self.last_event_index, {'name':'generateCard', 'parameters':[button_param.target_zone, n_decks]});                        
-        //         //     self.socket.emit('generateCard', self.last_event_index, button_param.target_zone, n_decks, true);                         
-        //         // } else 
-        //         // if (button_param.event_name ==='resetGame'){
-        //         //     self.socket.emit('resetGame');    
-        //         // } else if (button_param.event_name ==='exitToGameRoom'){
-        //         //     self.socket.emit('exitToGameRoom');                                           
-        //         // }
-        //     } 
-        // });
-
-
-        // this.input.on('gameobjectup', function(pointer, gameObject){
-        //     if (gameObject instanceof TextButton){
-        //         gameObject.highlight(0);                    
-        //     } 
-        // });        
+        });     
 
         this.socket.on('resetLayout', function (server_layout_cfg, n_active_player, player_info) {
             if ((n_active_player!==undefined) && (n_active_player!==null)){
