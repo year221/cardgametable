@@ -170,7 +170,7 @@
         "offset_y": -8,
         "width": 40,
         "height": 20,
-        "default": "4"
+        "default": "{NACTIVEPLAYER}"
         },
         "label": {
         "offset_x": 0,
@@ -269,7 +269,7 @@
           "input": {
             "offset_x": 90,
             "offset_y": -7,
-            "default": "8"
+            "default": "{NACTIVEPLAYER}*2"
           }
         }
       ]

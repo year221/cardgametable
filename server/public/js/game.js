@@ -520,7 +520,7 @@ export default class Game extends Phaser.Scene
                     const zone = this.all_zones.get(zone_id);
                     let zone_player_id = (zone_id.split('_').length>=1)?(zone_id.split('_')[1]):'';                    
                     let element_json = JSON.stringify(grp_cfg)
-                    element_json = element_json.replace(/\{PLAYERID\}/g, zone_player_id).replace(/\{ZONEID\}/g, zone_id);                        
+                    element_json = element_json.replace(/\{PLAYERID\}/g, zone_player_id).replace(/\{ZONEID\}/g, zone_id).replace(/\{NACTIVEPLAYER\}/g, String(this.n_active_player));                        
                     let element_cfg = JSON.parse(element_json);
                     element_cfg.name = element_cfg.name + '_' + zone_id;
                     if (grp_cfg['position_type']=='relative_to_zone'){
@@ -533,7 +533,9 @@ export default class Game extends Phaser.Scene
                 }                
                 break;
             case 'standalone':
-                this.add_single_ui_element(grp_cfg);
+                let element_json = JSON.stringify(grp_cfg)
+                element_json = element_json.replace(/\{NACTIVEPLAYER\}/g, String(this.n_active_player));              
+                this.add_single_ui_element(JSON.parse(element_json));
                 break;
         }
     }

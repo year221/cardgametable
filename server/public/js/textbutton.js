@@ -1,5 +1,6 @@
 import Phaser from './phaser.js';
-
+import math from './math.js';
+//import { evaluate } from 'mathjs'
 export class TextButton extends Phaser.GameObjects.Text
 {
     params={};
@@ -41,7 +42,11 @@ export class TextButton extends Phaser.GameObjects.Text
     }    
 }
 
-
+function limited_eval(text){
+    // Preserve only 0-9 and +, -, * / and . in the expression and evaluate it.
+    const limited_text = text.replace(/[^0-9\+\*\-\/\.]/g, '');
+    return math.evaluate(limited_text);
+}
 
 function sort_cards(card_ids, sort_key_array){
     const sorted_card_ids = Array.from(card_ids);        
@@ -280,7 +285,7 @@ export function addNewDeck(scene, cfg){
         cfg.input.width, cfg.input.height,
         {
         type: 'number',
-        text: cfg.input.default,
+        text: String(limited_eval(cfg.input.default)),
         fontSize: '12px',
         }
     );
@@ -361,7 +366,7 @@ export function addNewDealer(scene, group_cfg){
                 40, 20,
                 {
                 type: 'number',
-                text: String(cfg.input.default),
+                text:  String(limited_eval(cfg.input.default)),
                 fontSize: '12px',
                 }
             );
