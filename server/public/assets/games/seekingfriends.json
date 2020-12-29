@@ -177,7 +177,25 @@
         "offset_y": -15,
         "text": "#Decks"
         }
-    },    
+    }, 
+    {
+      "group_type": "standalone",
+      "type": "SimpleEvent",
+      "name": "FlipSelected",
+      "event_name": "FlipSelected",
+      "text": "Flip Selected",
+      "x": 400,
+      "y": 485
+    },       
+    {
+      "group_type": "standalone",
+      "type": "SimpleEvent",
+      "name": "Deselect",
+      "event_name": "Deselect",
+      "text": "Deselect",
+      "x": 300,
+      "y": 485
+    },     
     {
       "group_type": "standalone",
       "type": "SimpleEvent",

@@ -78,13 +78,13 @@ export default class Game extends Phaser.Scene
         this.selection_box = this.add.rectangle(0, 0, 0, 0, 0x1d7196, 0.4);
 
         // regular buttons
-        const flip_button = this.add.text(400,485, 'FLIP Selected Card', {color:'#0f0', backgroundColor: '#666', fontSize:'12px'});
-        flip_button.setInteractive();
-        flip_button.on('pointerdown', this.action_flip_selected_cards, this);
+        // const flip_button = this.add.text(400,485, 'FLIP Selected Card', {color:'#0f0', backgroundColor: '#666', fontSize:'12px'});
+        // flip_button.setInteractive();
+        // flip_button.on('pointerdown', this.action_flip_selected_cards, this);
 
-        const deselect_button = this.add.text(300,485, 'Deselect', {color:'#0f0', backgroundColor: '#666', fontSize:'12px'});
-        deselect_button.setInteractive();
-        deselect_button.on('pointerdown', this.action_deselect, this);                
+        // const deselect_button = this.add.text(300,485, 'Deselect', {color:'#0f0', backgroundColor: '#666', fontSize:'12px'});
+        // deselect_button.setInteractive();
+        // deselect_button.on('pointerdown', this.action_deselect, this);                
    
 
         this.input.on('dragstart', function (pointer, gameObject) {
@@ -591,7 +591,13 @@ export default class Game extends Phaser.Scene
                     case 'NewGameRound':
                         event_handler = this.action_new_game_round.bind(this);
                         break;
-                }
+                    case 'FlipSelected':
+                        event_handler = this.action_flip_selected_cards.bind(this);
+                        break;
+                    case 'Deselect':
+                        event_handler = this.action_deselect.bind(this);
+                        break;
+                }             
                 const event_button = this.add.existing(
                     new SimpleEventButton(this,
                         element_cfg, event_handler));                
