@@ -1,7 +1,7 @@
 import Phaser from './phaser.js';
 import {CardZone, calculate_circular_zone_xy} from './zone.js';
 import {PokerCard, Card} from './cards.js';
-import {TextButton, SortButton, MoveCardButton, SimpleEventButton, ScoreText, addInputText, addNewDeck, addNewDealer} from './textbutton.js';
+import {TextButton, SortButton,FlipButton, MoveCardButton, SimpleEventButton, ScoreText, addInputText, addNewDeck, addNewDealer} from './textbutton.js';
 
 export default class Game extends Phaser.Scene
 {
@@ -89,52 +89,21 @@ export default class Game extends Phaser.Scene
         const deselect_button = this.add.text(300,485, 'Deselect', {color:'#0f0', backgroundColor: '#666', fontSize:'12px'});
         deselect_button.setInteractive();
         deselect_button.on('pointerdown', this.action_deselect, this);                
+   
 
-        // const reset_button2 = new SimpleEventButton(this, 
-        //     {
-        //         x:200,
-        //         y:265,
-        //         name: 'resetgame2',
-        //         text: 'RESET',
-        //     },
-        //     this.action_new_game_ground.bind(this)
-        //     );
-
-        // this.add.existing(reset_button2);
-        // reset_button2.add_listener_to_scene();      
-
-        if (Math.floor(Client.player_id)>=0){
-            const flip_all_button = this.add.text(100,265, 'FLIP ALL', {color:'#0f0', backgroundColor: '#666', fontSize:'12px'});
-            flip_all_button.setInteractive();
-            flip_all_button.on('pointerdown', function(){
-                const zone_id = 'Hand_'+ Client.player_id;
-                self.action_flip_cards_in_a_zone(zone_id);
-                // const card_ids = self.cards_in_zones.get(zone_id);
-                // self.event_cardFlipped(card_ids);                        
-                // self.last_event_index ++;
-                // self.event_buffer.set(self.last_event_index, {'name':'cardFlipped', 'parameters':[card_ids]});                                                
-                // self.socket.emit('cardFlipped', self.last_event_index, card_ids);        
-            });       
-
-            // const sort_button = new SortButton(this, 
-            // {
-            //     x:0,
-            //     y:265,
-            //     name: 'sort',
-            //     text: 'SORT',
-            //     zone_id: 'Hand_'+ Client.player_id,
-            //     sort_key_array:[
-            //     'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8', 'C9', 'C10', 'CJ', 'CQ', 'CK', 'CA',
-            //     'D2', 'D3', 'D4', 'D5', 'D6', 'D7', 'D8', 'D9', 'D10', 'DJ', 'DQ', 'DK', 'DA',
-            //     'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8', 'S9', 'S10', 'SJ', 'SQ', 'SK', 'SA',
-            //     'H2', 'H3', 'H4', 'H5', 'H6', 'H7', 'H8', 'H9', 'H10', 'HJ', 'HQ', 'HK', 'HA',
-            //     'J1', 'J2'                        
-            //     ] 
-            // });
-            // this.add.existing(sort_button);
-            // sort_button.add_listener_to_scene();       
-
-        }
+        // if (Math.floor(Client.player_id)>=0){
+        //     const flip_all_button = this.add.text(100,265, 'FLIP ALL', {color:'#0f0', backgroundColor: '#666', fontSize:'12px'});
+        //     flip_all_button.setInteractive();
+        //     flip_all_button.on('pointerdown', function(){
+        //         const zone_id = 'Hand_'+ Client.player_id;
+        //         self.action_flip_cards_in_a_zone(zone_id);
+        //         // const card_ids = self.cards_in_zones.get(zone_id);
+        //         // self.event_cardFlipped(card_ids);                        
+        //         // self.last_event_index ++;
+        //         // self.event_buffer.set(self.last_event_index, {'name':'cardFlipped', 'parameters':[card_ids]});                                                
+        //         // self.socket.emit('cardFlipped', self.last_event_index, card_ids);        
+        //     });            
+        // }
 
         this.input.on('dragstart', function (pointer, gameObject) {
             // cache starting depth so that we could return it to its depth
@@ -626,7 +595,14 @@ export default class Game extends Phaser.Scene
                         element_cfg));
                 sort_button.add_listener_to_scene();
                 this.ui_elements.set(sort_button.name, sort_button);              
-                break;                            
+                break;    
+            case 'FlipButton':
+                const flip_button = this.add.existing(
+                    new FlipButton(this,
+                        element_cfg));
+                flip_button.add_listener_to_scene();
+                this.ui_elements.set(flip_button.name, flip_button);              
+                break;                                           
             case 'ScoreText':
                 const test_score = this.add.existing(
                     new ScoreText(this,

@@ -391,6 +391,18 @@
       "H2", "H3", "H4", "H5", "H6", "H7", "H8", "H9", "H10", "HJ", "HQ", "HK", "HA",
       "J1", "J2"                        
       ] 
-    }                           
+    },
+    {
+      "group_type": "per_zone_group",
+      "zone_group": "Hand",
+      "type": "FlipButton",
+      "position_type": "relative_to_zone", 
+      "offset_x": 350,
+      "offset_y": -115,
+      "name": "Flip",
+      "text": "FLIP UP",
+      "zone_id": "{ZONEID}",
+      "flip_type": "FaceUp"
+    }                            
   ]
 }

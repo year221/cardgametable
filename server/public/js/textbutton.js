@@ -56,6 +56,44 @@ export class SortButton extends TextButton
     }    
 }
 
+export class FlipButton extends TextButton
+{
+    flip_type;
+    target_zone_id;
+    constructor(scene, button_cfg){
+        super(scene,button_cfg['x'], button_cfg['y'], button_cfg['text'], button_cfg['style'])    
+        switch (button_cfg['flip_type']){
+            case undefined:
+                this.flip_type = null;
+                break;
+            case 'FlipSide':
+                this.flip_type = null;
+                break;
+            case 'FaceUp':
+                this.flip_type = true;
+                break;
+            case 'FaceDown':
+                this.flip_type = false;
+                break;
+        }        
+        //this.flip_type = button_cfg['flip_type']
+        this.name = button_cfg['name']
+        this.target_zone_id = button_cfg['zone_id']            
+    }
+
+    add_listener_to_scene(){
+        super.add_listener_to_scene();
+        this.on('pointerdown', function(pointer, localX, localY, event){            
+            //const sorted_card_ids = sort_cards(this.scene.cards_in_zones.get(this.target_zone_id), this.sort_key_array);            
+            //sorted_card_ids.sort((a,b)=>sort_key_array.indexOf(a.split('_')[0])-sort_key_array.indexOf(b.split('_')[0]));     
+            //this.scene.action_move_cards(this.target_zone_id, this.target_zone_id, sorted_card_ids, null);
+            this.scene.action_flip_cards_in_a_zone(this.target_zone_id, this.flip_type);
+            event.stopPropagation()
+        });        
+        this.setInteractive();        
+    }    
+}
+
 
 export class MoveCardButton extends TextButton
 {    
@@ -86,6 +124,8 @@ export class MoveCardButton extends TextButton
         this.setInteractive();        
     }    
 }
+
+
 
 
 export class ScoreText extends Phaser.GameObjects.Text
