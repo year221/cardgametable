@@ -356,6 +356,7 @@ export default class Game extends Phaser.Scene
         this.socket.emit('requestLayout');
         this.socket.emit('requestGameSync');
         this.socket.emit('getMyPlayerName');
+        this.socket.emit('requestUIElementTextCache');
         this.socket.on('playerInfo', function(player_info){
             self.registry.set('playerinfo', player_info);
         });        

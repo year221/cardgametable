@@ -29,7 +29,8 @@ game_state = {
   socket_id_to_player_id: new Map(),
   socket_id_to_player_info: new Map(),
   last_events: {},
-  n_active_player:0,  
+  n_active_player:0,
+  ui_element_sync_cache: new Map()
 };
 
 
@@ -82,6 +83,7 @@ function reset_state_to_waiting(){
   }
   game_state.status='Waiting';
   game_state.n_active_player=0;
+  game_state.ui_element_sync_cache.clear();
 }
 
 
@@ -327,7 +329,14 @@ io.on('connection', function (socket) {
 
   socket.on('uiElementTextSync', function(element_name, text){
     console.log('uiElementTextSync', element_name, text); 
+    game_state.ui_element_sync_cache.set(element_name, text);
     socket.broadcast.emit('uiElementTextSync', element_name, text); 
+  });
+
+  socket.on('requestUIElementTextCache', function(){
+    for (let [element_name, text] of game_state.ui_element_sync_cache){
+      socket.emit('uiElementTextSync', element_name, text);  
+    }
   });
   
   socket.on('requestGameStatus', function(){
