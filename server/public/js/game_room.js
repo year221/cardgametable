@@ -47,19 +47,19 @@ export default class GameRoom extends Phaser.Scene
         this.name_input.on('textchange', function(inputText){ 
             self.socket.emit('updatePlayerName', self.name_input.text);  
         });
-        this.game_info = this.add.text(x, y+60, 'Game Status:', {fontSize: '20px'});
-        this.player_info = this.add.text(x, y+80, 'Player Information', {fontSize: '20px'});
+        this.game_info = this.add.text(x, y+100, 'Game Status:', {fontSize: '20px'});
+        this.player_info = this.add.text(x, y+120, 'Player Information', {fontSize: '20px'});
 
-        this.join_game = this.add.text(x,y+30, 'Join Game', {fontSize:'20px', backgroundColor: '#666'});               
+        this.join_game = this.add.text(x,y+70, 'Join Game', {fontSize:'20px', backgroundColor: '#666'});               
         this.join_game.on('pointerdown', function(){                                             
             self.socket.emit('joinGame');                                   
         })
                 
-        this.observe_game = this.add.text(x+140,y+30, 'Observe', {fontSize:'20px', backgroundColor: '#666'});        
+        this.observe_game = this.add.text(x+140,y+70, 'Observe', {fontSize:'20px', backgroundColor: '#666'});        
         this.observe_game.on('pointerdown', function(){                                             
             self.socket.emit('observeGame');                                   
         })        
-        this.start_game = this.add.text(x+280,y+30, 'Start Game', {fontSize:'20px', backgroundColor: '#666'});      
+        this.start_game = this.add.text(x+280,y+70, 'Start Game', {fontSize:'20px', backgroundColor: '#666'});      
         this.start_game.on('pointerdown', function(){                                            
             self.socket.emit('startGame');                                   
         })         
@@ -68,15 +68,15 @@ export default class GameRoom extends Phaser.Scene
         this.start_game.visible=false;        
 
         const form = `
-        <select name="layout" style="font-size: 12px; background-color: black; color: white; width: 200px"> Select Layout 
+        <select name="layout" style="font-size: 20px; background-color: black; color: white; width: 200px"> Select Layout 
          <option value="English-Desktop">English-Desktop</option> 
          <option value="Chinese-Desktop">Chinese-Desktop</option> 
         </select>
         `;
-        this.add.text(x,y+40, 'Select Game Layout ->', {fontSize:'12px'}); 
+        this.add.text(x,y+35, 'Select Game Layout:', {fontSize:'20px'}); 
         var layout_select = this.add.dom().createFromHTML(form);
         this.game_layout_file = 'English-Desktop';
-        layout_select.setPosition(x+250,y+47.5);
+        layout_select.setPosition(x+340,y+42.5);
         layout_select.addListener('change');
   
         layout_select.on('change', function (event) {                     
@@ -144,10 +144,10 @@ export default class GameRoom extends Phaser.Scene
 
     }
     display_player_info(player_info){
-        const content = ['Player Information: '];
+        const content = ['Player Name and Status: '];
         for (let player of player_info){            
             if (player.player_name!==null){
-                content.push('  ' + player.player_name+ '  '+ player.player_type);
+                content.push(player.player_name+ '  '+ player.player_type);
             }            
         }           
         this.player_info.setText(content);

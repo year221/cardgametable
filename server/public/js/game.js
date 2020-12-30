@@ -520,6 +520,8 @@ export default class Game extends Phaser.Scene
     }    
     // set zone and button layouts
     clear_all_zones_and_buttons(){
+        this.registry.reset();
+        this.registry.events.removeAllListeners();
         for (let [zone_id, zone] of this.all_zones){
             zone.destroy();
         }
