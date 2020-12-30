@@ -1,0 +1,16 @@
+{
+   "layout": {
+       "files": [
+           {
+               "type": "json",
+               "key": "English-Desktop",
+               "url": "assets/games/seekingfriends.json"
+           },
+           {
+               "type": "json",
+               "key": "Chinese-Desktop",
+               "url": "assets/games/seekingfriends-Chinese.json"
+           }
+       ]
+   }
+}

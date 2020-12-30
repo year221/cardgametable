@@ -5,6 +5,7 @@ import {TextButton, SortButton,FlipButton, MoveCardButton, SimpleEventButton, Sc
 
 export default class Game extends Phaser.Scene
 {
+    layout_file
     //player_id='0';
     n_active_player;
     all_zones;
@@ -63,14 +64,29 @@ export default class Game extends Phaser.Scene
     preload()
     {
         this.load.atlas('cards', 'assets/cards.png', 'assets/cards.json');
-        this.load.json('layout', 'assets/games/seekingfriends.json');
-        //this.load.plugin('rexinputtextplugin', 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexinputtextplugin.min.js', true);           
+        
         if (this.plugins.get('rexinputtextplugin', false)===null){
             this.load.plugin('rexinputtextplugin', 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexinputtextplugin.min.js', true);               
-        }            
+        }          
+        this.load.setPrefix('layout.');
+        this.load.pack('layout', 'assets/games/seekingfriends-pack.json');        
+        //this.load.plugin('rexinputtextplugin', 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexinputtextplugin.min.js', true);           
+          
     }
     create()
     {
+        
+        const data_passed_in = this.sys.getData();
+        this.layout_file =this.cache.json.get('layout.layout')['layout']['files'][0]['key'];        
+        if (data_passed_in !==undefined) {
+            this.layout_file = data_passed_in['game_layout_file'] ?? this.layout_file;
+        }
+        // this.load.json('layout', layout_file);
+        // this.load.once(Phaser.Loader.Events.COMPLETE, () => {
+        //     // texture loaded so use instead of the placeholder
+        //     console.log('')
+        // })        
+        // this.load.start();
         console.log("run scene creation for game")
         var self = this;   
         this.scale.setGameSize(1400, 800);   
@@ -346,7 +362,7 @@ export default class Game extends Phaser.Scene
                 self.n_active_player = n_active_player;
             }
             self.clear_all_zones_and_buttons();
-            const layout_cfg = self.cache.json.get('layout')
+            const layout_cfg = self.cache.json.get('layout.'+self.layout_file);
             self.registry.set('playerinfo', player_info);
             self.layout_zones_and_buttons(layout_cfg)//, player_info);            
             self.cameras.main.centerOn(layout_cfg.default_camera.x, layout_cfg.default_camera.y);                 
