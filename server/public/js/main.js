@@ -12,9 +12,11 @@ export default new Phaser.Game({
         createContainer: true
     },	
     scale: {
+        parent: 'gamediv',
+        autoCenter: Phaser.Scale.CENTER_BOTH,
         mode: Phaser.Scale.FIT,
-        width: 1400,
-        height: 790
+        width: 600,
+        height: 800
     },
     //pixelArt: true,
     //antialias: false,

@@ -73,7 +73,22 @@ export default class Game extends Phaser.Scene
     {
         console.log("run scene creation for game")
         var self = this;   
-        this.scale.setGameSize(1400, 790);     
+        this.scale.setGameSize(1400, 800);   
+        // this.scale.scaleMode = Phaser.Scale.ScaleModes.FIT;
+        // this.scale.displaySize.setAspectMode(this.scale.scaleMode)
+        // this.scale.getParentBounds();
+
+        // //  Only set the parent bounds if the parent has an actual size
+        // if (this.scale.parentSize.width > 0 && this.scale.parentSize.height > 0)
+        // {
+        //     this.scale.displaySize.setParent(this.scale.parentSize);
+        // }
+
+        // this.scale.refresh();        
+        
+        
+        
+        
         this.activated_cards = this.add.group();
         this.new_selected_cards =this.add.group();
         // configuration

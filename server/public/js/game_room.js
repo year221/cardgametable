@@ -24,7 +24,10 @@ export default class GameRoom extends Phaser.Scene
         var self = this;
         const x = -200;
         const y = -200;
-        this.scale.setGameSize(1000, 570);
+        //this.sys.scale.scaleMode  = Phaser.Scale.NONE;
+        this.scale.setGameSize(600, 800);
+
+        //this.scale.resize();
         this.cameras.main.centerOn(0,0);//.setZoom(1.5);
 
         const name_label = this.add.text(x,y, 'Your Name', {fontSize:'20px'});
