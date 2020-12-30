@@ -1,8 +1,10 @@
 var express = require('express');
 var app = express();
-var server = require('http').Server(app);
-console.log(server)
-var io = require('socket.io').listen(server);
+var server = require('http').createServer(app);
+const options = { /* ... */ };
+const io = require('socket.io')(server, options);
+// console.log(server)
+// var io = require('socket.io').listen(server);
 const utils = require('./utils');
 
 
