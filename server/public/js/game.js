@@ -94,7 +94,7 @@ export default class Game extends Phaser.Scene
         // configuration
         this.input.dragDistanceThreshold=5;
         this.selection_box = this.add.rectangle(0, 0, 0, 0, 0x1d7196, 0.4);
-
+        this.input.setTopOnly(true);
         // regular buttons
         // const flip_button = this.add.text(400,485, 'FLIP Selected Card', {color:'#0f0', backgroundColor: '#666', fontSize:'12px'});
         // flip_button.setInteractive();
@@ -530,20 +530,31 @@ export default class Game extends Phaser.Scene
             }
 
             for (let player_id = 0; player_id<this.n_active_player; player_id++){
-               let xy_pos = zone_xy[((player_id-position_offset)%this.n_active_player+this.n_active_player)%this.n_active_player];
-               let zone_id = zone_grp.name + '_' + String(player_id);
-               let local_display = zone_grp.local_display_other_player
-               if (String(player_id)==Client.player_id){
-                local_display = zone_grp.local_display_current_player
-               }
-               if (!this.all_zones.has(zone_id)){
-                  this.add_zone(zone_id, xy_pos.x, xy_pos.y,
-                    zone_grp.width, zone_grp.height, 
-                    zone_grp.fillColor, 
-                    zone_grp.boundary_width, zone_grp.boundary_height, 
-                    zone_grp.card_step_x, zone_grp.card_step_y, 
-                    zone_grp.card_scale, local_display)
-               }
+                let xy_pos = zone_xy[((player_id-position_offset)%this.n_active_player+this.n_active_player)%this.n_active_player];
+                let zone_id = zone_grp.name + '_' + String(player_id);
+                let local_display = zone_grp.local_display_other_player ?? 0;
+                let center_text = zone_grp.center_text_other_player ?? undefined;
+                if (String(player_id)==Client.player_id){
+                    local_display = zone_grp.local_display_current_player ?? local_display;
+                    center_text = zone_grp.center_text_current_player ?? center_text;
+                }
+               
+               
+                if (!this.all_zones.has(zone_id)){
+                    this.add_zone(zone_id, xy_pos.x, xy_pos.y,
+                        zone_grp.width, zone_grp.height, 
+                        zone_grp.fillColor, 
+                        zone_grp.boundary_width, zone_grp.boundary_height, 
+                        zone_grp.card_step_x, zone_grp.card_step_y, 
+                        zone_grp.card_scale, local_display);
+                    if (center_text!==undefined){
+                        this.add.text(xy_pos.x-Math.round(center_text.length/2*7), xy_pos.y-6, center_text,
+                        {
+                            fontSize: "12px",
+                            color:'#666'
+                        });
+                    }
+                }
             }
         } else if (zone_grp.type=='single'){
             this.add_zone(zone_grp.name,
@@ -553,7 +564,14 @@ export default class Game extends Phaser.Scene
                 zone_grp.boundary_width, zone_grp.boundary_height, 
                 zone_grp.card_step_x, zone_grp.card_step_y, 
                 zone_grp.card_scale, 
-                zone_grp.local_display)                
+                zone_grp.local_display)    
+            if (zone_grp.center_text!==undefined){
+                this.add.text(zone_grp.x-Math.round(zone_grp.center_text.length/2*7), zone_grp.y-6, zone_grp.center_text,
+                {
+                    fontSize: "12px",
+                    color:'#666'
+                });
+            }                            
         }        
     }
     
