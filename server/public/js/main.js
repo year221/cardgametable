@@ -4,14 +4,20 @@ import GameRoom from './game_room.js'
 //import InputTextPlugin from './lib/rexinputtextplugin.min.js';
 
 export default new Phaser.Game({
-	parent: 'rex-text-input',
+	parent: 'gamediv',
 	type: Phaser.AUTO,
-	width: 1400,
-	height: 780,
+
 	disableContextMenu: true,
     dom: {
         createContainer: true
     },	
+    scale: {
+        parent: 'gamediv',
+        autoCenter: Phaser.Scale.CENTER_BOTH,
+        mode: Phaser.Scale.FIT,
+        width: 600,
+        height: 800
+    },
     //pixelArt: true,
     //antialias: false,
     resolution: window.devicePixelRatio,
