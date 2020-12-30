@@ -78,7 +78,7 @@ export default class Game extends Phaser.Scene
         // configuration
         this.input.dragDistanceThreshold=5;
         this.selection_box = this.add.rectangle(0, 0, 0, 0, 0x1d7196, 0.4);
-
+        this.input.setTopOnly(true);
         // regular buttons
         // const flip_button = this.add.text(400,485, 'FLIP Selected Card', {color:'#0f0', backgroundColor: '#666', fontSize:'12px'});
         // flip_button.setInteractive();
