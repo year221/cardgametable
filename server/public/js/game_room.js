@@ -23,18 +23,23 @@ export default class GameRoom extends Phaser.Scene
     create()
     {        
         var self = this;
-        const x = -100;
-        const y = 0;
-        this.cameras.main.centerOn(0,0);
-        const name_label = this.add.text(x,y, 'Your Name', {fontSize:'12px'});
+        const x = -200;
+        const y = -200;
+        //this.sys.scale.scaleMode  = Phaser.Scale.NONE;
+        this.scale.setGameSize(600, 800);
+
+        //this.scale.resize();
+        this.cameras.main.centerOn(0,0);//.setZoom(1.5);
+
+        const name_label = this.add.text(x,y, 'Your Name', {fontSize:'20px'});
         this.name_input = this.add.rexInputText(
-            x+150,
-            y+5, 
-            100, 20,
+            x+220,
+            y+8, 
+            200, 25,
             {
             type: 'text',
             text: "Anonymous",
-            fontSize: '12px',
+            fontSize: '20px',
             border: 1,    
             borderColor: '#888888',
             }
@@ -42,19 +47,19 @@ export default class GameRoom extends Phaser.Scene
         this.name_input.on('textchange', function(inputText){ 
             self.socket.emit('updatePlayerName', self.name_input.text);  
         });
-        this.game_info = this.add.text(x, y+60, 'Game Status:', {fontSize: '12px'});
-        this.player_info = this.add.text(x, y+80, 'Player Information', {fontSize: '12px'});
+        this.game_info = this.add.text(x, y+60, 'Game Status:', {fontSize: '20px'});
+        this.player_info = this.add.text(x, y+80, 'Player Information', {fontSize: '20px'});
 
-        this.join_game = this.add.text(x,y+20, 'Join Game', {fontSize:'12px', backgroundColor: '#666'});               
+        this.join_game = this.add.text(x,y+30, 'Join Game', {fontSize:'20px', backgroundColor: '#666'});               
         this.join_game.on('pointerdown', function(){                                             
             self.socket.emit('joinGame');                                   
         })
                 
-        this.observe_game = this.add.text(x+100,y+20, 'Observe', {fontSize:'12px', backgroundColor: '#666'});        
+        this.observe_game = this.add.text(x+140,y+30, 'Observe', {fontSize:'20px', backgroundColor: '#666'});        
         this.observe_game.on('pointerdown', function(){                                             
             self.socket.emit('observeGame');                                   
         })        
-        this.start_game = this.add.text(x+200,y+20, 'Start Game', {fontSize:'12px', backgroundColor: '#666'});      
+        this.start_game = this.add.text(x+280,y+30, 'Start Game', {fontSize:'20px', backgroundColor: '#666'});      
         this.start_game.on('pointerdown', function(){                                            
             self.socket.emit('startGame');                                   
         })         
@@ -139,10 +144,10 @@ export default class GameRoom extends Phaser.Scene
 
     }
     display_player_info(player_info){
-        const content = ['Player Information', ''];
+        const content = ['Player Information: '];
         for (let player of player_info){            
             if (player.player_name!==null){
-                content.push(player.player_name+ '  '+ player.player_type);
+                content.push('  ' + player.player_name+ '  '+ player.player_type);
             }            
         }           
         this.player_info.setText(content);

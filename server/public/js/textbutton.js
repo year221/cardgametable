@@ -4,39 +4,38 @@ import math from './math.js';
 export class TextButton extends Phaser.GameObjects.Text
 {
     params={};
-    constructor(scene, x, y, text, style){
+    backgroundColor;
+    backgroundColor_over;
+    backgroundColor_down;    
+    constructor(scene, x, y, text, style){        
+        const default_style = {color:'#eee',
+        backgroundColor: '#707070',  
+        padding: {x:3,y:3},
+        fontSize:'12px'};    
+        super(scene, x, y, text, {...default_style,...style});
         if ((style===undefined) || (style===null)){
-            style = {color:'#eee',
-            backgroundColor: '#0275d8',//''#666',  
-            padding: {x:3,y:3},
-            fontSize:'12px'}                  
-        }
-        super(scene, x, y, text, style);
+            this.backgroundColor = '#707070';
+            this.backgroundColor_over='#565656';
+            this.backgroundColor_down='#434343';
+        } else {
+            this.backgroundColor = style['backgroundColor'] ?? '#707070';
+            this.backgroundColor_over = style['backgroundColor'] ?? '#565656';
+            this.backgroundColor_down = style['backgroundColor'] ?? '#434343';            
+        }        
     }
-
-    // highlight(value){
-    //     switch (value)
-    //     if (value==1){
-    //         this.setBackgroundColor('#025aa5');
-    //         //this.setTint(0x888888);
-    //     } else if (value==0){
-    //         this.setBackgroundColor('#0275d8');
-    //         //this.clearTint();
-    //     }
-    // }    
 
     add_listener_to_scene(){
         this.on('pointerover', function(pointer, localX, localY, event){               
-            this.setBackgroundColor('#025aa5'); 
+            this.setBackgroundColor(this.backgroundColor_over); 
         });  
         this.on('pointerout', function(pointer, localX, localY, event){               
-            this.setBackgroundColor('#0275d8');
+            this.setBackgroundColor(this.backgroundColor);
         });  
         this.on('pointerdown', function(pointer, localX, localY, event){                  
-            this.setBackgroundColor('#014682'); 
+            this.setBackgroundColor(this.backgroundColor_down); 
         });       
         this.on('pointerup', function(pointer, localX, localY, event){                  
-            this.setBackgroundColor('#025aa5'); 
+            this.setBackgroundColor(this.backgroundColor); 
         });                         
         this.setInteractive({ useHandCursor: true });
     }    
