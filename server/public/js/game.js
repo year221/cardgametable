@@ -72,7 +72,8 @@ export default class Game extends Phaser.Scene
     create()
     {
         console.log("run scene creation for game")
-        var self = this;        
+        var self = this;   
+        this.scale.setGameSize(1400, 790);     
         this.activated_cards = this.add.group();
         this.new_selected_cards =this.add.group();
         // configuration
