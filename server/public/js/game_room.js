@@ -8,10 +8,11 @@ import {TextButton} from './textbutton.js';
 export default class GameRoom extends Phaser.Scene
 {
     // The purpose of this object is to make connection to the server and get player id information. ANd also start game
+    game_layout_file
 	constructor()
 	{
         super('GameRoom')    
-        this.socket = window.Client.socket;            
+        this.socket = window.Client.socket;        
     }       
     preload()
     {        
@@ -61,7 +62,22 @@ export default class GameRoom extends Phaser.Scene
         this.observe_game.visible=false;
         this.start_game.visible=false;        
 
-        
+        const form = `
+        <select name="layout" style="font-size: 12px; background-color: black; color: white; width: 200px"> Select Layout 
+         <option value="English-Desktop">English-Desktop</option> 
+         <option value="Chinese-Desktop">Chinese-Desktop</option> 
+        </select>
+        `;
+        this.add.text(x,y+40, 'Select Game Layout ->', {fontSize:'12px'}); 
+        var layout_select = this.add.dom().createFromHTML(form);
+        this.game_layout_file = 'English-Desktop';
+        layout_select.setPosition(x+250,y+47.5);
+        layout_select.addListener('change');
+  
+        layout_select.on('change', function (event) {                     
+            self.game_layout_file = event.target.value;
+            console.log(event.target.value);
+        });        
 
         this.socket.on('returnGameStatus', this.on_updateGameStatus.bind(this));       
         this.socket.on('playerInfo', this.display_player_info.bind(this));
@@ -102,7 +118,7 @@ export default class GameRoom extends Phaser.Scene
 
     transition_to_game_scene(){
         this.socket.removeAllListeners();        
-        this.scene.start('Game');        
+        this.scene.start('Game', {game_layout_file:this.game_layout_file});        
     }
 
     on_returnPlayerName(player_name){
