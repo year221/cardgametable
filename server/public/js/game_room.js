@@ -20,8 +20,7 @@ export default class GameRoom extends Phaser.Scene
         }
     }   
     create()
-    {
-        console.log('run game room creation');
+    {        
         var self = this;
         const x = -100;
         const y = 0;
@@ -42,8 +41,8 @@ export default class GameRoom extends Phaser.Scene
         this.name_input.on('textchange', function(inputText){ 
             self.socket.emit('updatePlayerName', self.name_input.text);  
         });
-        this.game_info = this.add.text(x, y+40, 'Game Status:', {fontSize: '12px'});
-        this.player_info = this.add.text(x, y+60, 'Player Information', {fontSize: '12px'});
+        this.game_info = this.add.text(x, y+60, 'Game Status:', {fontSize: '12px'});
+        this.player_info = this.add.text(x, y+80, 'Player Information', {fontSize: '12px'});
 
         this.join_game = this.add.text(x,y+20, 'Join Game', {fontSize:'12px', backgroundColor: '#666'});               
         this.join_game.on('pointerdown', function(){                                             
@@ -64,66 +63,60 @@ export default class GameRoom extends Phaser.Scene
 
         
 
-        this.socket.on('returnGameStatus', function(game_status, player_info, can_be_joined){            
-            if (game_status == 'Waiting'){                
-                self.start_game.visible=true;
-                self.start_game.setInteractive();
-                self.join_game.visible=true;
-                self.join_game.setInteractive();
-                self.observe_game.visible=true;
-                self.observe_game.setInteractive();
-            } else if (game_status == 'InGame'){
-                self.start_game.visible=false;
-                // CHeck if can join
-                if ((can_be_joined!==null) && (can_be_joined)){
-                    self.join_game.visible=true;
-                    self.join_game.setInteractive();
-                } else {
-                    self.join_game.visible=false;                    
-                }
-                self.observe_game.visible=true;
-                self.observe_game.setInteractive();
-            }            
-            self.display_game_info(game_status);
-            self.display_player_info(player_info);
-        });
-
-        
-        this.socket.on('playerInfo', function(player_info){
-            self.display_player_info(player_info);
-        });
-
-        this.socket.on('startGameFromGameRoom', function(){
-            console.log('startGame');
-            console.log('our_player_id',Client.player_id);
-            self.socket.removeAllListeners();
-            //self.input.removeAllListeners();
-            self.scene.start('Game');
-        });
-
-
-        this.socket.on('returnPlayerName', function(player_name){            
-            if (player_name ===null){
-                self.socket.emit('updatePlayerName', self.name_input.text);  
-            } else {
-                self.name_input.setText(player_name);
-            }
-        });
-            
-        this.socket.emit('requestGameStatus');
-        this.socket.emit('getMyPlayerName');
-
+        this.socket.on('returnGameStatus', this.on_updateGameStatus.bind(this));       
+        this.socket.on('playerInfo', this.display_player_info.bind(this));
+        this.socket.on('startGameFromGameRoom', this.transition_to_game_scene.bind(this));
+        this.socket.on('returnPlayerName', this.on_returnPlayerName.bind(this));
         this.socket.on('playerIDAssigned', function (player_id) {            
             Client.player_id = player_id;            
         });            
-        //this.socket.emit('updatePlayerName', this.name_input.text);  
+
+        this.socket.emit('requestGameStatus');
+        this.socket.emit('getMyPlayerName');        
+        
     }  
+
+    on_updateGameStatus(game_status, player_info, can_be_joined){            
+        if (game_status == 'Waiting'){                
+            this.start_game.visible=true;
+            this.start_game.setInteractive();
+            this.join_game.visible=true;
+            this.join_game.setInteractive();
+            this.observe_game.visible=true;
+            this.observe_game.setInteractive();
+        } else if (game_status == 'InGame'){
+            this.start_game.visible=false;
+            // CHeck if can join
+            if ((can_be_joined!==null) && (can_be_joined)){
+                this.join_game.visible=true;
+                this.join_game.setInteractive();
+            } else {
+                this.join_game.visible=false;                    
+            }
+            this.observe_game.visible=true;
+            this.observe_game.setInteractive();
+        }            
+        this.display_game_info(game_status);
+        this.display_player_info(player_info);
+    }
+
+    transition_to_game_scene(){
+        this.socket.removeAllListeners();        
+        this.scene.start('Game');        
+    }
+
+    on_returnPlayerName(player_name){
+        if (player_name ===null){
+            this.socket.emit('updatePlayerName', this.name_input.text);  
+        } else {
+            this.name_input.setText(player_name);
+        }        
+    }
     
     display_game_info(game_status){
         
         if (game_status == 'Waiting'){
-            this.game_info.setText('Game Status: Waiting for players to join');
-            console.log('show elements')            
+            this.game_info.setText('Game Status: Waiting for players to join');            
         } else if (game_status == 'InGame'){
             this.game_info.setText('Game Status: Game in play.');                        
         } 
@@ -131,14 +124,10 @@ export default class GameRoom extends Phaser.Scene
     }
     display_player_info(player_info){
         const content = ['Player Information', ''];
-        for (let player of player_info){
-            //if (player.player_id <=-1){
-            //    content.push(player.player_name+  " Observer");
-            //} else {
+        for (let player of player_info){            
             if (player.player_name!==null){
                 content.push(player.player_name+ '  '+ player.player_type);
-            }
-            //}
+            }            
         }           
         this.player_info.setText(content);
     }

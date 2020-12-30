@@ -17,7 +17,7 @@
       "fillColor": 2236962,
       "boundary_width": 40,
       "boundary_height": 52.5,
-      "card_step_x": 15,
+      "card_step_x": 18,
       "card_step_y": 97.5,
       "card_scale": 0.5,
       "local_display_other_player": 2,
@@ -36,7 +36,7 @@
       "fillColor": 2236962,
       "boundary_width": 40,
       "boundary_height": 52.5,
-      "card_step_x": 15,
+      "card_step_x": 18,
       "card_step_y": 97.5,
       "card_scale": 0.5,
       "local_display_other_player": 2,
@@ -55,7 +55,7 @@
       "fillColor": 3355443,
       "boundary_width": 40,
       "boundary_height": 52.5,
-      "card_step_x": 15,
+      "card_step_x": 18,
       "card_step_y": 30,
       "card_scale": 0.5,
       "local_display_other_player": 0,
@@ -76,7 +76,7 @@
       "boundary_height": 28.5,
       "card_step_x": 0,
       "card_step_y": 15,
-      "card_scale": 0.25,
+      "card_scale": 0.3,
       "local_display_other_player": 0,
       "local_display_current_player": 0
     },
@@ -93,14 +93,14 @@
       "fillColor": 3355443,
       "boundary_width": 22.5,
       "boundary_height": 28.5,
-      "card_step_x": 7.5,
+      "card_step_x": 10,
       "card_step_y": 15,
-      "card_scale": 0.25,
+      "card_scale": 0.3,
       "local_display_other_player": 0,
       "local_display_current_player": 0
     },
     {
-      "type": "public",
+      "type": "single",
       "name": "Hidden",
       "x": -200,
       "y": 0,
@@ -109,13 +109,13 @@
       "fillColor": 3355443,
       "boundary_width": 22.5,
       "boundary_height": 28.5,
-      "card_step_x": 7.5,
+      "card_step_x": 10,
       "card_step_y": 15,
-      "card_scale": 0.25,
+      "card_scale": 0.3,
       "local_display": 0
     },
     {
-      "type": "public",
+      "type": "single",
       "name": "SharedScore",
       "x": 208,
       "y": 0,
@@ -124,13 +124,13 @@
       "fillColor": 3355443,
       "boundary_width": 22.5,
       "boundary_height": 28.5,
-      "card_step_x": 7.5,
+      "card_step_x": 10,
       "card_step_y": 15,
-      "card_scale": 0.25,
+      "card_scale": 0.3,
       "local_display": 0
     },
     {
-      "type": "public",
+      "type": "single",
       "name": "CardDealer",
       "x": -480,
       "y": 0,
@@ -141,51 +141,104 @@
       "boundary_height": 28.5,
       "card_step_x": 0,
       "card_step_y": 1,
-      "card_scale": 0.25,
+      "card_scale": 0.3,
       "local_display": 0
     }
   ],
   "ui_elements": [
-    {
-      "type": "deck_generator",
-      "name": "GenerateCard",
-      "generate_button_label": "NewCards",
-      "target_zone": "CardDealer",
-      "x": -450,
-      "y": -25,
-      "input": {
+    {        
+        "group_type": "standalone",
+        "type": "DeckGenerator",
+        "name": "AddNewDeck",
+        "generate_button_label": "NewCards",
+        "dst_zone_id": "CardDealer",
+        "all_card_ids_in_a_deck": [
+          "C2", "C3", "C4", "C5", "C6", "C7", "C8", "C9", "C10", "CJ", "CQ", "CK", "CA",
+          "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9", "D10", "DJ", "DQ", "DK", "DA",
+          "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "S10", "SJ", "SQ", "SK", "SA",
+          "H2", "H3", "H4", "H5", "H6", "H7", "H8", "H9", "H10", "HJ", "HQ", "HK", "HA",
+          "J1", "J2"                        
+        ],
+        "shuffle": true,
+        "x": -450,
+        "y": -25,
+        "button": {
+        "text": "AddNewDeck"
+        },
+        "input": {
         "offset_x": 90,
         "offset_y": -8,
-        "default": "4"
-      },
-      "label": {
+        "width": 40,
+        "height": 20,
+        "default": "{NACTIVEPLAYER}"
+        },
+        "label": {
         "offset_x": 0,
         "offset_y": -15,
         "text": "#Decks"
-      }
-    },
+        }
+    }, 
     {
-      "type": "simple_event",
-      "name": "Reset Game",
-      "event_name": "resetGame",
-      "button_label": "New Round",
+      "group_type": "standalone",
+      "type": "SimpleEvent",
+      "name": "FlipSelected",
+      "event_name": "FlipSelected",
+      "text": "Flip Selected",
+      "x": 400,
+      "y": 485
+    },       
+    {
+      "group_type": "standalone",
+      "type": "SimpleEvent",
+      "name": "Deselect",
+      "event_name": "Deselect",
+      "text": "Deselect",
+      "x": 300,
+      "y": 485
+    },     
+    {
+      "group_type": "standalone",
+      "type": "SimpleEvent",
+      "name": "ResetGame",
+      "event_name": "NewGameRound",
+      "text": "New Round",
       "x": 500,
       "y": -10
     },
     {
-      "type": "simple_event",
-      "name": "Return To Game Room",
+      "group_type": "standalone",
+      "type": "SimpleEvent",
+      "name": "ReturnToGameRoom",
       "event_name": "exitToGameRoom",
-      "button_label": "Reset To Game Room",
+      "text": "Reset To Game Room",
       "x": 500,
       "y": 15
     },
+    {  
+      "group_type": "standalone",
+      "type": "InputText",        
+      "x": -550,
+      "y": 380,
+      "width": 90,
+      "height": 201.5,
+      "name": "WhiteBoard",
+      "text": "whiteboard",
+      "input_type": "textarea",
+      "style": {
+          "fontSize": "12px",
+          "border": 2,
+          "borderColor": "#888888"
+      }
+    },
     {
-      "type": "deal_cards",
+      "group_type": "standalone",
+      "type": "DealCards",
       "name": "DealCards",
       "x": -450,
-      "y": -5,
-      "button_label": "DealCards",
+      "y": 25,
+      "button": {
+        "text":"DealCards"
+      },
       "move_card_cfg": [
         {
           "type": "ui",
@@ -194,12 +247,12 @@
           "dst_zone_group_name": "Hand",
           "label": {
             "offset_x": 0,
-            "offset_y": 15,
+            "offset_y": -30,
             "text": "PerPlayer"
           },
           "input": {
             "offset_x": 90,
-            "offset_y": 22,
+            "offset_y": -23,
             "default": "52"
           }
         },
@@ -210,16 +263,203 @@
           "dst_zone_id": "Hidden",
           "label": {
             "offset_x": 0,
-            "offset_y": 30,
+            "offset_y": -15,
             "text": "Hidden"
           },
           "input": {
             "offset_x": 90,
-            "offset_y": 38,
-            "default": "8"
+            "offset_y": -7,
+            "default": "{NACTIVEPLAYER}*2"
           }
         }
       ]
-    }
+    },
+    {
+      "group_type": "per_zone_group",
+      "zone_group": "Trash",
+      "type": "MoveCardButton",
+      "position_type": "relative_to_zone",
+      "offset_x": -20,
+      "offset_y": -60,
+      "name": "clear",
+      "text": "CLEAR",
+      "src_zone_id": "Show_{PLAYERID}",
+      "dst_zone_id": "Trash_{PLAYERID}"
+    },
+    {
+      "group_type": "per_zone_group",
+      "zone_group": "Hidden",
+      "type": "ScoreText",
+      "position_type": "relative_to_zone",
+      "offset_x": 75,
+      "offset_y": 20,
+      "name": "NCardsHiddenPile",
+      "text": "#cards:",
+      "zone_id": "{ZONEID}",
+      "score_type": "count",
+      "style": 
+      {
+        "fontSize": "12px"
+      }
+    },
+    {
+      "group_type": "per_zone_group",
+      "zone_group": "CardDealer",
+      "type": "ScoreText",
+      "position_type": "relative_to_zone",
+      "offset_x": -20,
+      "offset_y": 20,
+      "name": "NCardsCardDealer",
+      "text": "#:",
+      "zone_id": "{ZONEID}",
+      "score_type": "count",
+      "style": 
+      {
+        "fontSize": "12px"
+      }
+    },
+    {
+      "group_type": "per_zone_group",
+      "zone_group": "Hand",
+      "type": "ScoreText",
+      "position_type": "relative_to_zone",
+      "offset_x": -440,
+      "offset_y": -115,
+      "name": "NCards",
+      "text": "#cards:",
+      "zone_id": "{ZONEID}",
+      "score_type": "count",
+      "style": 
+      {
+        "fontSize": "12px"
+      }
+    },
+    {
+      "group_type": "per_zone_group",
+      "zone_group": "PrivateHelper",
+      "type": "ScoreText",
+      "position_type": "relative_to_zone",
+      "offset_x": -100,
+      "offset_y": -115,
+      "name": "NCards",
+      "text": "#cards:",
+      "zone_id": "{ZONEID}",
+      "score_type": "count",
+      "style": 
+      {
+        "fontSize": "12px"
+      }
+    },
+    {
+      "group_type": "per_zone_group",
+      "zone_group": "Score",
+      "type": "ScoreText",
+      "position_type": "relative_to_zone",
+      "offset_x": 75,
+      "offset_y": 20,
+      "name": "Score",
+      "text": "score:",
+      "zone_id": "{ZONEID}",
+      "score_type": "score",
+      "score_map": {
+        "C5": 5, "D5": 5, "S5":5, "H5":5,
+        "C10": 10, "D10": 10, "S10":10, "H10":10,
+        "CK": 10, "DK": 10, "SK":10, "HK":10
+      },
+      "style": 
+      {
+        "fontSize": "12px"
+      }
+    },
+    {
+      "group_type": "per_zone_group",
+      "zone_group": "SharedScore",
+      "type": "ScoreText",
+      "position_type": "relative_to_zone",
+      "offset_x": 170,
+      "offset_y": 20,
+      "name": "Score",
+      "text": "score:",
+      "zone_id": "{ZONEID}",
+      "score_type": "score",
+      "score_map": {
+        "C5": 5, "D5": 5, "S5":5, "H5":5,
+        "C10": 10, "D10": 10, "S10":10, "H10":10,
+        "CK": 10, "DK": 10, "SK":10, "HK":10
+      },
+      "style": 
+      {
+        "fontSize": "12px"
+      }
+    },
+    {
+      "group_type": "per_zone_group",
+      "zone_group": "Hand",
+      "type": "SortButton",
+      "position_type": "relative_to_zone", 
+      "offset_x": 355,
+      "offset_y": -120,
+      "name": "Sort",
+      "text": "SORT",
+      "zone_id": "{ZONEID}",
+      "sort_key_array":[
+      "C2", "C3", "C4", "C5", "C6", "C7", "C8", "C9", "C10", "CJ", "CQ", "CK", "CA",
+      "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9", "D10", "DJ", "DQ", "DK", "DA",
+      "S2", "S3", "S4", "S5", "S6", "S7", "S8", "S9", "S10", "SJ", "SQ", "SK", "SA",
+      "H2", "H3", "H4", "H5", "H6", "H7", "H8", "H9", "H10", "HJ", "HQ", "HK", "HA",
+      "J1", "J2"                        
+      ] 
+    },
+    {
+      "group_type": "per_zone_group",
+      "zone_group": "Hand",
+      "type": "FlipButton",
+      "position_type": "relative_to_zone", 
+      "offset_x": 395,
+      "offset_y": -120,
+      "name": "Flip",
+      "text": "FACE UP",
+      "zone_id": "{ZONEID}",
+      "flip_type": "FaceUp"
+    },
+    {
+      "group_type": "per_zone_group",
+      "zone_group": "PrivateHelper",
+      "type": "FlipButton",
+      "position_type": "relative_to_zone", 
+      "offset_x": -30,
+      "offset_y": -120,
+      "name": "Flip",
+      "text": "FACE UP",
+      "zone_id": "{ZONEID}",
+      "flip_type": "FaceUp"
+    },  
+    {
+      "group_type": "per_zone_group",
+      "zone_group": "PrivateHelper",
+      "type": "FlipButton",
+      "position_type": "relative_to_zone", 
+      "offset_x": 30,
+      "offset_y": -120,
+      "name": "Flip",
+      "text": "FACE DOWN",
+      "zone_id": "{ZONEID}",
+      "flip_type": "FaceDown"
+    },       
+    {
+      "group_type": "per_zone_group",
+      "zone_group": "Show",
+      "type": "PlayerName",
+      "position_type": "relative_to_zone",
+      "offset_x": -110,
+      "offset_y": 42.5,
+      "name": "PlayerName",
+      "text": "",
+      "player_id": "{PLAYERID}",
+      "style": 
+      {
+        "fontSize": "12px"
+      }
+    }                                
   ]
 }

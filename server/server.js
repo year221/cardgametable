@@ -12,14 +12,14 @@ app.get('/', function (req, res) {
   res.sendFile(__dirname + '/index.html');
 });
 
-let all_cards_prototype = [];
-for (let suit of ['S', 'H', 'C','D']) {
-  for (let num of ['2','3','4','5','6','7','8','9','10','J','Q','K','A']){
-    all_cards_prototype.push(suit+num)
-  }
-}
-all_cards_prototype.push('J1');
-all_cards_prototype.push('J2');
+// let all_cards_prototype = [];
+// for (let suit of ['S', 'H', 'C','D']) {
+//   for (let num of ['2','3','4','5','6','7','8','9','10','J','Q','K','A']){
+//     all_cards_prototype.push(suit+num)
+//   }
+// }
+// all_cards_prototype.push('J1');
+// all_cards_prototype.push('J2');
 
 game_state = {
   status: "Waiting",
@@ -29,7 +29,8 @@ game_state = {
   socket_id_to_player_id: new Map(),
   socket_id_to_player_info: new Map(),
   last_events: {},
-  n_active_player:0,  
+  n_active_player:0,
+  ui_element_sync_cache: new Map()
 };
 
 
@@ -82,6 +83,7 @@ function reset_state_to_waiting(){
   }
   game_state.status='Waiting';
   game_state.n_active_player=0;
+  game_state.ui_element_sync_cache.clear();
 }
 
 
@@ -224,49 +226,71 @@ io.on('connection', function (socket) {
   socket.on('requestGameSync', function(){    
     socket.emit('gameStateSync', game_state.last_events, game_state.cards_in_zones,  game_state.card_status);    
   })
-  socket.on('cardFlipped', function (event_index, card_ids)
+  socket.on('cardFlipped', function (event_index, card_id_and_faces)
   {
-    console.log('cardFlipped', game_state.socket_id_to_player_id.get(socket.id), event_index, card_ids);
+    console.log('cardFlipped', game_state.socket_id_to_player_id.get(socket.id), event_index, card_id_and_faces);
     game_state.last_events[game_state.socket_id_to_player_id.get(socket.id)]=event_index;
-    for (const card_id of card_ids){
-      game_state.card_status[card_id]=!(game_state.card_status[card_id]);
+    for (const [card_id, face_up] of card_id_and_faces){
+      game_state.card_status[card_id]=face_up;
     }
     io.sockets.emit('gameStateSync', game_state.last_events, null, game_state.card_status);
   });
   
-  socket.on('generateCard', function(event_index, dst_zone_id, n_decks, shuffle){
-    console.log("generateCard", event_index, dst_zone_id, n_decks, shuffle);
+  socket.on('addNewCard', function(event_index, dst_zone_id, card_ids, card_status, strict){
+    console.log("addNewCard", event_index, dst_zone_id, card_ids, card_status, strict);
     game_state.last_events[game_state.socket_id_to_player_id.get(socket.id)]=event_index;
-    // generate new deck id
-    let max_deck_num = Math.max(...game_state.zone_ids.map(zone_id=> Math.max(...game_state.cards_in_zones[zone_id].map(card_id=> card_id.split('_')[1]))));
-    if (max_deck_num<0){max_deck_num=0;}
-    //console.log(max_deck_num);
-    // for (let cards_in_zone of game_state.cards_in_zones){
-    //   Math.max(...cards_in_zone.map(card_id=> card_id.split('_')[1]))
-    // }
-    let card_id_generated = [];
-
-    for (let i=max_deck_num+1; i<=max_deck_num+n_decks; i++){
-      const str_i = String(i);        
-      card_id_generated=card_id_generated.concat(all_cards_prototype.map(card_proto => card_proto+'_'+str_i));        
-      console.log(max_deck_num, n_decks, str_i, card_id_generated.length);
+    
+    if ((strict===undefined) || (strict===null)){
+      strict =true;
     }
-    for (const card_id of card_id_generated){
-      game_state.card_status[card_id] = false;
-    }
-    if ((shuffle === undefined) || (shuffle == null) || (shuffle)){
-      utils.shuffle(card_id_generated); 
-    } 
-    //console.log(card_id_generated);
-    let dst_zone = game_state.cards_in_zones[dst_zone_id];
-    if (dst_zone===undefined){
-      game_state.zone_ids.push(dst_zone_id);
-      game_state.cards_in_zones[dst_zone_id] =  card_id_generated;
-    } else {
-      game_state.cards_in_zones[dst_zone_id]= game_state.cards_in_zones[dst_zone_id].concat(card_id_generated);
+    // remove card that already exists    
+    let new_card_ids = card_ids.filter(card_id => !game_state.card_status.hasOwnProperty(card_id))
+    // if strict, then if any card_id already exist, we will not add the whole set of cards. 
+    if ((!strict) || (new_card_ids.length==card_ids.length)){               
+       if (game_state.cards_in_zones[dst_zone_id]===undefined){
+         game_state.zone_ids.push(dst_zone_id);
+         game_state.cards_in_zones[dst_zone_id]=[];
+       }       
+       game_state.cards_in_zones[dst_zone_id]  = game_state.cards_in_zones[dst_zone_id].concat(new_card_ids); 
+       for (let card_id in new_card_ids){
+          game_state.card_status[card_id]=card_status[card_id];
+       }
     }
     io.sockets.emit('gameStateSync', game_state.last_events, game_state.cards_in_zones,  game_state.card_status);
   });
+  // socket.on('generateCard', function(event_index, dst_zone_id, n_decks, shuffle){
+  //   console.log("generateCard", event_index, dst_zone_id, n_decks, shuffle);
+  //   game_state.last_events[game_state.socket_id_to_player_id.get(socket.id)]=event_index;
+  //   // generate new deck id
+  //   let max_deck_num = Math.max(...game_state.zone_ids.map(zone_id=> Math.max(...game_state.cards_in_zones[zone_id].map(card_id=> card_id.split('_')[1]))));
+  //   if (max_deck_num<0){max_deck_num=0;}
+  //   //console.log(max_deck_num);
+  //   // for (let cards_in_zone of game_state.cards_in_zones){
+  //   //   Math.max(...cards_in_zone.map(card_id=> card_id.split('_')[1]))
+  //   // }
+  //   let card_id_generated = [];
+
+  //   for (let i=max_deck_num+1; i<=max_deck_num+n_decks; i++){
+  //     const str_i = String(i);        
+  //     card_id_generated=card_id_generated.concat(all_cards_prototype.map(card_proto => card_proto+'_'+str_i));        
+  //     console.log(max_deck_num, n_decks, str_i, card_id_generated.length);
+  //   }
+  //   for (const card_id of card_id_generated){
+  //     game_state.card_status[card_id] = false;
+  //   }
+  //   if ((shuffle === undefined) || (shuffle == null) || (shuffle)){
+  //     utils.shuffle(card_id_generated); 
+  //   } 
+  //   //console.log(card_id_generated);
+  //   let dst_zone = game_state.cards_in_zones[dst_zone_id];
+  //   if (dst_zone===undefined){
+  //     game_state.zone_ids.push(dst_zone_id);
+  //     game_state.cards_in_zones[dst_zone_id] =  card_id_generated;
+  //   } else {
+  //     game_state.cards_in_zones[dst_zone_id]= game_state.cards_in_zones[dst_zone_id].concat(card_id_generated);
+  //   }
+  //   io.sockets.emit('gameStateSync', game_state.last_events, game_state.cards_in_zones,  game_state.card_status);
+  // });
   socket.on('cardMoved', function (event_index, src_zone_id, dst_zone_id, card_ids, dst_pos_in_zone) {
     console.log('cardMoved', game_state.socket_id_to_player_id.get(socket.id), event_index, card_ids, src_zone_id, dst_zone_id, dst_pos_in_zone);
 /*     let index = game_state.cards_in_zone[src_zone_id].indexOf(card_id);
@@ -304,14 +328,22 @@ io.on('connection', function (socket) {
   });  
 
   socket.on('uiElementTextSync', function(element_name, text){
-    //console.log('uiElementTextSync', element_name, text); 
+    console.log('uiElementTextSync', element_name, text); 
+    game_state.ui_element_sync_cache.set(element_name, text);
     socket.broadcast.emit('uiElementTextSync', element_name, text); 
+  });
+
+  socket.on('requestUIElementTextCache', function(){
+    for (let [element_name, text] of game_state.ui_element_sync_cache){
+      socket.emit('uiElementTextSync', element_name, text);  
+    }
   });
   
   socket.on('requestGameStatus', function(){
     socket.emit('returnGameStatus', game_state.status, Array(...game_state.socket_id_to_player_info.values()), can_join_game());    
   });
-  socket.on('resetGame', function (event_index, src_zone_id, dst_zone_id, card_ids, dst_pos_in_zone) {  
+  socket.on('resetGame', function () {  
+    console.log('reset Game');
     for (let zone_id of game_state.zone_ids){
       game_state.cards_in_zones[zone_id] = [];
     }
