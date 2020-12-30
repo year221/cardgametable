@@ -21,7 +21,9 @@
       "card_step_y": 97.5,
       "card_scale": 0.5,
       "local_display_other_player": 2,
-      "local_display_current_player": 0
+      "local_display_current_player": 0,
+      "center_text_other_player": "",
+      "center_text_current_player": "Cards dealt to you. Only you can see cards here."
     },
     {
       "type": "one_zone_per_player",
@@ -40,7 +42,9 @@
       "card_step_y": 97.5,
       "card_scale": 0.5,
       "local_display_other_player": 2,
-      "local_display_current_player": 0
+      "local_display_current_player": 0,
+      "center_text_other_player": "",
+      "center_text_current_player": "Only you can see cards here."      
     },
     {
       "type": "one_zone_per_player",
@@ -59,7 +63,9 @@
       "card_step_y": 30,
       "card_scale": 0.5,
       "local_display_other_player": 0,
-      "local_display_current_player": 0
+      "local_display_current_player": 0,
+      "center_text_other_player": "",
+      "center_text_current_player": "Place your played cards here"
     },
     {
       "type": "one_zone_per_player",
@@ -97,7 +103,9 @@
       "card_step_y": 15,
       "card_scale": 0.3,
       "local_display_other_player": 0,
-      "local_display_current_player": 0
+      "local_display_current_player": 0,
+      "center_text_other_player": "Cards won by others",
+      "center_text_current_player": "Place cards you won here"      
     },
     {
       "type": "single",
@@ -112,7 +120,8 @@
       "card_step_x": 10,
       "card_step_y": 15,
       "card_scale": 0.3,
-      "local_display": 0
+      "local_display": 0,
+      "center_text": "Place the hidden pile here"
     },
     {
       "type": "single",
@@ -127,7 +136,8 @@
       "card_step_x": 10,
       "card_step_y": 15,
       "card_scale": 0.3,
-      "local_display": 0
+      "local_display": 0,
+      "center_text": "Cards won by the group"
     },
     {
       "type": "single",
