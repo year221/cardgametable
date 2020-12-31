@@ -89,7 +89,7 @@ export default class Game extends Phaser.Scene
         // this.load.start();
         console.log("run scene creation for game")
         var self = this;   
-        this.scale.setGameSize(1400, 800);   
+        //this.scale.setGameSize(1400, 800);   
         // this.scale.scaleMode = Phaser.Scale.ScaleModes.FIT;
         // this.scale.displaySize.setAspectMode(this.scale.scaleMode)
         // this.scale.getParentBounds();
