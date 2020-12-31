@@ -692,6 +692,11 @@ export default class Game extends Phaser.Scene
     
     layout_zones_and_buttons(layout_cfg){
         var self=this;
+        const game_size = layout_cfg['game_size'];
+        if (game_size!==undefined){
+            this.scale.setGameSize(game_size['width'], game_size['height']);       
+        }
+        
         // layout zones
         for (let zone_grp of layout_cfg['zones']){
             this.add_zone_grp(zone_grp);
