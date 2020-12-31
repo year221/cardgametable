@@ -8,9 +8,15 @@
            },
            {
                "type": "json",
+               "key": "English-Mobile",
+               "url": "assets/games/seekingfriends-mobile.json"
+           },           
+           {
+               "type": "json",
                "key": "Chinese-Desktop",
                "url": "assets/games/seekingfriends-Chinese.json"
            }
+
        ]
    }
 }
