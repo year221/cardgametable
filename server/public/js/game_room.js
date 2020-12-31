@@ -19,6 +19,7 @@ export default class GameRoom extends Phaser.Scene
         if (this.plugins.get('rexinputtextplugin', false)===null){
             this.load.plugin('rexinputtextplugin', 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexinputtextplugin.min.js', true);               
         }
+        this.load.json('layout', 'assets/games/seekingfriends-pack.json');                
     }   
     create()
     {        
@@ -67,16 +68,25 @@ export default class GameRoom extends Phaser.Scene
         this.observe_game.visible=false;
         this.start_game.visible=false;        
 
+        
+        const layout_keys = this.cache.json.get('layout')['layout']['files'].map(file=>file['key'])
+        
         const form = `
-        <select name="layout" style="font-size: 20px; background-color: black; color: white; width: 200px"> Select Layout 
-         <option value="English-Desktop">English-Desktop</option> 
-         <option value="Chinese-Desktop">Chinese-Desktop</option> 
-        </select>
-        `;
-        this.add.text(x,y+35, 'Select Game Layout:', {fontSize:'20px'}); 
+        <select name="layout" style="font-size: 20px; background-color: black; color: white; width: 200px"> Select Layout
+        `.concat(
+             ...layout_keys.map(key=>`<option value="KEY">KEY</option>
+            `.replace(/KEY/g, key)))
+        .concat(`</select>`);
+        // const form = `
+        // <select name="layout" style="font-size: 12px; background-color: black; color: white; width: 200px"> Select Layout
+        //  <option value="English-Desktop">English-Desktop</option> 
+        //  <option value="Chinese-Desktop">Chinese-Desktop</option> 
+        // </select>
+        // `;
+        this.add.text(x,y+40, 'Select Game Layout ->', {fontSize:'20px'}); 
         var layout_select = this.add.dom().createFromHTML(form);
-        this.game_layout_file = 'English-Desktop';
-        layout_select.setPosition(x+340,y+42.5);
+        this.game_layout_file = layout_keys[0];
+        layout_select.setPosition(x+250,y+47.5);
         layout_select.addListener('change');
   
         layout_select.on('change', function (event) {                     
