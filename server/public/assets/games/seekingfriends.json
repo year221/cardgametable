@@ -432,7 +432,7 @@
       "offset_x": 395,
       "offset_y": -120,
       "name": "Flip",
-      "text": "FACE UP",
+      "text": "FLIP UP",
       "zone_id": "{ZONEID}",
       "flip_type": "FaceUp"
     },
@@ -444,7 +444,7 @@
       "offset_x": -30,
       "offset_y": -120,
       "name": "Flip",
-      "text": "FACE UP",
+      "text": "FLIP UP",
       "zone_id": "{ZONEID}",
       "flip_type": "FaceUp"
     },  
@@ -456,7 +456,7 @@
       "offset_x": 30,
       "offset_y": -120,
       "name": "Flip",
-      "text": "FACE DOWN",
+      "text": "FLIP DOWN",
       "zone_id": "{ZONEID}",
       "flip_type": "FaceDown"
     },       
