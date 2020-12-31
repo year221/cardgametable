@@ -1,8 +1,10 @@
 var express = require('express');
 var app = express();
-var server = require('http').Server(app);
-console.log(server)
-var io = require('socket.io').listen(server);
+var server = require('http').createServer(app);
+const options = { /* ... */ };
+const io = require('socket.io')(server, options);
+// console.log(server)
+// var io = require('socket.io').listen(server);
 const utils = require('./utils');
 
 
@@ -195,8 +197,8 @@ io.on('connection', function (socket) {
 
   console.log(game_state.n_active_player, game_state.last_events);
 
-  socket.on('disconnect', function () {
-    console.log('user disconnected', socket.id);
+  socket.on('disconnect', function (reason) {
+    console.log('user disconnected', socket.id, reason);
     const player_id = game_state.socket_id_to_player_id.get(socket.id);
     game_state.socket_id_to_player_id.delete(socket.id);
     game_state.socket_id_to_player_info.delete(socket.id);
