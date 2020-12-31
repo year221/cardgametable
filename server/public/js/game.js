@@ -1,5 +1,5 @@
 import Phaser from './phaser.js';
-import {CardZone, calculate_circular_zone_xy} from './zone.js';
+import {CardZone, calculate_circular_zone_xy, calculate_grid_xy} from './zone.js';
 import {PokerCard, Card} from './cards.js';
 import {TextButton, SortButton,FlipButton, MoveCardButton, SimpleEventButton, ScoreText, PlayerName, addInputText, addNewDeck, addNewDealer} from './textbutton.js';
 
@@ -364,8 +364,10 @@ export default class Game extends Phaser.Scene
             self.clear_all_zones_and_buttons();
             const layout_cfg = self.cache.json.get('layout.'+self.layout_file);
             self.registry.set('playerinfo', player_info);
-            self.layout_zones_and_buttons(layout_cfg)//, player_info);            
-            self.cameras.main.centerOn(layout_cfg.default_camera.x, layout_cfg.default_camera.y);                 
+            self.layout_zones_and_buttons(layout_cfg)//, player_info); 
+            if (layout_cfg['default_camera']!== undefined){
+                self.cameras.main.centerOn(layout_cfg.default_camera.x, layout_cfg.default_camera.y);                 
+            }
         });           
         
         this.socket.on('gameStateSync', function (last_events, cards_in_zones, cards_status) {            
@@ -521,7 +523,7 @@ export default class Game extends Phaser.Scene
     // set zone and button layouts
     clear_all_zones_and_buttons(){
         for (let [zone_id, zone] of this.all_zones){
-            zone.destroy();
+            zone.destroy(); 
         }
         this.all_zones.clear();
         this.cards_in_zones.clear();
@@ -534,12 +536,21 @@ export default class Game extends Phaser.Scene
     
     add_zone_grp(zone_grp){
         if (zone_grp.type=='one_zone_per_player'){
-                
-            let zone_xy = calculate_circular_zone_xy(
-                zone_grp.starting_x, zone_grp.starting_y,
-                zone_grp.step_x, zone_grp.step_y, this.n_active_player,
-                zone_grp.n_row
-                );
+            let zone_xy = [];
+            if ((zone_grp.position_calc === undefined) || (zone_grp.position_calc=='circular')){
+                zone_xy = calculate_circular_zone_xy(
+                    zone_grp.starting_x, zone_grp.starting_y,
+                    zone_grp.step_x, zone_grp.step_y, this.n_active_player,
+                    zone_grp.n_row
+                    );
+            } else if (zone_grp.position_calc=='grid_column_first') {
+                zone_xy = calculate_grid_xy(
+                    zone_grp.starting_x, zone_grp.starting_y,
+                    zone_grp.step_x, zone_grp.step_y, this.n_active_player,
+                    zone_grp.n_col,
+                    );
+            }
+
             let position_offset = Math.floor(Client.player_id);
             if (position_offset<0){
                 position_offset = 0;
@@ -692,6 +703,11 @@ export default class Game extends Phaser.Scene
     
     layout_zones_and_buttons(layout_cfg){
         var self=this;
+        const game_size = layout_cfg['game_size'];
+        if (game_size!==undefined){
+            this.scale.setGameSize(game_size['width'], game_size['height']);       
+        }
+        
         // layout zones
         for (let zone_grp of layout_cfg['zones']){
             this.add_zone_grp(zone_grp);
