@@ -3,6 +3,10 @@
     "x": 0,
     "y": 110
   },
+  "game_size": {
+    "width": 1400,
+    "height": 800
+  },  
   "zones": [
     {
       "type": "one_zone_per_player",
@@ -23,7 +27,7 @@
       "local_display_other_player": 2,
       "local_display_current_player": 0,
       "center_text_other_player": "",
-      "center_text_current_player": "Cards dealt to you. Only you can see cards here."
+      "center_text_current_player": "Cards dealt to me. Only I can see card here."
     },
     {
       "type": "one_zone_per_player",
@@ -44,7 +48,7 @@
       "local_display_other_player": 2,
       "local_display_current_player": 0,
       "center_text_other_player": "",
-      "center_text_current_player": "Only you can see cards here."      
+      "center_text_current_player": "Only I can see card here."      
     },
     {
       "type": "one_zone_per_player",
@@ -65,7 +69,7 @@
       "local_display_other_player": 0,
       "local_display_current_player": 0,
       "center_text_other_player": "",
-      "center_text_current_player": "Place your played cards here"
+      "center_text_current_player": "Place cards played by me here"
     },
     {
       "type": "one_zone_per_player",
@@ -105,7 +109,7 @@
       "local_display_other_player": 0,
       "local_display_current_player": 0,
       "center_text_other_player": "Cards won by others",
-      "center_text_current_player": "Place cards you won here"      
+      "center_text_current_player": "Place cards I won here"      
     },
     {
       "type": "single",

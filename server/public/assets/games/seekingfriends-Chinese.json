@@ -3,6 +3,10 @@
     "x": 0,
     "y": 110
   },
+  "game_size": {
+    "width": 1400,
+    "height": 800
+  },    
   "zones": [
     {
       "type": "one_zone_per_player",
@@ -21,7 +25,9 @@
       "card_step_y": 97.5,
       "card_scale": 0.5,
       "local_display_other_player": 2,
-      "local_display_current_player": 0
+      "local_display_current_player": 0,
+      "center_text_other_player": "",
+      "center_text_current_player": "我的手牌区（别人不可见）"      
     },
     {
       "type": "one_zone_per_player",
@@ -40,7 +46,9 @@
       "card_step_y": 97.5,
       "card_scale": 0.5,
       "local_display_other_player": 2,
-      "local_display_current_player": 0
+      "local_display_current_player": 0,
+      "center_text_other_player": "",
+      "center_text_current_player": "我的手牌区2"          
     },
     {
       "type": "one_zone_per_player",
@@ -59,7 +67,9 @@
       "card_step_y": 30,
       "card_scale": 0.5,
       "local_display_other_player": 0,
-      "local_display_current_player": 0
+      "local_display_current_player": 0,
+      "center_text_other_player": "",
+      "center_text_current_player": "我的出牌区"          
     },
     {
       "type": "one_zone_per_player",
@@ -97,7 +107,9 @@
       "card_step_y": 15,
       "card_scale": 0.3,
       "local_display_other_player": 0,
-      "local_display_current_player": 0
+      "local_display_current_player": 0,
+      "center_text_other_player": "别人的得分区",
+      "center_text_current_player": "我的得分区"        
     },
     {
       "type": "single",
@@ -112,7 +124,8 @@
       "card_step_x": 10,
       "card_step_y": 15,
       "card_scale": 0.3,
-      "local_display": 0
+      "local_display": 0,
+      "center_text": "底牌"
     },
     {
       "type": "single",
@@ -127,7 +140,8 @@
       "card_step_x": 10,
       "card_step_y": 15,
       "card_scale": 0.3,
-      "local_display": 0
+      "local_display": 0,
+      "center_text": "非庄家得分"
     },
     {
       "type": "single",
