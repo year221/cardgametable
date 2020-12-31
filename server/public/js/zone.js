@@ -98,6 +98,28 @@ export class CardZone extends Phaser.GameObjects.Rectangle
     }    
 }
 
+export function calculate_grid_xy(
+    starting_x, starting_y, step_x, step_y, n_zones, n_col
+    ){
+    if (n_col===undefined){
+        n_col=1;
+    }
+    const n_row = Math.ceil (n_zones/n_col);
+    let zone_xy = []
+    for (let i =0; i< n_row; i++){
+        zone_xy.push({
+            'x': starting_x,
+            'y': starting_y+ step_y*i,
+        });        
+    }
+    for (let i =0; i< n_zones-n_row; i++){
+        zone_xy.push({
+            'x': starting_x + step_x,
+            'y': starting_y + step_y*i,
+        });        
+    }    
+    return zone_xy;    
+}
 export function calculate_circular_zone_xy(
     starting_x, starting_y, step_x, step_y, n_zones, n_row
     ){
