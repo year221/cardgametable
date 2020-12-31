@@ -217,7 +217,8 @@ export class PlayerName extends Phaser.GameObjects.Text
         this.text=this.leading_text + this.extract_player_name(this.scene.registry.get('playerinfo'));
         this.scene.registry.events.on('changedata-playerinfo', function(parent, value, previousValue){            
             console.log('player name changed');
-            this.text=this.leading_text + this.extract_player_name(value);
+            const new_text = this.leading_text + this.extract_player_name(value);
+            this.text = new_text;
         }, this);   
         this.scene.registry.events.on('setdata-playerinfo', function(parent, value, previousValue){            
             console.log('data card_ids set');

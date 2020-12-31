@@ -48,19 +48,19 @@ export default class GameRoom extends Phaser.Scene
         this.name_input.on('textchange', function(inputText){ 
             self.socket.emit('updatePlayerName', self.name_input.text);  
         });
-        this.game_info = this.add.text(x, y+60, 'Game Status:', {fontSize: '20px'});
-        this.player_info = this.add.text(x, y+80, 'Player Information', {fontSize: '20px'});
+        this.game_info = this.add.text(x, y+100, 'Game Status:', {fontSize: '20px'});
+        this.player_info = this.add.text(x, y+120, 'Player Information', {fontSize: '20px'});
 
-        this.join_game = this.add.text(x,y+30, 'Join Game', {fontSize:'20px', backgroundColor: '#666'});               
+        this.join_game = this.add.text(x,y+70, 'Join Game', {fontSize:'20px', backgroundColor: '#666'});               
         this.join_game.on('pointerdown', function(){                                             
             self.socket.emit('joinGame');                                   
         })
                 
-        this.observe_game = this.add.text(x+140,y+30, 'Observe', {fontSize:'20px', backgroundColor: '#666'});        
+        this.observe_game = this.add.text(x+140,y+70, 'Observe', {fontSize:'20px', backgroundColor: '#666'});        
         this.observe_game.on('pointerdown', function(){                                             
             self.socket.emit('observeGame');                                   
         })        
-        this.start_game = this.add.text(x+280,y+30, 'Start Game', {fontSize:'20px', backgroundColor: '#666'});      
+        this.start_game = this.add.text(x+280,y+70, 'Start Game', {fontSize:'20px', backgroundColor: '#666'});      
         this.start_game.on('pointerdown', function(){                                            
             self.socket.emit('startGame');                                   
         })         
@@ -154,10 +154,10 @@ export default class GameRoom extends Phaser.Scene
 
     }
     display_player_info(player_info){
-        const content = ['Player Information: '];
+        const content = ['Player Name and Status: '];
         for (let player of player_info){            
             if (player.player_name!==null){
-                content.push('  ' + player.player_name+ '  '+ player.player_type);
+                content.push(player.player_name+ '  '+ player.player_type);
             }            
         }           
         this.player_info.setText(content);
