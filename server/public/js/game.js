@@ -89,7 +89,7 @@ export default class Game extends Phaser.Scene
         // this.load.start();
         console.log("run scene creation for game")
         var self = this;   
-        this.scale.setGameSize(1400, 800);   
+        //this.scale.setGameSize(1400, 800);   
         // this.scale.scaleMode = Phaser.Scale.ScaleModes.FIT;
         // this.scale.displaySize.setAspectMode(this.scale.scaleMode)
         // this.scale.getParentBounds();
@@ -577,6 +577,7 @@ export default class Game extends Phaser.Scene
                         zone_grp.card_step_x, zone_grp.card_step_y, 
                         zone_grp.card_scale, local_display);
                     if (center_text!==undefined){
+                        if (local_display!=2)
                         this.add.text(xy_pos.x-Math.round(center_text.length/2*7), xy_pos.y-6, center_text,
                         {
                             fontSize: "12px",

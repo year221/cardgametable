@@ -83,10 +83,10 @@ export default class GameRoom extends Phaser.Scene
         //  <option value="Chinese-Desktop">Chinese-Desktop</option> 
         // </select>
         // `;
-        this.add.text(x,y+40, 'Select Game Layout ->', {fontSize:'20px'}); 
+        this.add.text(x,y+40, 'Select Game Layout', {fontSize:'20px'}); 
         var layout_select = this.add.dom().createFromHTML(form);
         this.game_layout_file = layout_keys[0];
-        layout_select.setPosition(x+250,y+47.5);
+        layout_select.setPosition(x+350,y+47.5);
         layout_select.addListener('change');
   
         layout_select.on('change', function (event) {                     
