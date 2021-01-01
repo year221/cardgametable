@@ -715,27 +715,37 @@ export default class Game extends Phaser.Scene
             this.add_element_grp(ui_element_grp);
         }   
 
-        if (layout_cfg['default_camera']!== undefined){
-            self.cameras.main.centerOn(layout_cfg.default_camera.x, layout_cfg.default_camera.y);                 
-        }
+        
         const bd = this.calculate_visible_zone_element_boundary();
-        let game_size_w = bd.x_max - bd.x_min;
-        let game_size_h = bd.y_max - bd.y_min;
-        let cam_center_x = (bd.x_max + bd.x_min)/2;
-        let cam_center_y = (bd.y_max + bd.y_min)/2;
+
+        
+        
+            //self.cameras.main.centerOn(layout_cfg.default_camera.x, layout_cfg.default_camera.y);                 
+            
+        const margin = 5;
+        let game_size_w = bd.x_max - bd.x_min+margin*2;
+        let game_size_h = bd.y_max - bd.y_min+margin*2;
+        
         if (game_size!==undefined){
             if (game_size_w < game_size['width']){
-                game_size_w = game_size['width'];
-                cam_center_x = layout_cfg.default_camera.x;
+                game_size_w = game_size['width'];                
             }
             if (game_size_h < game_size['height']){
-                game_size_h = game_size['height'];
+                game_size_h = game_size['height'];                
+            }                                    
+        }
+        let cam_center_x = (bd.x_max + bd.x_min)/2;
+        let cam_center_y = (bd.y_max + bd.y_min)/2;    
+        if (layout_cfg['default_camera'] !== undefined){                    
+            if ((bd.x_max-layout_cfg.default_camera.x <= game_size_w/2+margin) && (layout_cfg.default_camera.x-bd.x_min <= game_size_w/2+margin)){
+                cam_center_x = layout_cfg.default_camera.x;                
+            }        
+            if ((bd.y_max-layout_cfg.default_camera.y <= game_size_h/2+margin) && (layout_cfg.default_camera.y-bd.x_min <= game_size_h/2+margin)){
                 cam_center_y = layout_cfg.default_camera.y;
-            }
-              
-        }        
+            }        
+        }
         this.scale.setGameSize(game_size_w, game_size_h);     
-        self.cameras.main.centerOn(cam_center_x, cam_center_y);                         
+        this.cameras.main.centerOn(cam_center_x, cam_center_y);                         
     }
 
     find_zone_group(group_name){  
