@@ -263,6 +263,35 @@ export function addInputText(scene, cfg){
         }, scene);  
         return textinput        
 }
+
+// export function addInputText(scene, cfg){        
+//         // const text_cfg = Object.assign(
+//         //     {text: cfg['text'],
+//         //     type:cfg['input_type']},
+//         //     cfg['style'])
+//         let form = '';
+//         const form_style = `"width: ${cfg['width']}px; height: ${cfg['height']}px; ${cfg['css_style']??''}"`;                
+//         if (cfg['input_type'] == 'textarea'){
+//             form = `<textarea id="${cfg['name']}" name="${cfg['name']}" style=${form_style}></textarea>`;            
+//         }            
+//         var textinput = scene.add.dom().createFromHTML(form,'div');
+//         textinput.setPosition(cfg['x'], cfg['y']);
+//         textinput.addListener('change');
+//         // const textinput = scene.add.rexInputText(
+//         //     cfg['x'], cfg['y'], cfg['width'], cfg['height'],
+//         //     text_cfg);
+
+//         textinput.name = cfg['name'];
+//         scene.ui_elements.set(textinput.name, textinput);
+//         textinput.on('change', function(event){ 
+//             console.log(event.target);
+//             this.socket.emit('uiElementTextSync', event.target.name, event.target.value);
+//         }, scene);  
+//         return textinput        
+// }
+
+
+
 const shuffle_array_in_place = function(array) {
     for (let i = array.length - 1; i > 0; i--) {
       let j = Math.floor(Math.random() * (i + 1)); // random index from 0 to i

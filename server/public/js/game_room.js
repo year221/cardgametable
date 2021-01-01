@@ -72,7 +72,7 @@ export default class GameRoom extends Phaser.Scene
         const layout_keys = this.cache.json.get('layout')['layout']['files'].map(file=>file['key'])
         
         const form = `
-        <select name="layout" style="font-size: 20px; background-color: black; color: white; width: 200px"> Select Layout
+        <select name="layout" style="font-size: 20px; background-color: black; color: white; width: 200px;"> Select Layout
         `.concat(
              ...layout_keys.map(key=>`<option value="KEY">KEY</option>
             `.replace(/KEY/g, key)))
