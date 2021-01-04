@@ -365,9 +365,6 @@ export default class Game extends Phaser.Scene
             const layout_cfg = self.cache.json.get('layout.'+self.layout_file);
             self.registry.set('playerinfo', player_info);
             self.layout_zones_and_buttons(layout_cfg)//, player_info); 
-            if (layout_cfg['default_camera']!== undefined){
-                self.cameras.main.centerOn(layout_cfg.default_camera.x, layout_cfg.default_camera.y);                 
-            }
         });           
         
         this.socket.on('gameStateSync', function (last_events, cards_in_zones, cards_status) {            
@@ -707,9 +704,7 @@ export default class Game extends Phaser.Scene
     layout_zones_and_buttons(layout_cfg){
         var self=this;
         const game_size = layout_cfg['game_size'];
-        if (game_size!==undefined){
-            this.scale.setGameSize(game_size['width'], game_size['height']);       
-        }
+
         
         // layout zones
         for (let zone_grp of layout_cfg['zones']){
@@ -719,11 +714,91 @@ export default class Game extends Phaser.Scene
         for (let ui_element_grp of layout_cfg['ui_elements']){
             this.add_element_grp(ui_element_grp);
         }   
+
+        
+        const bd = this.calculate_visible_zone_element_boundary();
+
+        
+        
+            //self.cameras.main.centerOn(layout_cfg.default_camera.x, layout_cfg.default_camera.y);                 
+            
+        const margin = 5;
+        let game_size_w = bd.x_max - bd.x_min+margin*2;
+        let game_size_h = bd.y_max - bd.y_min+margin*2;
+        
+        if (game_size!==undefined){
+            if (game_size_w < game_size['width']){
+                game_size_w = game_size['width'];                
+            }
+            if (game_size_h < game_size['height']){
+                game_size_h = game_size['height'];                
+            }                                    
+        }
+        let cam_center_x = (bd.x_max + bd.x_min)/2;
+        let cam_center_y = (bd.y_max + bd.y_min)/2;    
+        if (layout_cfg['default_camera'] !== undefined){                    
+            if ((bd.x_max-layout_cfg.default_camera.x <= game_size_w/2+margin) && (layout_cfg.default_camera.x-bd.x_min <= game_size_w/2+margin)){
+                cam_center_x = layout_cfg.default_camera.x;                
+            }        
+            if ((bd.y_max-layout_cfg.default_camera.y <= game_size_h/2+margin) && (layout_cfg.default_camera.y-bd.x_min <= game_size_h/2+margin)){
+                cam_center_y = layout_cfg.default_camera.y;
+            }        
+        }
+        this.scale.setGameSize(game_size_w, game_size_h);     
+        this.cameras.main.centerOn(cam_center_x, cam_center_y);                         
     }
 
     find_zone_group(group_name){  
         const all_zones_ids = Array(...this.all_zones.keys());
         return all_zones_ids.filter(zone_id => zone_id.split('_')[0]===group_name);        
+    }
+
+    calculate_visible_zone_element_boundary(){
+        let x_min = 0;
+        let x_max = 0;
+        let y_min = 0;
+        let y_max = 0;
+        for (let [zone_id, zone] of this.all_zones){
+            if (zone.visible){                
+                x_min = Math.min(x_min, zone.x-zone.displayWidth*zone.originX);
+                x_max = Math.max(x_max, zone.x+zone.displayWidth*(1-zone.originX));
+                y_min = Math.min(y_min, zone.y-zone.displayHeight*zone.originY);
+                y_max = Math.max(y_max, zone.y+zone.displayHeight*(1-zone.originY));
+                // let xy = zone.getBottomRight();
+                // x_min = Math.min(x_min, xy.x);
+                // x_max = Math.max(x_max, xy.x);
+                // y_min = Math.min(y_min, xy.y);
+                // y_max = Math.max(y_max, xy.y);
+                // xy = zone.getTopLeft();
+                // x_min = Math.min(x_min, xy.x);
+                // x_max = Math.max(x_max, xy.x);
+                // y_min = Math.min(y_min, xy.y);
+                // y_max = Math.max(y_max, xy.y);
+            }
+        }
+        for (let [element_name, element] of this.ui_elements){
+            // TO DO consider other elements
+            //try {
+            x_min = Math.min(x_min, element.x-element.displayWidth*element.originX);
+            x_max = Math.max(x_max, element.x+element.displayWidth*(1-element.originX));
+            y_min = Math.min(y_min, element.y-element.displayHeight*element.originY);
+            y_max = Math.max(y_max, element.y+element.displayHeight*(1-element.originY));
+            
+            // let xy = element.getBottomRight();
+            // x_min = Math.min(x_min, xy.x);
+            // x_max = Math.max(x_max, xy.x);
+            // y_min = Math.min(y_min, xy.y);
+            // y_max = Math.max(y_max, xy.y);
+            // xy = element.getTopLeft();
+            // x_min = Math.min(x_min, xy.x);
+            // x_max = Math.max(x_max, xy.x);
+            // y_min = Math.min(y_min, xy.y);
+            // y_max = Math.max(y_max, xy.y);
+            //} catch (err){
+            //    console.log(err);
+            //}
+        }        
+        return {x_min: x_min, x_max:x_max, y_min:y_min, y_max:y_max}
     }
 
     clear_selection_related_elements(){
