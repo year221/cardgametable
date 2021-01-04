@@ -754,16 +754,16 @@ export default class Game extends Phaser.Scene
     }
 
     calculate_visible_zone_element_boundary(){
-        let x_min = 0;
-        let x_max = 0;
-        let y_min = 0;
-        let y_max = 0;
+        let x_min = undefined;
+        let x_max = undefined;
+        let y_min = undefined;
+        let y_max = undefined;
         for (let [zone_id, zone] of this.all_zones){
             if (zone.visible){                
-                x_min = Math.min(x_min, zone.x-zone.displayWidth*zone.originX);
-                x_max = Math.max(x_max, zone.x+zone.displayWidth*(1-zone.originX));
-                y_min = Math.min(y_min, zone.y-zone.displayHeight*zone.originY);
-                y_max = Math.max(y_max, zone.y+zone.displayHeight*(1-zone.originY));
+                x_min = Math.min(x_min??zone.x, zone.x-zone.displayWidth*zone.originX);
+                x_max = Math.max(x_max??zone.x, zone.x+zone.displayWidth*(1-zone.originX));
+                y_min = Math.min(y_min??zone.y, zone.y-zone.displayHeight*zone.originY);
+                y_max = Math.max(y_max??zone.y, zone.y+zone.displayHeight*(1-zone.originY));
                 // let xy = zone.getBottomRight();
                 // x_min = Math.min(x_min, xy.x);
                 // x_max = Math.max(x_max, xy.x);
@@ -779,10 +779,10 @@ export default class Game extends Phaser.Scene
         for (let [element_name, element] of this.ui_elements){
             // TO DO consider other elements
             //try {
-            x_min = Math.min(x_min, element.x-element.displayWidth*element.originX);
-            x_max = Math.max(x_max, element.x+element.displayWidth*(1-element.originX));
-            y_min = Math.min(y_min, element.y-element.displayHeight*element.originY);
-            y_max = Math.max(y_max, element.y+element.displayHeight*(1-element.originY));
+            x_min = Math.min(x_min??element.x, element.x-element.displayWidth*element.originX);
+            x_max = Math.max(x_max??element.x, element.x+element.displayWidth*(1-element.originX));
+            y_min = Math.min(y_min??element.y, element.y-element.displayHeight*element.originY);
+            y_max = Math.max(y_max??element.y, element.y+element.displayHeight*(1-element.originY));
             
             // let xy = element.getBottomRight();
             // x_min = Math.min(x_min, xy.x);
@@ -798,6 +798,7 @@ export default class Game extends Phaser.Scene
             //    console.log(err);
             //}
         }        
+        console.log({x_min: x_min, x_max:x_max, y_min:y_min, y_max:y_max})
         return {x_min: x_min, x_max:x_max, y_min:y_min, y_max:y_max}
     }
 
