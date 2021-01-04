@@ -4,8 +4,8 @@
     "y": 110
   },
   "game_size": {
-    "width": 1400,
-    "height": 800
+    "width": 800,
+    "height": 400
   },  
   "zones": [
     {
@@ -238,6 +238,7 @@
       "name": "WhiteBoard",
       "text": "whiteboard",
       "input_type": "textarea",
+      "cssstyle": "font-size:12px; border:2; border-color:#888888",
       "style": {
           "fontSize": "12px",
           "border": 2,

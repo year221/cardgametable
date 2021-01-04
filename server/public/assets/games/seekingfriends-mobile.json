@@ -1,29 +1,29 @@
 {
   "game_size": {
     "width": 600,
-    "height": 1000
+    "height": 500
   },
   "default_camera": {
     "x": 300,
-    "y": 600
+    "y": 400
   },  
   "zones": [
     {
       "type": "one_zone_per_player",
       "name": "Hand",
       "position_calc": "grid_column_first",
-      "starting_x": 300,
+      "starting_x": 350,
       "starting_y": 910,
       "step_x": 600,
       "step_y": 1000,
       "n_col": 1,
-      "width": 600,
+      "width": 500,
       "height": 201.5,
       "fillColor": 2236962,
       "boundary_width": 40,
       "boundary_height": 52.5,
       "card_step_x": 15.5,
-      "card_step_y": 97.5,
+      "card_step_y": 50,
       "card_scale": 0.5,
       "local_display_other_player": 2,
       "local_display_current_player": 0,
@@ -34,21 +34,21 @@
       "type": "one_zone_per_player",
       "name": "PrivateHelper",
       "position_calc": "grid_column_first",
-      "starting_x": 510,
-      "starting_y": 380,
+      "starting_x": 300,
+      "starting_y": 1045,
       "step_x": 1015,
       "step_y": -760,
       "n_row": 2,
-      "width": 200,
-      "height": 201.5,
+      "width": 400,
+      "height": 60,
       "fillColor": 2236962,
-      "boundary_width": 40,
-      "boundary_height": 52.5,
-      "card_step_x": 18,
-      "card_step_y": 97.5,
-      "card_scale": 0.5,
+      "boundary_width": 22.5,
+      "boundary_height": 28.5,
+      "card_step_x": 10,
+      "card_step_y": 15,
+      "card_scale": 0.3,
       "local_display_other_player": 2,
-      "local_display_current_player": 2,
+      "local_display_current_player": 0,
       "center_text_other_player": "",
       "center_text_current_player": "Only you can see cards here."      
     },
@@ -56,18 +56,18 @@
       "type": "one_zone_per_player",
       "name": "Show",
       "position_calc": "grid_column_first",
-      "starting_x": 200,
-      "starting_y": 740,
+      "starting_x": 210,
+      "starting_y": 640,
       "step_x": 600,
       "step_y": -92.5,
       "n_col": 1,
-      "width": 300,
+      "width": 320,
       "height": 90,
       "fillColor": 3355443,
       "boundary_width": 30,
       "boundary_height": 39.25,
-      "card_step_x": 13.5,
-      "card_step_y": 22.5,
+      "card_step_x": 12.5,
+      "card_step_y": 21.5,
       "card_scale": 0.375,
       "local_display_other_player": 0,
       "local_display_current_player": 0,
@@ -79,7 +79,7 @@
       "name": "Trash",
       "position_calc": "grid_column_first",
       "starting_x": 24,
-      "starting_y": 757.5,
+      "starting_y": 657.5,
       "step_x": 600,
       "step_y": -92.5,
       "n_col": 1,
@@ -99,7 +99,7 @@
       "name": "Score",
       "position_calc": "grid_column_first",
       "starting_x": 485,
-      "starting_y": 740,
+      "starting_y": 640,
       "step_x": 600,
       "step_y": -92.5,
       "n_col": 1,
@@ -119,9 +119,9 @@
     {
       "type": "single",
       "name": "Hidden",
-      "x": 340,
-      "y": 1050,
-      "width": 200,
+      "x": 250,
+      "y": 740,
+      "width": 190,
       "height": 71,
       "fillColor": 3355443,
       "boundary_width": 22.5,
@@ -135,9 +135,9 @@
     {
       "type": "single",
       "name": "SharedScore",
-      "x": 520,
-      "y": 1050,
-      "width": 150,
+      "x": 475,
+      "y": 740,
+      "width": 240,
       "height": 71,
       "fillColor": 3355443,
       "boundary_width": 22.5,
@@ -151,8 +151,8 @@
     {
       "type": "single",
       "name": "CardDealer",
-      "x": 100,
-      "y": 1050,
+      "x": 30,
+      "y": 740,
       "width": 48,
       "height": 71,
       "fillColor": 3355443,
@@ -165,8 +165,10 @@
     }
   ],
   "ui_elements": [
-    {        
-        "group_type": "standalone",
+    { 
+        "group_type": "per_zone_group",
+        "zone_group": "CardDealer",      
+        "position_type": "relative_to_zone",             
         "type": "DeckGenerator",
         "name": "AddNewDeck",
         "generate_button_label": "NewCards",
@@ -179,15 +181,15 @@
           "J1", "J2"                        
         ],
         "shuffle": true,
-        "x": 125,
-        "y": 1020,
+        "offset_x": 25,
+        "offset_y": -22,
         "button": {
         "text": "AddNewDeck"
         },
         "input": {
-        "offset_x": 90,
+        "offset_x": 70,
         "offset_y": -8,
-        "width": 40,
+        "width": 32,
         "height": 20,
         "default": "{NACTIVEPLAYER}"
         },
@@ -221,7 +223,7 @@
       "name": "ResetGame",
       "event_name": "NewGameRound",
       "text": "New Round",
-      "x": 5,
+      "x": 0,
       "y": 1020
     },
     {
@@ -229,15 +231,15 @@
       "type": "SimpleEvent",
       "name": "ReturnToGameRoom",
       "event_name": "exitToGameRoom",
-      "text": "Exit Game",
-      "x": 5,
-      "y": 1060
+      "text": "Reset & Exit",
+      "x": 0,
+      "y": 1050
     },
     {  
       "group_type": "standalone",
       "type": "InputText",        
-      "x": -550,
-      "y": 380,
+      "x": 47.5,
+      "y": 910,
       "width": 90,
       "height": 201.5,
       "name": "WhiteBoard",
@@ -250,11 +252,13 @@
       }
     },
     {
-      "group_type": "standalone",
+      "group_type": "per_zone_group",
+      "zone_group": "CardDealer",      
+      "position_type": "relative_to_zone", 
       "type": "DealCards",
       "name": "DealCards",
-      "x": 125,
-      "y": 1070,
+      "offset_x": 25,
+      "offset_y": 30,
       "button": {
         "text":"DealCards"
       },
@@ -270,8 +274,8 @@
             "text": "PerPlayer"
           },
           "input": {
-            "offset_x": 90,
-            "offset_y": -23,
+            "offset_x": 82,
+            "offset_y": -24,
             "default": "52"
           }
         },
@@ -286,8 +290,8 @@
             "text": "Hidden"
           },
           "input": {
-            "offset_x": 90,
-            "offset_y": -7,
+            "offset_x": 82,
+            "offset_y": -8,
             "default": "{NACTIVEPLAYER}*2"
           }
         }
@@ -446,8 +450,8 @@
       "zone_group": "PrivateHelper",
       "type": "FlipButton",
       "position_type": "relative_to_zone", 
-      "offset_x": -30,
-      "offset_y": -120,
+      "offset_x": 210,
+      "offset_y": -20,
       "name": "Flip",
       "text": "FLIP UP",
       "zone_id": "{ZONEID}",
@@ -458,8 +462,8 @@
       "zone_group": "PrivateHelper",
       "type": "FlipButton",
       "position_type": "relative_to_zone", 
-      "offset_x": 30,
-      "offset_y": -120,
+      "offset_x": 210,
+      "offset_y": 0,
       "name": "Flip",
       "text": "FLIP DOWN",
       "zone_id": "{ZONEID}",
