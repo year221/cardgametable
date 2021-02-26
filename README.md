@@ -1,5 +1,9 @@
 # cardgametable
-A web-based virtual reconfigurable gametable for playing card games,
+A web-based virtual reconfigurable gametable for playing card games.
+
+This is a translation / improvement of Python pyarcade + zeroMQ based cardgameFYF into javascript-based web game.
+
+Game server is available at: cardgame.ga
 
 ## Build docker image
 
