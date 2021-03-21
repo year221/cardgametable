@@ -180,7 +180,7 @@ io.on('connection', function (socket) {
       //     game_state.socket_id_to_player_info.get(socket_id).player_id ='-2';
       //   }
       // }
-      //game_state.shuffle_player_orders();
+      game_state.shuffle_player_orders();
       for (let player_info of game_state.player_list){
         if (player_info.connection_status==='Connected') {
           if (player_info.player_type === 'Player') {
