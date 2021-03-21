@@ -141,12 +141,13 @@ io.on('connection', function (socket) {
         if (available_player_info.length>0){
           const current_socket_player = game_state.get_player(socket.id);
           //const player_info = game_state.get_player_by_uuid(available_player_info[0].player_uuid);
+          current_socket_player.player_type = 'Player';
           current_socket_player.player_id = available_player_info[0].player_id;
           game_state.remove_player_by_uuid(available_player_info[0].player_uuid);
           //player_info.socket_id = socket.id;
           //player_info.connection_status = 'Connected';
           //player_info.player_name = current_socket_player.player_name
-
+          console.log(game_state)
           socket.broadcast.emit('returnGameStatus',
               game_state.status, game_state.get_reduced_player_info(), can_join_game());
           socket.emit('playerIDAssigned', current_socket_player.player_id);
