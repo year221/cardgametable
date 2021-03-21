@@ -90,6 +90,8 @@ function reset_state_to_waiting(){
 io.on('connection', function (socket) {
   console.log('a user connected', socket.id, 'player_id', socket.handshake.query.player_uuid);
   game_state.check_and_initialize_player(socket.id, socket.handshake.query.player_uuid);
+  socket.broadcast.emit('returnGameStatus',
+      game_state.status, game_state.get_reduced_player_info(), can_join_game());
   io.sockets.emit('playerInfo', game_state.get_reduced_player_info());
   console.log(game_state)
   //check_player_info(socket.id);
