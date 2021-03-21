@@ -1,4 +1,11 @@
 var Client = {};
-Client.player_id = '-2';
+Client.player_id = null;
 Client.player_infos = [];
-Client.socket = io.connect();
+const uuid = uuidv4();
+Client.socket = io.connect(
+    {
+        query: {
+            player_uuid:uuid
+        }
+    }
+);

@@ -352,6 +352,17 @@ export class Game extends Phaser.Scene {
         this.socket.on('playerInfo', function(player_info){
             self.registry.set('playerinfo', player_info);
         });
+
+        // check disconnect and try to automatically reconnect
+        this.socket.on('disconnect', function(){
+            self.socket.connect();
+        });
+        this.socket.on('connect', function(){
+            self.socket.emit('requestGameSync');
+            self.socket.emit('getMyPlayerName');
+            self.socket.emit('requestUIElementTextCache');
+        });
+
         console.log("creation done");
     }
 

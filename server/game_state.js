@@ -43,12 +43,15 @@ export class GameState {
         const index = this.player_list.findIndex(player_info=>player_info.player_uuid===player_uuid)
         this.player_list.splice(index, 1);
     }
-    add_new_player(socket_id){
+    add_new_player(socket_id, player_uuid){
+        if (player_uuid === undefined){
+            player_uuid = uuidv4();
+        }
         this.player_list.push(
             {
                 player_id: null,
                 player_name: 'Anonymous',
-                player_uuid: uuidv4(),
+                player_uuid: player_uuid,
                 player_type: 'Unassigned',
                 connection_status: 'Connected',
                 socket_id: socket_id
@@ -82,9 +85,21 @@ export class GameState {
         return this.player_list.find(player_info => player_info.player_uuid===player_uuid)
     }
 
-    check_and_initialize_player(socket_id){
+    check_and_initialize_player(socket_id, player_uuid){
+        console.log("check&innitialize player", socket_id, player_uuid);
         if (this.get_player(socket_id) === undefined){
-            this.add_new_player(socket_id)
+            if (player_uuid!== undefined){
+                // Use player uuid to match existing players
+                const player_info = this.get_player_by_uuid(player_uuid)
+                if (player_info === undefined){
+                    this.add_new_player(socket_id, player_uuid)
+                } else {
+                    player_info.socket_id = socket_id;
+                    player_info.connection_status = 'Connected';
+                }
+            } else {
+                this.add_new_player(socket_id)
+            }
         }
     }
     clean_cards_and_events(){
@@ -118,10 +133,10 @@ export class GameState {
     get_next_available_player_id(){
         const all_current_ids = this.player_list.map(player_info=>player_info.player_id);
         let player_id=0;
-        while (all_current_ids.includes(player_id)){
+        while (all_current_ids.includes(String(player_id))){
             player_id++;
         }
-        return player_id
+        return String(player_id);
     }
 
     get_disconnected_player_info(){

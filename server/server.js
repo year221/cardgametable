@@ -88,8 +88,9 @@ function reset_state_to_waiting(){
 
 
 io.on('connection', function (socket) {
-  console.log('a user connected', socket.id);
-  game_state.check_and_initialize_player(socket.id);
+  console.log('a user connected', socket.id, 'player_id', socket.handshake.query.player_uuid);
+  game_state.check_and_initialize_player(socket.id, socket.handshake.query.player_uuid);
+  io.sockets.emit('playerInfo', game_state.get_reduced_player_info());
   console.log(game_state)
   //check_player_info(socket.id);
   //game_state.socket_id_to_player_info.set(socket.id, {player_name:null, player_type:'Unassigned', player_id:''});
@@ -104,14 +105,14 @@ io.on('connection', function (socket) {
 
   socket.on('getMyPlayerName', function(player_name){
     //check_player_info(socket.id);
-    game_state.check_and_initialize_player(socket.id);
+    //game_state.check_and_initialize_player(socket.id);
     //socket.emit('returnPlayerName',game_state.socket_id_to_player_info.get(socket.id).player_name);
     socket.emit('returnPlayerName',game_state.get_player(socket.id).player_name);
   });
 
   socket.on('observeGame', function(){
     //check_player_info(socket.id);
-    game_state.check_and_initialize_player(socket.id);
+    //game_state.check_and_initialize_player(socket.id);
     game_state.get_player(socket.id).player_type ='Observer';
     io.sockets.emit('playerInfo', game_state.get_reduced_player_info());
     if (game_state.status=='InGame'){
@@ -129,7 +130,7 @@ io.on('connection', function (socket) {
 
     //const connected_active_players = get_currently_connected_active_players();
     if (game_state.status=='Waiting'){
-      game_state.check_and_initialize_player(socket.id);
+      //game_state.check_and_initialize_player(socket.id);
       game_state.get_player(socket.id).player_type ='Player';
       //game_state.socket_id_to_player_info.get(socket.id).player_type ='Player';
       io.sockets.emit('playerInfo', game_state.get_reduced_player_info());
