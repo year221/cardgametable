@@ -143,7 +143,7 @@ export class GameRoom extends Phaser.Scene
     }
     display_player_info(player_info){
         const content = ['Player Name and Status: '];
-        for (let player of player_info){
+        for (let player of player_info.filter(player_info=>player_info.connection_status==='Connected')){
             if (player.player_name!==null){
                 content.push(player.player_name+ '  '+ player.player_type);
             }

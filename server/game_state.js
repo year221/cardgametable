@@ -62,7 +62,14 @@ export class GameState {
         shuffle(this.player_list);
     }
     get_reduced_player_info(){
-        return this.player_list.filter(player_info => player_info.connection_status==='Connected').map(
+        // return this.player_list.filter(player_info => player_info.connection_status==='Connected').map(
+        //     player_info => {return {
+        //         player_id: player_info.player_id,
+        //         player_name: player_info.player_name,
+        //         player_type: player_info.player_type,
+        //         connection_status: player_info.connection_status
+        //     }});
+        return this.player_list.map(
             player_info => {return {
                 player_id: player_info.player_id,
                 player_name: player_info.player_name,
